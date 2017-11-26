@@ -21,6 +21,7 @@ LoadNewFile::LoadNewFile(QWidget *parent) : QWidget(parent)
     connect(chooseFileButton, &QAbstractButton::pressed, this, &LoadNewFile::chooseFile);
     connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
     connect(clearButton, &QAbstractButton::pressed, this, &LoadNewFile::clear);
+    connect(startButton, &QAbstractButton::pressed, this, &LoadNewFile::startProcessing);
 
     startButton->setEnabled(false);
 
@@ -88,8 +89,35 @@ void LoadNewFile::clear()
     startButton->setEnabled(false);
     actionsLog->clear();
     errorCounterLE->clear();
-//    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
-//    QSqlDatabase::database("MyConnection",false).close();
-//    QSqlDatabase::removeDatabase("MyConnection");
-//    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
+    //    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
+    //    QSqlDatabase::database("MyConnection",false).close();
+    //    QSqlDatabase::removeDatabase("MyConnection");
+    //    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
+}
+
+void LoadNewFile::finishProcessing()
+{
+    delete processor;
+    msg = new QMessageBox;
+    msg->setText("Processing finished!");
+    msg->setStandardButtons(QMessageBox::Ok);
+    msg->exec();
+}
+void LoadNewFile::startProcessing()
+{
+    processor = new LoadNewFileLogic(this);
+    connect(processor,&LoadNewFileLogic::processingFinished,this,&LoadNewFile::finishProcessing);
+    connect(processor,&LoadNewFileLogic::sendInformation,this,&LoadNewFile::getInformation);
+    connect(processor,&LoadNewFileLogic::sendProgress,this,&LoadNewFile::getProgress);
+    processor->processData(directory);
+}
+
+void LoadNewFile::getInformation(const QString info)
+{
+    actionsLog->append(info);
+}
+
+void LoadNewFile::getProgress(const int percentage)
+{
+    processingProgress->setValue(percentage);
 }

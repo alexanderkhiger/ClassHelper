@@ -2,6 +2,7 @@
 #define LOADNEWFILE_H
 
 #include <QWidget>
+#include "loadnewfilelogic.h"
 
 class QString;
 class QPushButton;
@@ -13,20 +14,24 @@ class QVBoxLayout;
 class QProgressBar;
 class QFileDialog;
 class QDialogButtonBox;
-class LoadNewFileLogic;
+class QMessageBox;
+
 
 class LoadNewFile : public QWidget
 {
     Q_OBJECT
 public:
     explicit LoadNewFile(QWidget *parent = nullptr);
-    friend class LoadNewFileLogic;
 
 signals:
 
 public slots:
     void chooseFile();
     void clear();
+    void startProcessing();
+    void finishProcessing();
+    void getInformation(const QString info);
+    void getProgress(const int percentage);
 
 private:
 
@@ -54,6 +59,9 @@ private:
 
     QProgressBar *processingProgress;
 
+    QMessageBox *msg;
+
+    LoadNewFileLogic *processor;
 
 };
 
