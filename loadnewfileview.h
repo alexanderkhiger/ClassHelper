@@ -1,5 +1,5 @@
-#ifndef LOADNEWFILE_H
-#define LOADNEWFILE_H
+#ifndef LOADNEWFILEVIEW_H
+#define LOADNEWFILEVIEW_H
 
 #include <QWidget>
 #include "loadnewfilelogic.h"
@@ -17,11 +17,11 @@ class QDialogButtonBox;
 class QMessageBox;
 
 
-class LoadNewFile : public QWidget
+class LoadNewFileView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LoadNewFile(QWidget *parent = nullptr);
+    explicit LoadNewFileView(QWidget *parent = nullptr);
 
 signals:
 
@@ -62,6 +62,9 @@ private:
     QMessageBox *msg;
 
     LoadNewFileLogic *processor;
+
+private slots:
+    void createUI();
 
 };
 

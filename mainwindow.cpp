@@ -1,18 +1,25 @@
 #include <QtWidgets>
 #include "mainwindow.h"
 #include "droparea.h"
-#include "loadnewfile.h"
+#include "loadnewfileview.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
+    createUI();
+    connect(dropArea, &DropArea::changed, this, &MainWindow::updateParameters);
+    connect(dropArea, &DropArea::clearParameters, this, &MainWindow::clearParameters);
+    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
+    connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
+    connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickClassUpdate);
+    connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickTeacherUpdate);
+    connect(newFileAction, &QAction::triggered, this, &MainWindow::newFile);
+}
+
+void MainWindow::createUI()
+{
     setMinimumHeight(500);
     dropArea = new DropArea;
-
     dropArea->setFixedHeight(75);
-
-    connect(dropArea, &DropArea::changed, this, &MainWindow::updateParameters);
-
-    connect(dropArea, &DropArea::clearParameters, this, &MainWindow::clearParameters);
 
     clearButton = new QPushButton(tr("Очистить"));
     quitButton = new QPushButton(tr("Выход"));
@@ -21,14 +28,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     buttonBox->addButton(clearButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
-
     teachersList = new QListWidget;
     classesList = new QListWidget;
-
-    connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickClassUpdate);
-    connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickTeacherUpdate);
 
     teachersList->setDragEnabled(true);
     classesList->setDragEnabled(true);
@@ -60,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     classesHeader->setAlignment(Qt::AlignHCenter);
     teachersHeader->setAlignment(Qt::AlignHCenter);
 
-
     chosenClass->setPlaceholderText(tr("Дисциплина"));
     chosenTeacher->setPlaceholderText(tr("Преподаватель"));
 
@@ -73,14 +73,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     workField = new QGroupBox;
     workField->setObjectName("workField");
 
-
     externalVLayout = new QVBoxLayout;
     internalMiddleVLayout = new QVBoxLayout;
     internalLeftVLayout = new QVBoxLayout;
     internalRightVLayout = new QVBoxLayout;
     externalHLayout = new QHBoxLayout;
     internalHLayout = new QHBoxLayout;
-
 
     internalHLayout->addWidget(chosenClass);
     internalHLayout->addWidget(chosenTeacher);
@@ -106,25 +104,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     this->setCentralWidget(myWorkField);
 
-    QMenu *fileMenu = new QMenu(tr("Файл"));
-    QMenu *editMenu = new QMenu(tr("Правка"));
-    QMenu *toolsMenu = new QMenu(tr("Инструменты"));
-    QMenu *helpMenu = new QMenu(tr("Справка"));
+    fileMenu = new QMenu(tr("Файл"));
+    editMenu = new QMenu(tr("Правка"));
+    toolsMenu = new QMenu(tr("Инструменты"));
+    helpMenu = new QMenu(tr("Справка"));
 
     this->menuBar()->addMenu(fileMenu);
     this->menuBar()->addMenu(editMenu);
     this->menuBar()->addMenu(toolsMenu);
     this->menuBar()->addMenu(helpMenu);
 
-    QAction *newAct = new QAction(tr("Загрузить файл данных"), this);
-    newAct->setShortcuts(QKeySequence::New);
-    newAct->setStatusTip(tr("Загрузить новый файл данных"));
-    connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
-    fileMenu->addAction(newAct);
+    newFileAction = new QAction(tr("Загрузить файл данных"), this);
+    newFileAction->setShortcuts(QKeySequence::New);
+    newFileAction->setStatusTip(tr("Загрузить новый файл данных"));
+    fileMenu->addAction(newFileAction);
 
     setWindowTitle(tr("Time Tracker"));
 }
-
 
 void MainWindow::updateParameters(const QObject *myObject, const QMimeData *mimeData)
 {
@@ -186,6 +182,6 @@ void MainWindow::clearParameters()
 
 void MainWindow::newFile()
 {
-    LoadNewFile *frm = new LoadNewFile;
+    LoadNewFileView *frm = new LoadNewFileView;
     frm->show();
 }

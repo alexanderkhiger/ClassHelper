@@ -26,14 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     droparea.cpp \
-    auth.cpp \
     mainwindow.cpp \
-    loadnewfile.cpp \
-    loadnewfilelogic.cpp
+    loadnewfilelogic.cpp \
+    universityview.cpp \
+    queryrunner.cpp \
+    authview.cpp \
+    loadnewfileview.cpp
 
 HEADERS += \
     droparea.h \
-    auth.h \
     mainwindow.h \
-    loadnewfile.h \
-    loadnewfilelogic.h
+    loadnewfilelogic.h \
+    universityview.h \
+    queryrunner.h \
+    authview.h \
+    loadnewfileview.h

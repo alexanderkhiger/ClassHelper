@@ -1,10 +1,12 @@
-#ifndef AUTH_H
-#define AUTH_H
+#ifndef AUTHVIEW_H
+#define AUTHVIEW_H
 
 #include <QWidget>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <mainwindow.h>
+#include <queryrunner.h>
+#include <universityview.h>
 
 class QPushButton;
 class QDialogButtonBox;
@@ -14,15 +16,15 @@ class QTextEdit;
 class QVBoxLayout;
 class QHBoxLayout;
 
-class Auth : public QWidget
+class AuthView : public QWidget
 {
     Q_OBJECT
 
 public:
-    Auth();
+    AuthView();
+    QSqlDatabase db;
 
 private:
-    QSqlDatabase db;
     QPushButton *authButton;
     QPushButton *quitButton;
     QDialogButtonBox *buttonBox;
@@ -39,9 +41,15 @@ private:
     QVBoxLayout *internalLeftVLayout;
     QVBoxLayout *internalRightVLayout;
     QHBoxLayout *internalHLayout;
+    QueryRunner *runner;
+
+public slots:
+    void tryAuth();
+    void authSuccess();
+    void authError(const QString error);
 
 private slots:
-    void tryAuth();
+    void createUI();
 
 };
 

@@ -1,7 +1,14 @@
-#include "auth.h"
+#include "authview.h"
 #include <QtWidgets>
 
-Auth::Auth()
+AuthView::AuthView()
+{
+    createUI();
+    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
+    connect(authButton, &QAbstractButton::pressed, this, &AuthView::tryAuth);
+}
+
+void AuthView::createUI()
 {
     this->setMinimumHeight(250);
     this->resize(250,250);
@@ -43,9 +50,6 @@ Auth::Auth()
     buttonBox->addButton(authButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(authButton, &QAbstractButton::pressed, this, &Auth::tryAuth);
-
     actionsLog = new QTextEdit;
 
     actionsLog->setReadOnly(true);
@@ -80,29 +84,24 @@ Auth::Auth()
     externalVLayout->addWidget(buttonBox);
 
     setWindowTitle(tr("Авторизация"));
-
+}
+void AuthView::authError(const QString error)
+{
+    actionsLog->setText(error);
 }
 
-void Auth::tryAuth()
+void AuthView::authSuccess()
 {
-    QSqlDatabase db;
-    db = QSqlDatabase::addDatabase("QMYSQL", "MyConnection");
-    db.setHostName(hostnameField->text());
-    db.setDatabaseName(databaseField->text());
-    db.setUserName(usernameField->text());
-    db.setPassword(passwordField->text());
-    if (usernameField->text() == "" || passwordField->text() == "" || databaseField->text() == "" || hostnameField->text() == "")
-        actionsLog->setText(tr("Необходимо заполнить все поля"));
-    else
-    {
-        db.open();
-        if (db.isOpen() == 0)
-            actionsLog->setText(tr("Ошибка авторизации, проверьте правильность данных"));
-        else
-        {
-            MainWindow *frm = new MainWindow;
-            frm->show();
-            this->close();
-        }
-    }
+    delete runner;
+    UniversityView *frm = new UniversityView;
+    frm->show();
+    this->close();
+}
+
+void AuthView::tryAuth()
+{
+    runner = new QueryRunner(this);
+    connect(runner,&QueryRunner::authError,this,&AuthView::authError);
+    connect(runner,&QueryRunner::authSuccess,this,&AuthView::authSuccess);
+    runner->tryAuth(usernameField->text(),passwordField->text(),databaseField->text(),hostnameField->text());
 }

@@ -1,9 +1,18 @@
 #include <QtWidgets>
-#include "loadnewfile.h"
+#include "loadnewfileview.h"
 #include <QSqlDatabase>
 #include <QDebug>
 
-LoadNewFile::LoadNewFile(QWidget *parent) : QWidget(parent)
+LoadNewFileView::LoadNewFileView(QWidget *parent) : QWidget(parent)
+{
+    createUI();
+    connect(chooseFileButton, &QAbstractButton::pressed, this, &LoadNewFileView::chooseFile);
+    connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
+    connect(clearButton, &QAbstractButton::pressed, this, &LoadNewFileView::clear);
+    connect(startButton, &QAbstractButton::pressed, this, &LoadNewFileView::startProcessing);
+}
+
+void LoadNewFileView::createUI()
 {
     this->setMinimumHeight(250);
     this->resize(300,250);
@@ -14,14 +23,8 @@ LoadNewFile::LoadNewFile(QWidget *parent) : QWidget(parent)
     clearButton = new QPushButton(tr("Очистить"));
     buttonBox = new QDialogButtonBox;
 
-
     buttonBox->addButton(clearButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(exitButton, QDialogButtonBox::RejectRole);
-
-    connect(chooseFileButton, &QAbstractButton::pressed, this, &LoadNewFile::chooseFile);
-    connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(clearButton, &QAbstractButton::pressed, this, &LoadNewFile::clear);
-    connect(startButton, &QAbstractButton::pressed, this, &LoadNewFile::startProcessing);
 
     startButton->setEnabled(false);
 
@@ -51,8 +54,6 @@ LoadNewFile::LoadNewFile(QWidget *parent) : QWidget(parent)
     bottomHLayout = new QHBoxLayout;
     vLayout = new QVBoxLayout;
 
-
-
     topHLayout->addWidget(chooseFileButton);
     topHLayout->addWidget(chosenFile);
     middleHLayout->addWidget(startButton);
@@ -70,7 +71,7 @@ LoadNewFile::LoadNewFile(QWidget *parent) : QWidget(parent)
     this->setWindowTitle(tr("Добавление файла"));
 }
 
-void LoadNewFile::chooseFile()
+void LoadNewFileView::chooseFile()
 {
     buffer = QFileDialog::getOpenFileName(this, tr("Открыть файл"), "C:/", tr("Text files (*.txt *.rtf)"));
     if (buffer != "")
@@ -82,7 +83,7 @@ void LoadNewFile::chooseFile()
         startButton->setEnabled(false);
 }
 
-void LoadNewFile::clear()
+void LoadNewFileView::clear()
 {
     chosenFile->clear();
     directory = "";
@@ -95,7 +96,7 @@ void LoadNewFile::clear()
     //    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
 }
 
-void LoadNewFile::finishProcessing()
+void LoadNewFileView::finishProcessing()
 {
     delete processor;
     msg = new QMessageBox;
@@ -103,21 +104,21 @@ void LoadNewFile::finishProcessing()
     msg->setStandardButtons(QMessageBox::Ok);
     msg->exec();
 }
-void LoadNewFile::startProcessing()
+void LoadNewFileView::startProcessing()
 {
     processor = new LoadNewFileLogic(this);
-    connect(processor,&LoadNewFileLogic::processingFinished,this,&LoadNewFile::finishProcessing);
-    connect(processor,&LoadNewFileLogic::sendInformation,this,&LoadNewFile::getInformation);
-    connect(processor,&LoadNewFileLogic::sendProgress,this,&LoadNewFile::getProgress);
+    connect(processor,&LoadNewFileLogic::processingFinished,this,&LoadNewFileView::finishProcessing);
+    connect(processor,&LoadNewFileLogic::sendInformation,this,&LoadNewFileView::getInformation);
+    connect(processor,&LoadNewFileLogic::sendProgress,this,&LoadNewFileView::getProgress);
     processor->processData(directory);
 }
 
-void LoadNewFile::getInformation(const QString info)
+void LoadNewFileView::getInformation(const QString info)
 {
     actionsLog->append(info);
 }
 
-void LoadNewFile::getProgress(const int percentage)
+void LoadNewFileView::getProgress(const int percentage)
 {
     processingProgress->setValue(percentage);
 }

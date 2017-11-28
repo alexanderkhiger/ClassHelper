@@ -1,12 +1,14 @@
 
 #include <QApplication>
 
-#include "auth.h"
+#include "authview.h"
+// #include "universityview.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    Auth window;
+    AuthView window;
+//    UniversityView window;
     window.show();
     return app.exec();
 }

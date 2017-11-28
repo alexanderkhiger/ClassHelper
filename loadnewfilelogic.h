@@ -10,7 +10,7 @@
 #include <QDebug>
 #include <QDate>
 
-class LoadNewFile;
+class LoadNewFileView;
 class QString;
 class QStringList;
 

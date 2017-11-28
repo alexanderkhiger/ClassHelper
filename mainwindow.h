@@ -18,6 +18,8 @@ class QListWidgetItem;
 class QDebug;
 class QVBoxLayout;
 class QHBoxLayout;
+class QMenu;
+class QAction;
 
 class MainWindow : public QMainWindow
 {
@@ -64,6 +66,15 @@ private:
 
     QWidget *myWorkField;
 
+    QMenu *fileMenu;
+    QMenu *editMenu;
+    QMenu *toolsMenu;
+    QMenu *helpMenu;
+
+    QAction *newFileAction;
+
+private slots:
+    void createUI();
 
 };
 
