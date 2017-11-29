@@ -1,5 +1,5 @@
-#ifndef LOADNEWFILELOGIC_H
-#define LOADNEWFILELOGIC_H
+#ifndef LOADNEWFILEMODEL_H
+#define LOADNEWFILEMODEL_H
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -14,11 +14,11 @@ class LoadNewFileView;
 class QString;
 class QStringList;
 
-class LoadNewFileLogic : public QObject
+class LoadNewFileModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit LoadNewFileLogic(QObject *parent = nullptr);
+    explicit LoadNewFileModel(QObject *parent = nullptr);
 
 signals:
     void sendProgress(const int percentage);

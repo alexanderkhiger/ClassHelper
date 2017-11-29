@@ -2,9 +2,10 @@
 #define AUTHVIEW_H
 
 #include <QWidget>
+#include <QtWidgets>
 #include <QSqlDatabase>
 #include <QSqlQuery>
-#include <mainwindow.h>
+
 #include <queryrunner.h>
 #include <universityview.h>
 

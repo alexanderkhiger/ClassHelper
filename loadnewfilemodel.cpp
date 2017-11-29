@@ -1,11 +1,11 @@
-#include "loadnewfilelogic.h"
+#include "loadnewfilemodel.h"
 
-LoadNewFileLogic::LoadNewFileLogic(QObject *parent) : QObject(parent)
+LoadNewFileModel::LoadNewFileModel(QObject *parent) : QObject(parent)
 {
 
 }
 
-void LoadNewFileLogic::processData(const QString dir)
+void LoadNewFileModel::processData(const QString dir)
 {
     QFile file (dir);
     if(file.open(QIODevice::ReadOnly))

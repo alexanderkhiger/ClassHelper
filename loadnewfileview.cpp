@@ -1,7 +1,4 @@
-#include <QtWidgets>
 #include "loadnewfileview.h"
-#include <QSqlDatabase>
-#include <QDebug>
 
 LoadNewFileView::LoadNewFileView(QWidget *parent) : QWidget(parent)
 {
@@ -99,17 +96,15 @@ void LoadNewFileView::clear()
 void LoadNewFileView::finishProcessing()
 {
     delete processor;
-    msg = new QMessageBox;
-    msg->setText("Processing finished!");
-    msg->setStandardButtons(QMessageBox::Ok);
-    msg->exec();
+    QMessageBox::StandardButton infoMsg;
+    infoMsg = QMessageBox::information(this,tr("Оповещение"),tr("Обработка завершена!"),QMessageBox::Ok);
 }
 void LoadNewFileView::startProcessing()
 {
-    processor = new LoadNewFileLogic(this);
-    connect(processor,&LoadNewFileLogic::processingFinished,this,&LoadNewFileView::finishProcessing);
-    connect(processor,&LoadNewFileLogic::sendInformation,this,&LoadNewFileView::getInformation);
-    connect(processor,&LoadNewFileLogic::sendProgress,this,&LoadNewFileView::getProgress);
+    processor = new LoadNewFileModel(this);
+    connect(processor,&LoadNewFileModel::processingFinished,this,&LoadNewFileView::finishProcessing);
+    connect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
+    connect(processor,&LoadNewFileModel::sendProgress,this,&LoadNewFileView::getProgress);
     processor->processData(directory);
 }
 

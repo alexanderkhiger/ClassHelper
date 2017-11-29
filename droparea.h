@@ -3,6 +3,8 @@
 
 #include <QLabel>
 #include <QObject>
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 class QMimeData;
 

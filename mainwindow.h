@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtWidgets>
+
+#include "droparea.h"
+#include "loadnewfileview.h"
 
 class QDialogButtonBox;
 class QLabel;
@@ -25,7 +29,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QString uID, QString uName, QString uShortname, QWidget *parent = nullptr);
 
 public slots:
 
@@ -38,6 +42,11 @@ public slots:
 
 
 private:
+
+    QString receivedID;
+    QString receivedName;
+    QString receivedShortname;
+
     DropArea *dropArea;
 
     QGroupBox *workField;

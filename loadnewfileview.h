@@ -2,7 +2,11 @@
 #define LOADNEWFILEVIEW_H
 
 #include <QWidget>
-#include "loadnewfilelogic.h"
+#include <QtWidgets>
+#include <QSqlDatabase>
+#include <QDebug>
+
+#include "loadnewfilemodel.h"
 
 class QString;
 class QPushButton;
@@ -61,7 +65,7 @@ private:
 
     QMessageBox *msg;
 
-    LoadNewFileLogic *processor;
+    LoadNewFileModel *processor;
 
 private slots:
     void createUI();

@@ -1,8 +1,5 @@
 #include "droparea.h"
 
-#include <QDragEnterEvent>
-#include <QMimeData>
-
 DropArea::DropArea(QWidget *parent)
     : QLabel(parent)
 {

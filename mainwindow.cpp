@@ -1,10 +1,11 @@
-#include <QtWidgets>
 #include "mainwindow.h"
-#include "droparea.h"
-#include "loadnewfileview.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(QString uID, QString uName, QString uShortname, QWidget *parent) : QMainWindow(parent)
 {
+    receivedID = uID;
+    receivedName = uName;
+    receivedShortname = uShortname;
+
     createUI();
     connect(dropArea, &DropArea::changed, this, &MainWindow::updateParameters);
     connect(dropArea, &DropArea::clearParameters, this, &MainWindow::clearParameters);
@@ -119,7 +120,7 @@ void MainWindow::createUI()
     newFileAction->setStatusTip(tr("Загрузить новый файл данных"));
     fileMenu->addAction(newFileAction);
 
-    setWindowTitle(tr("Time Tracker"));
+    setWindowTitle(QString(tr("Time Tracker | %1 | %2")).arg(receivedName).arg(receivedShortname));
 }
 
 void MainWindow::updateParameters(const QObject *myObject, const QMimeData *mimeData)

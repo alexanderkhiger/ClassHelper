@@ -1,5 +1,4 @@
 #include "authview.h"
-#include <QtWidgets>
 
 AuthView::AuthView()
 {

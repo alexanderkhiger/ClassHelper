@@ -27,17 +27,19 @@ SOURCES += \
         main.cpp \
     droparea.cpp \
     mainwindow.cpp \
-    loadnewfilelogic.cpp \
     universityview.cpp \
     queryrunner.cpp \
     authview.cpp \
-    loadnewfileview.cpp
+    loadnewfileview.cpp \
+    universitymodel.cpp \
+    loadnewfilemodel.cpp
 
 HEADERS += \
     droparea.h \
     mainwindow.h \
-    loadnewfilelogic.h \
     universityview.h \
     queryrunner.h \
     authview.h \
-    loadnewfileview.h
+    loadnewfileview.h \
+    universitymodel.h \
+    loadnewfilemodel.h

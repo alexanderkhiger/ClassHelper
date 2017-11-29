@@ -1,9 +1,9 @@
 #include "queryrunner.h"
-#include <QDebug>
 
 QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
 {
     defaultModel = new QSqlQueryModel;
+    defaultTableModel = new QSqlTableModel;
 }
 
 void QueryRunner::tryAuth(const QString login, const QString password, const QString database, const QString hostname)
@@ -48,4 +48,12 @@ void QueryRunner::tryQuery(const QString query, bool isModelNeeded)
             emit queryError(defaultQuery.lastError());
         }
     }
+}
+
+void QueryRunner::tryTableModel(const QString tableName)
+{
+    defaultTableModel->setTable(tableName);
+    defaultTableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    defaultTableModel->select();
+    emit returnTableModel(defaultTableModel);
 }
