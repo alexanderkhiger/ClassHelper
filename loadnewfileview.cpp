@@ -102,10 +102,15 @@ void LoadNewFileView::finishProcessing()
 void LoadNewFileView::startProcessing()
 {
     processor = new LoadNewFileModel(this);
+
+    disconnect(processor,&LoadNewFileModel::processingFinished,this,&LoadNewFileView::finishProcessing);
+    disconnect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
+    disconnect(processor,&LoadNewFileModel::sendProgress,this,&LoadNewFileView::getProgress);
     connect(processor,&LoadNewFileModel::processingFinished,this,&LoadNewFileView::finishProcessing);
     connect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
     connect(processor,&LoadNewFileModel::sendProgress,this,&LoadNewFileView::getProgress);
     processor->processData(directory);
+
 }
 
 void LoadNewFileView::getInformation(const QString info)

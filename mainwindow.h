@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
-
+#include "tableeditorview.h"
 #include "droparea.h"
 #include "loadnewfileview.h"
 

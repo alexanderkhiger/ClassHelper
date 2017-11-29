@@ -14,6 +14,7 @@ void UniversityModel::updateModel(QSqlTableModel *model, operationType type, int
         if (!check)
         {
             emit updateError(model->lastError().text());
+            model->revertAll();
         }
     }
     else if (type == UniversityModel::uINSERT)
@@ -26,6 +27,7 @@ void UniversityModel::updateModel(QSqlTableModel *model, operationType type, int
         if (!check)
         {
             emit updateError(model->lastError().text());
+            model->revertAll();
         }
     }
 }

@@ -32,7 +32,9 @@ SOURCES += \
     authview.cpp \
     loadnewfileview.cpp \
     universitymodel.cpp \
-    loadnewfilemodel.cpp
+    loadnewfilemodel.cpp \
+    tableeditorview.cpp \
+    tableeditormodel.cpp
 
 HEADERS += \
     droparea.h \
@@ -42,4 +44,6 @@ HEADERS += \
     authview.h \
     loadnewfileview.h \
     universitymodel.h \
-    loadnewfilemodel.h
+    loadnewfilemodel.h \
+    tableeditorview.h \
+    tableeditormodel.h

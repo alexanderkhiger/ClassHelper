@@ -15,6 +15,9 @@ MainWindow::MainWindow(QString uID, QString uName, QString uShortname, QWidget *
     connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickClassUpdate);
     connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickTeacherUpdate);
     connect(newFileAction, &QAction::triggered, this, &MainWindow::newFile);
+
+    TableEditorView *frm = new TableEditorView(receivedID,receivedName,receivedShortname);
+    frm->show();
 }
 
 void MainWindow::createUI()

@@ -5,6 +5,7 @@
 #include <QtWidgets>
 #include <QSqlQuery>
 #include <QSqlQueryModel>
+#include <QSqlTableModel>
 #include <QDebug>
 
 #include <queryrunner.h>

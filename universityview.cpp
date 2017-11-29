@@ -26,6 +26,7 @@ void UniversityView::createUI()
     shortnameField->setToolTip(tr("Аббревиатура университета"));
     confirmAddition = new QPushButton(tr("OK"));
     universityTableView = new QTableView;
+    universityTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     universityTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     universityTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -105,6 +106,13 @@ void UniversityView::setModel(QSqlTableModel *model)
 
 void UniversityView::deleteRecord()
 {
+    if (modelReference == Q_NULLPTR)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+
     QModelIndex idIndex = universityTableView->model()->index(universityTableView->currentIndex().row(),0,QModelIndex());
     QModelIndex nameIndex = universityTableView->model()->index(universityTableView->currentIndex().row(),1,QModelIndex());
     QModelIndex shortnameIndex = universityTableView->model()->index(universityTableView->currentIndex().row(),2,QModelIndex());
@@ -118,6 +126,7 @@ void UniversityView::deleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
+        disconnect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
         connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
         uModel->updateModel(modelReference,UniversityModel::operationType::uDELETE,universityTableView->currentIndex().row());
     }
@@ -134,10 +143,19 @@ void UniversityView::addRecord()
             return;
     }
 
+    if (modelReference == Q_NULLPTR)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+
+    disconnect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
     connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
     uModel->updateModel(modelReference,UniversityModel::operationType::uINSERT,universityTableView->currentIndex().row(),nameField->text(),shortnameField->text());
     nameField->clear();
     shortnameField->clear();
+
 }
 
 void UniversityView::changeAddButtonStyle()
