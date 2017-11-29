@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QString uID, QString uName, QString uShortname, QWidget *parent = nullptr);
+    explicit MainWindow(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent = nullptr);
 
 public slots:
 
@@ -39,9 +39,11 @@ public slots:
     void doubleClickTeacherUpdate(const QListWidgetItem *myItem);
     void checkFields();
     void newFile();
-
+    void back();
 
 private:
+
+    QWidget *parentReference;
 
     QString receivedID;
     QString receivedName;
@@ -63,7 +65,7 @@ private:
     QLabel *teachersHeader;
 
     QPushButton *clearButton;
-    QPushButton *quitButton;
+    QPushButton *backButton;
     QDialogButtonBox *buttonBox;
 
     QVBoxLayout *externalVLayout;

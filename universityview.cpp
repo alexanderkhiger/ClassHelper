@@ -33,7 +33,7 @@ void UniversityView::createUI()
     addButton = new QPushButton(tr("Добавить"));;
     deleteButton = new QPushButton(tr("Удалить"));;
     deleteButton->setEnabled(0);
-    confirmButton = new QPushButton(tr("ОК"));;
+    confirmButton = new QPushButton(tr("Выбрать университет"));;
     confirmButton->setEnabled(0);
     exitButton = new QPushButton(tr("Выход"));;
     buttonBox = new QDialogButtonBox;
@@ -180,7 +180,7 @@ void UniversityView::choiceConfirmed()
     QString nameData = universityTableView->model()->data(nameIndex).toString();
     QString shortnameData = universityTableView->model()->data(shortnameIndex).toString();
 
-    MainWindow *frm = new MainWindow(idData, nameData, shortnameData);
+    MainWindow *frm = new MainWindow(idData, nameData, shortnameData,this);
     frm->show();
-    this->close();
+    this->hide();
 }

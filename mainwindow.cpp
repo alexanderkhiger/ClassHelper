@@ -1,7 +1,8 @@
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QString uID, QString uName, QString uShortname, QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent) : QMainWindow(parent)
 {
+    parentReference = ref;
     receivedID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
@@ -9,8 +10,8 @@ MainWindow::MainWindow(QString uID, QString uName, QString uShortname, QWidget *
     createUI();
     connect(dropArea, &DropArea::changed, this, &MainWindow::updateParameters);
     connect(dropArea, &DropArea::clearParameters, this, &MainWindow::clearParameters);
-    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
     connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
+    connect(backButton,&QAbstractButton::pressed,this,&MainWindow::back);
     connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickClassUpdate);
     connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickTeacherUpdate);
     connect(newFileAction, &QAction::triggered, this, &MainWindow::newFile);
@@ -23,11 +24,11 @@ void MainWindow::createUI()
     dropArea->setFixedHeight(75);
 
     clearButton = new QPushButton(tr("Очистить"));
-    quitButton = new QPushButton(tr("Выход"));
+    backButton = new QPushButton(tr("Назад"));
 
     buttonBox = new QDialogButtonBox;
-    buttonBox->addButton(clearButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
+    buttonBox->addButton(clearButton, QDialogButtonBox::ResetRole);
+    buttonBox->addButton(backButton, QDialogButtonBox::RejectRole);
 
     teachersList = new QListWidget;
     classesList = new QListWidget;
@@ -121,6 +122,12 @@ void MainWindow::createUI()
     fileMenu->addAction(newFileAction);
 
     setWindowTitle(QString(tr("Time Tracker | %1 | %2")).arg(receivedName).arg(receivedShortname));
+}
+
+void MainWindow::back()
+{
+    parentReference->show();
+    QWidget::close();
 }
 
 void MainWindow::updateParameters(const QObject *myObject, const QMimeData *mimeData)
