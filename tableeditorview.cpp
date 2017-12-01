@@ -6,6 +6,7 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     receivedName = uName;
     receivedShortname = uShortname;
     teModel = new TableEditorModel;
+    connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
     chairRunner = new QueryRunner;
     facultyRunner = new QueryRunner;
     teacherRunner = new QueryRunner;
@@ -398,8 +399,6 @@ void TableEditorView::facultyAddRecord()
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    disconnect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-    connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
     teModel->updateFacultyModel(facultyModelReference,TableEditorModel::operationType::fINSERT,facultyTable->currentIndex().row(),facultyName->text(),facultyShortname->text(),receivedUID);
     facultyName->clear();
     facultyShortname->clear();
@@ -427,8 +426,6 @@ void TableEditorView::facultyDeleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        disconnect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-        connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
         teModel->updateFacultyModel(facultyModelReference,TableEditorModel::operationType::fDELETE,facultyTable->currentIndex().row());
 
     }
@@ -451,8 +448,6 @@ void TableEditorView::chairAddRecord()
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    disconnect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-    connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
     teModel->updateFacultyModel(chairModelReference,TableEditorModel::operationType::fINSERT,chairTable->currentIndex().row(),chairName->text(),chairShortname->text(),chairFacultyID->text());
     chairName->clear();
     chairShortname->clear();
@@ -483,8 +478,6 @@ void TableEditorView::chairDeleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        disconnect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-        connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
         teModel->updateFacultyModel(chairModelReference,TableEditorModel::operationType::fDELETE,chairTable->currentIndex().row());
 
     }
@@ -507,8 +500,6 @@ void TableEditorView::teacherAddRecord()
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    disconnect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-    connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
     teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fINSERT,teacherTable->currentIndex().row(),teacherFirstName->text(),teacherSurname->text(),teacherMiddleName->text(),teacherDegree->text(),teacherChairID->text(),teacherPost->text(),teacherTitle->text());
     teacherFirstName->clear();
     teacherMiddleName->clear();
@@ -550,8 +541,6 @@ void TableEditorView::teacherDeleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        disconnect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-        connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
         teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fDELETE,teacherTable->currentIndex().row());
     }
 
