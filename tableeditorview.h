@@ -7,6 +7,9 @@
 #include <QSqlTableModel>
 #include "queryrunner.h"
 #include "tableeditormodel.h"
+#include "customlineedit.h"
+#include <QComboBox>
+#include <QLabel>
 
 class QLineEdit;
 class QPushButton;
@@ -27,6 +30,12 @@ public:
 signals:
 
 public slots:
+
+    void setSmallTablesVisible();
+    void setSmallTablesInvisible();
+    void getFacultyID();
+    void getChairID();
+
     void createFacultyWidgetUI();
     void createChairWidgetUI();
     void createTeacherWidgetUI();
@@ -35,18 +44,23 @@ public slots:
     void changeChairAddButtonStyle();
     void changeTeacherAddButtonStyle();
 
+    void checkSize(int index);
     void resizeTable(QTableView *table);
     void getError(QSqlError error);
 
     void enableFacultyButtons();
     void enableChairButtons();
     void enableTeacherButtons();
+    void enableGetIDButtons();
 
     void facultyAddRecord();
     void facultyDeleteRecord();
 
     void chairAddRecord();
     void chairDeleteRecord();
+
+    void openFacultyList();
+    void openChairList();
 
     void teacherAddRecord();
     void teacherDeleteRecord();
@@ -59,6 +73,7 @@ public slots:
 
     void getTeacherModel();
     void setTeacherModel(QSqlTableModel *model);
+
 private:
     QueryRunner *chairRunner;
     QueryRunner *facultyRunner;
@@ -71,16 +86,15 @@ private:
     QString receivedName;
     QString receivedShortname;
     QHeaderView *hHeader;
-    QSqlTableModel *facultyModelReference = Q_NULLPTR;
-    QSqlTableModel *chairModelReference = Q_NULLPTR;
-    QSqlTableModel *teacherModelReference = Q_NULLPTR;
+    QSqlTableModel *facultyModelReference = 0;
+    QSqlTableModel *chairModelReference = 0;
+    QSqlTableModel *teacherModelReference = 0;
 
     QWidget *facultyWidget;
     QTableView *facultyTable;
     QVBoxLayout *facultyVLayout;
     QHBoxLayout *facultyTopHLayout;
     QHBoxLayout *facultyBotHLayout;
-    QSqlTableModel *facultyModel;
     QLineEdit *facultyName;
     QLineEdit *facultyShortname;
     QPushButton *facultyConfirmAddition;
@@ -93,10 +107,10 @@ private:
     QVBoxLayout *chairVLayout;
     QHBoxLayout *chairTopHLayout;
     QHBoxLayout *chairBotHLayout;
-    QSqlTableModel *chairModel;
     QLineEdit *chairName;
     QLineEdit *chairShortname;
     QLineEdit *chairFacultyID;
+    CustomLineEdit *chairChooseFaculty;
     QPushButton *chairConfirmAddition;
     QPushButton *chairAddButton;
     QPushButton *chairDeleteButton;
@@ -108,17 +122,18 @@ private:
     QHBoxLayout *teacherTopHLayout;
     QHBoxLayout *teacherMidHLayout;
     QHBoxLayout *teacherBotHLayout;
-    QSqlTableModel *teacherModel;
+    CustomLineEdit *teacherChooseChair;
 
     QLineEdit *teacherFirstName;
     QLineEdit *teacherMiddleName;
     QLineEdit *teacherSurname;
 
-    QLineEdit *teacherTitle;
-    QLineEdit *teacherDegree;
     QLineEdit *teacherPost;
-    QLineEdit *teacherChairID;
+    QComboBox *teacherTitle;
+    QComboBox *teacherDegree;
 
+    QLabel *titleLabel;
+    QLabel *degreeLabel;
 
     QPushButton *teacherConfirmAddition;
     QPushButton *teacherAddButton;
@@ -126,6 +141,10 @@ private:
     int teacherAddButtonState = buttonState::INACTIVE;
 
     QVBoxLayout *vLayout;
+    QTableView *getIDTable;
+    QPushButton *agree;
+    QPushButton *disagree;
+    QDialogButtonBox *buttonBox;
 
 
 };

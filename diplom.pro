@@ -34,7 +34,8 @@ SOURCES += \
     universitymodel.cpp \
     loadnewfilemodel.cpp \
     tableeditorview.cpp \
-    tableeditormodel.cpp
+    tableeditormodel.cpp \
+    customlineedit.cpp
 
 HEADERS += \
     droparea.h \
@@ -46,4 +47,5 @@ HEADERS += \
     universitymodel.h \
     loadnewfilemodel.h \
     tableeditorview.h \
-    tableeditormodel.h
+    tableeditormodel.h \
+    customlineedit.h

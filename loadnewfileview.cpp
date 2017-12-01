@@ -3,6 +3,7 @@
 LoadNewFileView::LoadNewFileView(QWidget *parent) : QWidget(parent)
 {
     createUI();
+    setAttribute(Qt::WA_DeleteOnClose);
     connect(chooseFileButton, &QAbstractButton::pressed, this, &LoadNewFileView::chooseFile);
     connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
     connect(clearButton, &QAbstractButton::pressed, this, &LoadNewFileView::clear);

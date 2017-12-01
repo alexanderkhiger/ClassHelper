@@ -2,6 +2,7 @@
 
 TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname, QWidget *parent) : QWidget(parent)
 {
+
     receivedUID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
@@ -10,23 +11,104 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     chairRunner = new QueryRunner;
     facultyRunner = new QueryRunner;
     teacherRunner = new QueryRunner;
-    setMinimumSize(500,500);
+    setMinimumSize(300,300);
     setWindowTitle(tr("Работа с таблицами | %1 | %2").arg(uName).arg(uShortname));
 
     tableTab = new QTabWidget;
     chairWidget = new QWidget;
     facultyWidget = new QWidget;
     teacherWidget = new QWidget;
+
     tableTab->addTab(facultyWidget,tr("Факультеты"));
     tableTab->addTab(chairWidget,tr("Кафедры"));
     tableTab->addTab(teacherWidget,tr("Преподаватели"));
+
+    connect(tableTab,&QTabWidget::currentChanged,this,&TableEditorView::checkSize);
+
+    getIDTable = new QTableView;
+    agree = new QPushButton(tr("ОК"));
+    disagree = new QPushButton(tr("Назад"));
+    buttonBox = new QDialogButtonBox;
+    buttonBox->addButton(agree,QDialogButtonBox::AcceptRole);
+    buttonBox->addButton(disagree,QDialogButtonBox::RejectRole);
+    connect(disagree,&QPushButton::clicked,this,&TableEditorView::setSmallTablesInvisible);
+    getIDTable->setVisible(0);
+    buttonBox->setVisible(0);
+    getIDTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    getIDTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    getIDTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    getIDTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    getIDTable->verticalHeader()->setVisible(0);
+    connect(getIDTable,&QTableView::clicked,this,&TableEditorView::enableGetIDButtons);
+
     vLayout = new QVBoxLayout(this);
     vLayout->addWidget(tableTab);
+    vLayout->addWidget(getIDTable);
+    vLayout->addWidget(buttonBox);
     createChairWidgetUI();
     createFacultyWidgetUI();
     createTeacherWidgetUI();
-
+    resizeTable(facultyTable);
 }
+
+void TableEditorView::resizeTable(QTableView *table)
+{
+    hHeader = table->horizontalHeader();
+    setMinimumSize(120,300);
+    resize(120,300);
+    int neededWidth = 0;
+
+    table->resizeColumnsToContents();
+    table->resizeRowsToContents();
+
+    for (int c = 0; c < table->horizontalHeader()->count(); c++)
+    {
+        neededWidth += hHeader->sectionSize(c) + 20;
+    }
+
+    setMinimumSize(neededWidth,300);
+
+    table->horizontalHeader()->setStretchLastSection(true);
+}
+
+void TableEditorView::checkSize(int index)
+{
+    if (index == 0)
+    {
+        resizeTable(facultyTable);
+    }
+    else if (index == 1)
+    {
+        resizeTable(chairTable);
+    }
+    else
+    {
+        resizeTable(teacherTable);
+    }
+}
+
+void TableEditorView::getError(QSqlError error)
+{
+    QMessageBox::StandardButton errorMsg;
+    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+}
+
+
+void TableEditorView::setSmallTablesVisible()
+{
+    agree->setEnabled(0);
+    getIDTable->setVisible(1);
+    buttonBox->setVisible(1);
+    tableTab->setVisible(0);
+}
+
+void TableEditorView::setSmallTablesInvisible()
+{
+    getIDTable->setVisible(0);
+    buttonBox->setVisible(0);
+    tableTab->setVisible(1);
+}
+
 
 void TableEditorView::enableFacultyButtons()
 {
@@ -43,81 +125,9 @@ void TableEditorView::enableTeacherButtons()
     teacherDeleteButton->setEnabled(1);
 }
 
-
-void TableEditorView::resizeTable(QTableView *table)
+void TableEditorView::enableGetIDButtons()
 {
-    hHeader = table->horizontalHeader();
-
-    int neededWidth = 0;
-
-    table->resizeColumnsToContents();
-    table->resizeRowsToContents();
-
-    for (int c = 0; c < table->horizontalHeader()->count(); c++)
-    {
-        neededWidth += hHeader->sectionSize(c) + 20;
-    }
-
-    if (neededWidth > 300)
-        setMinimumSize(neededWidth,300);
-
-    table->horizontalHeader()->setStretchLastSection(true);
-}
-
-void TableEditorView::createChairWidgetUI()
-{
-    chairTable = new QTableView;
-    chairTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    chairTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    chairTable->verticalHeader()->setVisible(0);
-
-    chairName = new QLineEdit;
-    chairShortname = new QLineEdit;
-    chairFacultyID = new QLineEdit;
-    chairConfirmAddition = new QPushButton(tr("ОК"));
-    chairAddButton = new QPushButton(tr("Добавить"));
-    chairDeleteButton = new QPushButton(tr("Удалить"));
-    chairDeleteButton->setEnabled(0);
-
-    chairName->setPlaceholderText(tr("Название"));
-    chairName->setToolTip(tr("Название факультета"));
-
-    chairShortname->setPlaceholderText(tr("Аббревиатура"));
-    chairShortname->setToolTip(tr("Аббревиатура факультета"));
-
-    chairFacultyID->setPlaceholderText(tr("ID факультета"));
-    chairFacultyID->setToolTip(tr("ID факультета"));
-
-    connect(chairAddButton,&QPushButton::clicked,this,&TableEditorView::changeChairAddButtonStyle);
-    connect(chairConfirmAddition,&QPushButton::clicked,this,&TableEditorView::chairAddRecord);
-    connect(chairDeleteButton,&QPushButton::clicked,this,&TableEditorView::chairDeleteRecord);
-    connect(chairTable,&QTableView::clicked,this,&TableEditorView::enableChairButtons);
-
-    chairConfirmAddition->setVisible(0);
-    chairName->setVisible(0);
-    chairShortname->setVisible(0);
-    chairFacultyID->setVisible(0);
-
-    chairTopHLayout = new QHBoxLayout;
-    chairTopHLayout->addWidget(chairName);
-    chairTopHLayout->addWidget(chairShortname);
-    chairTopHLayout->addWidget(chairFacultyID);
-    chairTopHLayout->addWidget(chairConfirmAddition);
-
-    chairBotHLayout = new QHBoxLayout;
-    chairBotHLayout->addWidget(chairAddButton);
-    chairBotHLayout->addWidget(chairDeleteButton);
-
-    chairVLayout = new QVBoxLayout;
-    chairVLayout->addWidget(chairTable);
-    chairVLayout->addLayout(chairTopHLayout);
-    chairVLayout->addLayout(chairBotHLayout);
-    chairWidget->setLayout(chairVLayout);
-
-    getChairModel();
-    resizeTable(chairTable);
+    agree->setEnabled(1);
 }
 
 void TableEditorView::createFacultyWidgetUI()
@@ -167,8 +177,65 @@ void TableEditorView::createFacultyWidgetUI()
     facultyWidget->setLayout(facultyVLayout);
 
     getFacultyModel();
-    resizeTable(facultyTable);
 }
+
+void TableEditorView::createChairWidgetUI()
+{
+    chairTable = new QTableView;
+    chairTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    chairTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    chairTable->verticalHeader()->setVisible(0);
+
+    chairName = new QLineEdit;
+    chairShortname = new QLineEdit;
+    chairChooseFaculty = new CustomLineEdit(this);
+    chairChooseFaculty->setPlaceholderText(tr("ID факультета"));
+    chairChooseFaculty->setToolTip(tr("ID факультета"));
+
+    connect(chairChooseFaculty->chooseButton,&QToolButton::clicked,this,&TableEditorView::openFacultyList);
+
+    chairConfirmAddition = new QPushButton(tr("ОК"));
+    chairAddButton = new QPushButton(tr("Добавить"));
+    chairDeleteButton = new QPushButton(tr("Удалить"));
+    chairDeleteButton->setEnabled(0);
+
+    chairName->setPlaceholderText(tr("Название"));
+    chairName->setToolTip(tr("Название факультета"));
+
+    chairShortname->setPlaceholderText(tr("Аббревиатура"));
+    chairShortname->setToolTip(tr("Аббревиатура факультета"));
+
+    connect(chairAddButton,&QPushButton::clicked,this,&TableEditorView::changeChairAddButtonStyle);
+    connect(chairConfirmAddition,&QPushButton::clicked,this,&TableEditorView::chairAddRecord);
+    connect(chairDeleteButton,&QPushButton::clicked,this,&TableEditorView::chairDeleteRecord);
+    connect(chairTable,&QTableView::clicked,this,&TableEditorView::enableChairButtons);
+
+    chairConfirmAddition->setVisible(0);
+    chairName->setVisible(0);
+    chairShortname->setVisible(0);
+    chairChooseFaculty->setVisible(0);
+
+    chairTopHLayout = new QHBoxLayout;
+    chairTopHLayout->addWidget(chairName);
+    chairTopHLayout->addWidget(chairShortname);
+    chairTopHLayout->addWidget(chairChooseFaculty);
+    chairTopHLayout->addWidget(chairConfirmAddition);
+
+    chairBotHLayout = new QHBoxLayout;
+    chairBotHLayout->addWidget(chairAddButton);
+    chairBotHLayout->addWidget(chairDeleteButton);
+
+    chairVLayout = new QVBoxLayout;
+    chairVLayout->addWidget(chairTable);
+    chairVLayout->addLayout(chairTopHLayout);
+    chairVLayout->addLayout(chairBotHLayout);
+    chairWidget->setLayout(chairVLayout);
+
+    getChairModel();
+}
+
 
 void TableEditorView::createTeacherWidgetUI()
 {
@@ -182,10 +249,21 @@ void TableEditorView::createTeacherWidgetUI()
     teacherFirstName = new QLineEdit;
     teacherMiddleName = new QLineEdit;
     teacherSurname = new QLineEdit;
-    teacherTitle = new QLineEdit;
-    teacherDegree = new QLineEdit;
     teacherPost = new QLineEdit;
-    teacherChairID = new QLineEdit;
+
+    teacherTitle = new QComboBox;
+    teacherDegree = new QComboBox;
+
+    teacherTitle->addItem(tr("Отсутствует"));
+    teacherTitle->addItem(tr("Доцент"));
+    teacherTitle->addItem(tr("Профессор"));
+
+    teacherDegree->addItem(tr("Отсутствует"));
+    teacherDegree->addItem(tr("Кандидат наук"));
+    teacherDegree->addItem(tr("Доктор наук"));
+
+    teacherChooseChair = new CustomLineEdit(this);
+    connect(teacherChooseChair->chooseButton,&QToolButton::clicked,this,&TableEditorView::openChairList);
 
     teacherConfirmAddition = new QPushButton(tr("ОК"));
     teacherAddButton = new QPushButton(tr("Добавить"));
@@ -201,17 +279,14 @@ void TableEditorView::createTeacherWidgetUI()
     teacherSurname->setPlaceholderText(tr("Фамилия"));
     teacherSurname->setToolTip(tr("Фамилия преподавателя"));
 
-    teacherTitle->setPlaceholderText(tr("Ученое звание"));
     teacherTitle->setToolTip(tr("Ученое звание преподавателя"));
-
-    teacherDegree->setPlaceholderText(tr("Ученая степень"));
     teacherDegree->setToolTip(tr("Ученая степень преподавателя"));
 
     teacherPost->setPlaceholderText(tr("Должность"));
     teacherPost->setToolTip(tr("Должность преподавателя"));
 
-    teacherChairID->setPlaceholderText(tr("ID кафедры"));
-    teacherChairID->setToolTip(tr("ID кафедры"));
+    teacherChooseChair->setPlaceholderText(tr("ID кафедры"));
+    teacherChooseChair->setToolTip(tr("ID кафедры"));
 
     connect(teacherAddButton,&QPushButton::clicked,this,&TableEditorView::changeTeacherAddButtonStyle);
     connect(teacherConfirmAddition,&QPushButton::clicked,this,&TableEditorView::teacherAddRecord);
@@ -225,19 +300,28 @@ void TableEditorView::createTeacherWidgetUI()
     teacherTitle->setVisible(0);
     teacherDegree->setVisible(0);
     teacherPost->setVisible(0);
-    teacherChairID->setVisible(0);
+    teacherChooseChair->setVisible(0);
+
+    titleLabel = new QLabel(tr("Ученое звание "));
+    degreeLabel = new QLabel(tr("Ученая степень"));
+
+    titleLabel->setVisible(0);
+    degreeLabel->setVisible(0);
 
     teacherTopHLayout = new QHBoxLayout;
     teacherTopHLayout->addWidget(teacherSurname);
     teacherTopHLayout->addWidget(teacherFirstName);
     teacherTopHLayout->addWidget(teacherMiddleName);
+    teacherTopHLayout->addWidget(teacherChooseChair);
     teacherTopHLayout->addWidget(teacherConfirmAddition);
 
     teacherMidHLayout = new QHBoxLayout;
+    teacherMidHLayout->addWidget(titleLabel);
     teacherMidHLayout->addWidget(teacherTitle);
+    teacherMidHLayout->addWidget(degreeLabel);
     teacherMidHLayout->addWidget(teacherDegree);
     teacherMidHLayout->addWidget(teacherPost);
-    teacherMidHLayout->addWidget(teacherChairID);
+
 
     teacherBotHLayout = new QHBoxLayout;
     teacherBotHLayout->addWidget(teacherAddButton);
@@ -251,8 +335,8 @@ void TableEditorView::createTeacherWidgetUI()
     teacherWidget->setLayout(teacherVLayout);
 
     getTeacherModel();
-    resizeTable(teacherTable);
 }
+
 
 void TableEditorView::changeFacultyAddButtonStyle()
 {
@@ -281,13 +365,13 @@ void TableEditorView::changeChairAddButtonStyle()
 {
     chairName->clear();
     chairShortname->clear();
-    chairFacultyID->clear();
+    chairChooseFaculty->clear();
     if (chairAddButtonState == buttonState::INACTIVE)
     {
         chairName->setVisible(1);
         chairShortname->setVisible(1);
         chairConfirmAddition->setVisible(1);
-        chairFacultyID->setVisible(1);
+        chairChooseFaculty->setVisible(1);
         chairAddButtonState = buttonState::ACTIVE;
         chairAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
     }
@@ -296,7 +380,7 @@ void TableEditorView::changeChairAddButtonStyle()
         chairName->setVisible(0);
         chairShortname->setVisible(0);
         chairConfirmAddition->setVisible(0);
-        chairFacultyID->setVisible(0);
+        chairChooseFaculty->setVisible(0);
         chairAddButtonState = buttonState::INACTIVE;
         chairAddButton->setStyleSheet("");
     }
@@ -308,10 +392,10 @@ void TableEditorView::changeTeacherAddButtonStyle()
     teacherFirstName->clear();
     teacherMiddleName->clear();
     teacherSurname->clear();
-    teacherTitle->clear();
-    teacherDegree->clear();
+    teacherTitle->setCurrentIndex(0);
+    teacherDegree->setCurrentIndex(0);
     teacherPost->clear();
-    teacherChairID->clear();
+    teacherChooseChair->clear();
 
     if (teacherAddButtonState == buttonState::INACTIVE)
     {
@@ -321,8 +405,10 @@ void TableEditorView::changeTeacherAddButtonStyle()
         teacherSurname->setVisible(1);
         teacherTitle->setVisible(1);
         teacherDegree->setVisible(1);
+        titleLabel->setVisible(1);
+        degreeLabel->setVisible(1);
         teacherPost->setVisible(1);
-        teacherChairID->setVisible(1);
+        teacherChooseChair->setVisible(1);
         teacherAddButtonState = buttonState::ACTIVE;
         teacherAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
     }
@@ -334,14 +420,57 @@ void TableEditorView::changeTeacherAddButtonStyle()
         teacherSurname->setVisible(0);
         teacherTitle->setVisible(0);
         teacherDegree->setVisible(0);
+        titleLabel->setVisible(0);
+        degreeLabel->setVisible(0);
         teacherPost->setVisible(0);
-        teacherChairID->setVisible(0);
+        teacherChooseChair->setVisible(0);
         teacherAddButtonState = buttonState::INACTIVE;
         teacherAddButton->setStyleSheet("");
 
     }
 
 }
+
+void TableEditorView::openFacultyList()
+{
+    setSmallTablesVisible();
+    getIDTable->setModel(facultyModelReference);
+    resizeTable(getIDTable);
+    connect(agree,&QPushButton::clicked,this,&TableEditorView::getFacultyID);
+
+}
+
+void TableEditorView::openChairList()
+{
+    setSmallTablesVisible();
+    getIDTable->setModel(chairModelReference);
+    resizeTable(getIDTable);
+    connect(agree,&QPushButton::clicked,this,&TableEditorView::getChairID);
+}
+
+void TableEditorView::getFacultyID()
+{
+    QModelIndex idIndex = getIDTable->model()->index(getIDTable->currentIndex().row(),0,QModelIndex());
+    QString idData = getIDTable->model()->data(idIndex).toString();
+    chairChooseFaculty->setText(idData);
+    setSmallTablesInvisible();
+    resizeTable(chairTable);
+    disconnect(agree,&QPushButton::clicked,this,&TableEditorView::getFacultyID);
+}
+
+
+void TableEditorView::getChairID()
+{
+    QModelIndex idIndex = getIDTable->model()->index(getIDTable->currentIndex().row(),0,QModelIndex());
+    QString idData = getIDTable->model()->data(idIndex).toString();
+    teacherChooseChair->setText(idData);
+    setSmallTablesInvisible();
+    resizeTable(teacherTable);
+    disconnect(agree,&QPushButton::clicked,this,&TableEditorView::getChairID);
+}
+
+
+
 
 void TableEditorView::getFacultyModel()
 {
@@ -384,7 +513,7 @@ void TableEditorView::setTeacherModel(QSqlTableModel *model)
 
 
 void TableEditorView::facultyAddRecord()
-{
+{ 
     if (facultyName->text() == "" || facultyShortname->text() == "")
     {
         QMessageBox::StandardButton reply;
@@ -393,7 +522,7 @@ void TableEditorView::facultyAddRecord()
             return;
     }
 
-    if (facultyModelReference == Q_NULLPTR)
+    if (facultyModelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
@@ -407,7 +536,7 @@ void TableEditorView::facultyAddRecord()
 
 void TableEditorView::facultyDeleteRecord()
 {
-    if (facultyModelReference == Q_NULLPTR)
+    if (facultyModelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
@@ -434,7 +563,14 @@ void TableEditorView::facultyDeleteRecord()
 
 void TableEditorView::chairAddRecord()
 {
-    if (chairName->text() == "" || chairShortname->text() == "")
+    if (chairChooseFaculty->text() == "")
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Поле ID факультета обязательно для заполнения"),QMessageBox::Ok);
+        return;
+    }
+
+    if (chairName->text() == "" || chairShortname->text() == "" || chairChooseFaculty->text() == "")
     {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Не все поля заполнены. Все равно добавить запись?")), QMessageBox::Yes|QMessageBox::No);
@@ -442,22 +578,22 @@ void TableEditorView::chairAddRecord()
             return;
     }
 
-    if (chairModelReference == Q_NULLPTR)
+    if (chairModelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    teModel->updateFacultyModel(chairModelReference,TableEditorModel::operationType::fINSERT,chairTable->currentIndex().row(),chairName->text(),chairShortname->text(),chairFacultyID->text());
+    teModel->updateFacultyModel(chairModelReference,TableEditorModel::operationType::fINSERT,chairTable->currentIndex().row(),chairName->text(),chairShortname->text(),chairChooseFaculty->text());
     chairName->clear();
     chairShortname->clear();
-    chairFacultyID->clear();
+    chairChooseFaculty->clear();
 
 }
 
 void TableEditorView::chairDeleteRecord()
 {
-    if (chairModelReference == Q_NULLPTR)
+    if (chairModelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
@@ -484,9 +620,18 @@ void TableEditorView::chairDeleteRecord()
 
 }
 
+
 void TableEditorView::teacherAddRecord()
 {
-    if (teacherFirstName->text() == "" || teacherMiddleName->text() == "" || teacherSurname->text() == "" || teacherDegree->text() == "" || teacherTitle->text() == "" || teacherPost->text() == "" || teacherChairID->text() == "")
+
+    if (teacherChooseChair->text() == "")
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Поле ID кафедры обязательно для заполнения"),QMessageBox::Ok);
+        return;
+    }
+
+    if (teacherFirstName->text() == "" || teacherMiddleName->text() == "" || teacherSurname->text() == "" || teacherDegree->currentText() == "" || teacherTitle->currentText() == "" || teacherPost->text() == "" || teacherChooseChair->text() == "")
     {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Не все поля заполнены. Все равно добавить запись?")), QMessageBox::Yes|QMessageBox::No);
@@ -494,37 +639,37 @@ void TableEditorView::teacherAddRecord()
             return;
     }
 
-    if (teacherModelReference == Q_NULLPTR)
+    if (teacherModelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fINSERT,teacherTable->currentIndex().row(),teacherFirstName->text(),teacherSurname->text(),teacherMiddleName->text(),teacherDegree->text(),teacherChairID->text(),teacherPost->text(),teacherTitle->text());
+    teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fINSERT,teacherTable->currentIndex().row(),teacherSurname->text(),teacherFirstName->text(),teacherMiddleName->text(),teacherChooseChair->text(),teacherPost->text(),teacherDegree->currentText(),teacherTitle->currentText());
     teacherFirstName->clear();
     teacherMiddleName->clear();
     teacherSurname->clear();
-    teacherTitle->clear();
-    teacherDegree->clear();
+    teacherTitle->setCurrentIndex(0);
+    teacherDegree->setCurrentIndex(0);
     teacherPost->clear();
-    teacherChairID->clear();
+    teacherChooseChair->clear();
 }
 
 void TableEditorView::teacherDeleteRecord()
 {
-    if (teacherModelReference == Q_NULLPTR)
+    if (teacherModelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
     QModelIndex idIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),0,QModelIndex());
-    QModelIndex firstNameIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),1,QModelIndex());
-    QModelIndex surnameIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),2,QModelIndex());
+    QModelIndex firstNameIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),2,QModelIndex());
+    QModelIndex surnameIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),1,QModelIndex());
     QModelIndex middleNameIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),3,QModelIndex());
-    QModelIndex degreeIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),4,QModelIndex());
-    QModelIndex chairIDIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),5,QModelIndex());
-    QModelIndex postIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),6,QModelIndex());
+    QModelIndex degreeIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),6,QModelIndex());
+    QModelIndex chairIDIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),4,QModelIndex());
+    QModelIndex postIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),5,QModelIndex());
     QModelIndex titleIndex = teacherTable->model()->index(teacherTable->currentIndex().row(),7,QModelIndex());
 
     QString idData = teacherTable->model()->data(idIndex).toString();
@@ -546,8 +691,3 @@ void TableEditorView::teacherDeleteRecord()
 
 }
 
-void TableEditorView::getError(QSqlError error)
-{
-    QMessageBox::StandardButton errorMsg;
-    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
-}
