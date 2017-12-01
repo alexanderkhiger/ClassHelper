@@ -11,6 +11,8 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     connect(deleteButton,&QPushButton::clicked,this,&UniversityView::deleteRecord);
     connect(addButton,&QPushButton::clicked,this,&UniversityView::changeAddButtonStyle);
     connect(confirmAddition,&QPushButton::clicked,this,&UniversityView::addRecord);
+    connect(this,&UniversityView::updateError,this,&UniversityView::getError);
+    connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::editRecord);
 }
 
 void UniversityView::createUI()
@@ -26,7 +28,7 @@ void UniversityView::createUI()
     shortnameField->setToolTip(tr("Аббревиатура университета"));
     confirmAddition = new QPushButton(tr("OK"));
     universityTableView = new QTableView;
-    universityTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //    universityTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     universityTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     universityTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -68,7 +70,8 @@ void UniversityView::createUI()
 void UniversityView::resizeTable()
 {
     hHeader = universityTableView->horizontalHeader();
-
+    setMinimumSize(120,300);
+    resize(120,300);
     int neededWidth = 0;
 
     universityTableView->resizeColumnsToContents();
@@ -79,8 +82,7 @@ void UniversityView::resizeTable()
         neededWidth += hHeader->sectionSize(c) + 20;
     }
 
-    if (neededWidth > 300)
-        setMinimumSize(neededWidth,300);
+    setMinimumSize(neededWidth,300);
 
     universityTableView->horizontalHeader()->setStretchLastSection(true);
 
@@ -101,12 +103,15 @@ void UniversityView::getModel()
 void UniversityView::setModel(QSqlTableModel *model)
 {
     modelReference = model;
+    modelReference->setHeaderData(0,Qt::Horizontal,tr("ID университета"));
+    modelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
+    modelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     universityTableView->setModel(model);
 }
 
 void UniversityView::deleteRecord()
 {
-    if (modelReference == Q_NULLPTR)
+    if (modelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
@@ -143,7 +148,7 @@ void UniversityView::addRecord()
             return;
     }
 
-    if (modelReference == Q_NULLPTR)
+    if (modelReference == 0)
     {
         QMessageBox::StandardButton errorMsg;
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
@@ -157,6 +162,36 @@ void UniversityView::addRecord()
     shortnameField->clear();
 
 }
+
+void UniversityView::editRecord()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        modelReference->revertAll();
+        return;
+    }
+    else
+    {
+        int check = modelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(modelReference->lastError().text());
+            modelReference->revertAll();
+            return;
+        }
+        resizeTable();
+        deleteButton->setEnabled(0);
+        confirmButton->setEnabled(0);
+//        QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows;
+//        QModelIndex index = universityTableView->model()->index(0, 0);
+//        universityTableView->selectionModel()->select(index,flags);
+    }
+}
+
+
+
 
 void UniversityView::changeAddButtonStyle()
 {

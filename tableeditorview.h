@@ -28,7 +28,7 @@ public:
     explicit TableEditorView(QString uID, QString uName, QString uShortname,QWidget *parent = nullptr);
 
 signals:
-
+    void updateError(QSqlError error);
 public slots:
 
     void setSmallTablesVisible();
@@ -55,15 +55,18 @@ public slots:
 
     void facultyAddRecord();
     void facultyDeleteRecord();
+    void facultyEditRecord();
 
     void chairAddRecord();
     void chairDeleteRecord();
+    void chairEditRecord();
 
     void openFacultyList();
     void openChairList();
 
     void teacherAddRecord();
     void teacherDeleteRecord();
+    void teacherEditRecord();
 
     void getFacultyModel();
     void setFacultyModel(QSqlTableModel *model);

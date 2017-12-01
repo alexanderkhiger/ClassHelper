@@ -8,6 +8,7 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     receivedShortname = uShortname;
     teModel = new TableEditorModel;
     connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
+    connect(this,&TableEditorView::updateError,this,&TableEditorView::getError);
     chairRunner = new QueryRunner;
     facultyRunner = new QueryRunner;
     teacherRunner = new QueryRunner;
@@ -107,6 +108,7 @@ void TableEditorView::setSmallTablesInvisible()
     getIDTable->setVisible(0);
     buttonBox->setVisible(0);
     tableTab->setVisible(1);
+    checkSize(tableTab->currentIndex());
 }
 
 
@@ -133,7 +135,7 @@ void TableEditorView::enableGetIDButtons()
 void TableEditorView::createFacultyWidgetUI()
 {
     facultyTable = new QTableView;
-    facultyTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//    facultyTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     facultyTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     facultyTable->setSelectionMode(QAbstractItemView::SingleSelection);
     facultyTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -156,7 +158,7 @@ void TableEditorView::createFacultyWidgetUI()
     connect(facultyConfirmAddition,&QPushButton::clicked,this,&TableEditorView::facultyAddRecord);
     connect(facultyDeleteButton,&QPushButton::clicked,this,&TableEditorView::facultyDeleteRecord);
     connect(facultyTable,&QTableView::clicked,this,&TableEditorView::enableFacultyButtons);
-
+    connect(facultyTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::facultyEditRecord);
     facultyConfirmAddition->setVisible(0);
     facultyName->setVisible(0);
     facultyShortname->setVisible(0);
@@ -182,7 +184,7 @@ void TableEditorView::createFacultyWidgetUI()
 void TableEditorView::createChairWidgetUI()
 {
     chairTable = new QTableView;
-    chairTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//    chairTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
     chairTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -211,6 +213,7 @@ void TableEditorView::createChairWidgetUI()
     connect(chairConfirmAddition,&QPushButton::clicked,this,&TableEditorView::chairAddRecord);
     connect(chairDeleteButton,&QPushButton::clicked,this,&TableEditorView::chairDeleteRecord);
     connect(chairTable,&QTableView::clicked,this,&TableEditorView::enableChairButtons);
+    connect(chairTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::chairEditRecord);
 
     chairConfirmAddition->setVisible(0);
     chairName->setVisible(0);
@@ -240,7 +243,7 @@ void TableEditorView::createChairWidgetUI()
 void TableEditorView::createTeacherWidgetUI()
 {
     teacherTable = new QTableView;
-    teacherTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//    teacherTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     teacherTable->setSelectionMode(QAbstractItemView::SingleSelection);
     teacherTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -292,6 +295,7 @@ void TableEditorView::createTeacherWidgetUI()
     connect(teacherConfirmAddition,&QPushButton::clicked,this,&TableEditorView::teacherAddRecord);
     connect(teacherDeleteButton,&QPushButton::clicked,this,&TableEditorView::teacherDeleteRecord);
     connect(teacherTable,&QTableView::clicked,this,&TableEditorView::enableTeacherButtons);
+    connect(teacherTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::teacherEditRecord);
 
     teacherConfirmAddition->setVisible(0);
     teacherFirstName->setVisible(0);
@@ -454,7 +458,6 @@ void TableEditorView::getFacultyID()
     QString idData = getIDTable->model()->data(idIndex).toString();
     chairChooseFaculty->setText(idData);
     setSmallTablesInvisible();
-    resizeTable(chairTable);
     disconnect(agree,&QPushButton::clicked,this,&TableEditorView::getFacultyID);
 }
 
@@ -465,7 +468,6 @@ void TableEditorView::getChairID()
     QString idData = getIDTable->model()->data(idIndex).toString();
     teacherChooseChair->setText(idData);
     setSmallTablesInvisible();
-    resizeTable(teacherTable);
     disconnect(agree,&QPushButton::clicked,this,&TableEditorView::getChairID);
 }
 
@@ -482,6 +484,11 @@ void TableEditorView::getFacultyModel()
 void TableEditorView::setFacultyModel(QSqlTableModel *model)
 {
     facultyModelReference = model;
+//    facultyModelReference->setFilter(QString("id_universiteta = '%1'").arg(receivedUID));
+    facultyModelReference->setHeaderData(0,Qt::Horizontal,tr("ID факультета"));
+    facultyModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
+    facultyModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
+    facultyModelReference->setHeaderData(3,Qt::Horizontal,tr("ID университета"));
     facultyTable->setModel(model);
 }
 
@@ -495,6 +502,10 @@ void TableEditorView::getChairModel()
 void TableEditorView::setChairModel(QSqlTableModel *model)
 {
     chairModelReference = model;
+    chairModelReference->setHeaderData(0,Qt::Horizontal,tr("ID кафедры"));
+    chairModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
+    chairModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
+    chairModelReference->setHeaderData(3,Qt::Horizontal,tr("ID факультета"));
     chairTable->setModel(model);
 }
 
@@ -508,6 +519,14 @@ void TableEditorView::getTeacherModel()
 void TableEditorView::setTeacherModel(QSqlTableModel *model)
 {
     teacherModelReference = model;
+    teacherModelReference->setHeaderData(0,Qt::Horizontal,tr("ID преподавателя"));
+    teacherModelReference->setHeaderData(1,Qt::Horizontal,tr("Фамилия"));
+    teacherModelReference->setHeaderData(2,Qt::Horizontal,tr("Имя"));
+    teacherModelReference->setHeaderData(3,Qt::Horizontal,tr("Отчество"));
+    teacherModelReference->setHeaderData(4,Qt::Horizontal,tr("ID кафедры"));
+    teacherModelReference->setHeaderData(5,Qt::Horizontal,tr("Должность"));
+    teacherModelReference->setHeaderData(6,Qt::Horizontal,tr("Ученая степень"));
+    teacherModelReference->setHeaderData(7,Qt::Horizontal,tr("Ученое звание"));
     teacherTable->setModel(model);
 }
 
@@ -559,6 +578,29 @@ void TableEditorView::facultyDeleteRecord()
 
     }
 
+}
+
+void TableEditorView::facultyEditRecord()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        facultyModelReference->revertAll();
+        return;
+    }
+    else
+    {
+        int check = facultyModelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(facultyModelReference->lastError().text());
+            facultyModelReference->revertAll();
+            return;
+        }
+        resizeTable(facultyTable);
+        facultyDeleteButton->setEnabled(0);
+    }
 }
 
 void TableEditorView::chairAddRecord()
@@ -618,6 +660,29 @@ void TableEditorView::chairDeleteRecord()
 
     }
 
+}
+
+void TableEditorView::chairEditRecord()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        chairModelReference->revertAll();
+        return;
+    }
+    else
+    {
+        int check = chairModelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(chairModelReference->lastError().text());
+            chairModelReference->revertAll();
+            return;
+        }
+        resizeTable(chairTable);
+        chairDeleteButton->setEnabled(0);
+    }
 }
 
 
@@ -689,5 +754,28 @@ void TableEditorView::teacherDeleteRecord()
         teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fDELETE,teacherTable->currentIndex().row());
     }
 
+}
+
+void TableEditorView::teacherEditRecord()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        teacherModelReference->revertAll();
+        return;
+    }
+    else
+    {
+        int check = teacherModelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(teacherModelReference->lastError().text());
+            teacherModelReference->revertAll();
+            return;
+        }
+        resizeTable(teacherTable);
+        teacherDeleteButton->setEnabled(0);
+    }
 }
 

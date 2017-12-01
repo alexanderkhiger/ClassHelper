@@ -28,12 +28,13 @@ public:
     explicit UniversityView(QWidget *parent = nullptr);
 
 signals:
-
+    void updateError(QSqlError error);
 public slots:
     void choiceConfirmed();
     void enableButtons();
     void deleteRecord();
     void addRecord();
+    void editRecord();
     void changeAddButtonStyle();
     void getModel();
     void setModel(QSqlTableModel *model);
@@ -55,7 +56,7 @@ private:
     QVBoxLayout *internalVLayout;
     QVBoxLayout *externalVLayout;
     QHeaderView *hHeader;
-    QSqlTableModel *modelReference = Q_NULLPTR;
+    QSqlTableModel *modelReference = 0;
     QLineEdit *nameField;
     QLineEdit *shortnameField;
     QPushButton *confirmAddition;

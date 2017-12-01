@@ -57,3 +57,4 @@ void QueryRunner::tryTableModel(const QString tableName)
     defaultTableModel->select();
     emit returnTableModel(defaultTableModel);
 }
+

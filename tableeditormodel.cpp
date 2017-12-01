@@ -31,6 +31,15 @@ void TableEditorModel::updateFacultyModel(QSqlTableModel *model, operationType t
             model->revertAll();
         }
     }
+    else if (type == TableEditorModel::fUPDATE)
+    {
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
 }
 
 void TableEditorModel::updateTeacherModel(QSqlTableModel *model, operationType type, int row, QString arg1, QString arg2, QString arg3, QString arg4, QString arg5, QString arg6, QString arg7, QString arg8)
