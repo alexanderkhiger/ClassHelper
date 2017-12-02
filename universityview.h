@@ -40,6 +40,8 @@ public slots:
     void setModel(QSqlTableModel *model);
     void resizeTable();
     void getError(QSqlError error);
+    void changedFrom(const QItemSelection &selected);
+    void changedTo(const QModelIndex &bIndex);
 
 private:
     QueryRunner *runner;
@@ -62,6 +64,8 @@ private:
     QPushButton *confirmAddition;
     enum buttonState {INACTIVE,ACTIVE};
     int addButtonState = buttonState::INACTIVE;
+    QString universityBeforeUpdate;
+    QString universityAfterUpdate;
 
 private slots:
     void createUI();

@@ -10,6 +10,7 @@
 #include "customlineedit.h"
 #include <QComboBox>
 #include <QLabel>
+#include <customitemdelegate.h>
 
 class QLineEdit;
 class QPushButton;
@@ -29,6 +30,7 @@ public:
 
 signals:
     void updateError(QSqlError error);
+    void dataBeforeUpdate(QString bData);
 public slots:
 
     void setSmallTablesVisible();
@@ -77,6 +79,9 @@ public slots:
     void getTeacherModel();
     void setTeacherModel(QSqlTableModel *model);
 
+    void changedFromData(const QItemSelection &selected);
+    void changedToData(const QModelIndex &bIndex);
+
 private:
     QueryRunner *chairRunner;
     QueryRunner *facultyRunner;
@@ -104,6 +109,9 @@ private:
     QPushButton *facultyAddButton;
     QPushButton *facultyDeleteButton;
     int facultyAddButtonState = buttonState::INACTIVE;
+    QString facultyBeforeEditing;
+    QString facultyAfterEditing;
+    CustomItemDelegate *facultyItemDelegate;
 
     QWidget *chairWidget;
     QTableView *chairTable;
@@ -118,6 +126,8 @@ private:
     QPushButton *chairAddButton;
     QPushButton *chairDeleteButton;
     int chairAddButtonState = buttonState::INACTIVE;
+    QString chairBeforeEditing;
+    QString chairAfterEditing;
 
     QWidget *teacherWidget;
     QTableView *teacherTable;
@@ -142,6 +152,8 @@ private:
     QPushButton *teacherAddButton;
     QPushButton *teacherDeleteButton;
     int teacherAddButtonState = buttonState::INACTIVE;
+    QString teacherBeforeEditing;
+    QString teacherAfterEditing;
 
     QVBoxLayout *vLayout;
     QTableView *getIDTable;

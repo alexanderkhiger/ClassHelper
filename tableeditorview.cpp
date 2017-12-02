@@ -135,8 +135,8 @@ void TableEditorView::enableGetIDButtons()
 void TableEditorView::createFacultyWidgetUI()
 {
     facultyTable = new QTableView;
-//    facultyTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    facultyTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    facultyTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+//    facultyTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     facultyTable->setSelectionMode(QAbstractItemView::SingleSelection);
     facultyTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     facultyTable->verticalHeader()->setVisible(0);
@@ -154,11 +154,15 @@ void TableEditorView::createFacultyWidgetUI()
     facultyShortname->setPlaceholderText(tr("Аббревиатура"));
     facultyShortname->setToolTip(tr("Аббревиатура факультета"));
 
+//    facultyItemDelegate = new CustomItemDelegate;
+//    facultyTable->setItemDelegate(facultyItemDelegate);
+
     connect(facultyAddButton,&QPushButton::clicked,this,&TableEditorView::changeFacultyAddButtonStyle);
     connect(facultyConfirmAddition,&QPushButton::clicked,this,&TableEditorView::facultyAddRecord);
     connect(facultyDeleteButton,&QPushButton::clicked,this,&TableEditorView::facultyDeleteRecord);
     connect(facultyTable,&QTableView::clicked,this,&TableEditorView::enableFacultyButtons);
     connect(facultyTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::facultyEditRecord);
+//    connect(facultyTable,&QTableView::doubleClicked,this,)
     facultyConfirmAddition->setVisible(0);
     facultyName->setVisible(0);
     facultyShortname->setVisible(0);
@@ -184,8 +188,8 @@ void TableEditorView::createFacultyWidgetUI()
 void TableEditorView::createChairWidgetUI()
 {
     chairTable = new QTableView;
-//    chairTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    chairTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+//    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
     chairTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     chairTable->verticalHeader()->setVisible(0);
@@ -243,8 +247,8 @@ void TableEditorView::createChairWidgetUI()
 void TableEditorView::createTeacherWidgetUI()
 {
     teacherTable = new QTableView;
-//    teacherTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    teacherTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+//    teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     teacherTable->setSelectionMode(QAbstractItemView::SingleSelection);
     teacherTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     teacherTable->verticalHeader()->setVisible(0);
@@ -490,6 +494,8 @@ void TableEditorView::setFacultyModel(QSqlTableModel *model)
     facultyModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     facultyModelReference->setHeaderData(3,Qt::Horizontal,tr("ID университета"));
     facultyTable->setModel(model);
+    connect(facultyTable->selectionModel(),&QItemSelectionModel::selectionChanged,this,&TableEditorView::changedFromData);
+    connect(facultyTable->model(),&QAbstractItemModel::dataChanged,this,&TableEditorView::changedToData);
 }
 
 void TableEditorView::getChairModel()
@@ -507,6 +513,8 @@ void TableEditorView::setChairModel(QSqlTableModel *model)
     chairModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     chairModelReference->setHeaderData(3,Qt::Horizontal,tr("ID факультета"));
     chairTable->setModel(model);
+    connect(chairTable->selectionModel(),&QItemSelectionModel::selectionChanged,this,&TableEditorView::changedFromData);
+    connect(chairTable->model(),&QAbstractItemModel::dataChanged,this,&TableEditorView::changedToData);
 }
 
 void TableEditorView::getTeacherModel()
@@ -528,6 +536,43 @@ void TableEditorView::setTeacherModel(QSqlTableModel *model)
     teacherModelReference->setHeaderData(6,Qt::Horizontal,tr("Ученая степень"));
     teacherModelReference->setHeaderData(7,Qt::Horizontal,tr("Ученое звание"));
     teacherTable->setModel(model);
+    connect(teacherTable->selectionModel(),&QItemSelectionModel::selectionChanged,this,&TableEditorView::changedFromData);
+    connect(teacherTable->model(),&QAbstractItemModel::dataChanged,this,&TableEditorView::changedToData);
+}
+
+void TableEditorView::changedFromData(const QItemSelection &selected)
+{
+        if (tableTab->currentIndex() == 0)
+        {
+            facultyBeforeEditing = facultyTable->model()->data(selected.indexes()[0]).toString();
+            facultyAfterEditing = facultyTable->model()->data(selected.indexes()[0]).toString();
+        }
+        else if (tableTab->currentIndex() == 1)
+        {
+            chairBeforeEditing = chairTable->model()->data(selected.indexes()[0]).toString();
+            chairAfterEditing = chairTable->model()->data(selected.indexes()[0]).toString();
+        }
+        else if (tableTab->currentIndex() == 2)
+        {
+             teacherBeforeEditing = teacherTable->model()->data(selected.indexes()[0]).toString();
+             teacherAfterEditing = teacherTable->model()->data(selected.indexes()[0]).toString();
+        }
+}
+
+void TableEditorView::changedToData(const QModelIndex &bIndex)
+{
+    if (tableTab->currentIndex() == 0)
+    {
+        facultyAfterEditing = facultyTable->model()->data(bIndex).toString();
+    }
+    else if (tableTab->currentIndex() == 1)
+    {
+        chairAfterEditing = chairTable->model()->data(bIndex).toString();
+    }
+    else if (tableTab->currentIndex() == 2)
+    {
+         teacherAfterEditing = teacherTable->model()->data(bIndex).toString();
+    }
 }
 
 
@@ -582,11 +627,17 @@ void TableEditorView::facultyDeleteRecord()
 
 void TableEditorView::facultyEditRecord()
 {
+    if (facultyBeforeEditing == facultyAfterEditing)
+    {
+        return;
+    }
+
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(facultyBeforeEditing).arg(facultyAfterEditing)), QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
     {
         facultyModelReference->revertAll();
+        facultyBeforeEditing = facultyAfterEditing;
         return;
     }
     else
@@ -596,6 +647,7 @@ void TableEditorView::facultyEditRecord()
         {
             emit updateError(facultyModelReference->lastError().text());
             facultyModelReference->revertAll();
+            facultyBeforeEditing = facultyAfterEditing;
             return;
         }
         resizeTable(facultyTable);
@@ -664,11 +716,16 @@ void TableEditorView::chairDeleteRecord()
 
 void TableEditorView::chairEditRecord()
 {
+    if (chairBeforeEditing == chairAfterEditing)
+    {
+        return;
+    }
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(chairBeforeEditing).arg(chairAfterEditing)), QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
     {
         chairModelReference->revertAll();
+        chairBeforeEditing = chairAfterEditing;
         return;
     }
     else
@@ -678,6 +735,7 @@ void TableEditorView::chairEditRecord()
         {
             emit updateError(chairModelReference->lastError().text());
             chairModelReference->revertAll();
+            chairBeforeEditing = chairAfterEditing;
             return;
         }
         resizeTable(chairTable);
@@ -688,7 +746,6 @@ void TableEditorView::chairEditRecord()
 
 void TableEditorView::teacherAddRecord()
 {
-
     if (teacherChooseChair->text() == "")
     {
         QMessageBox::StandardButton errorMsg;
@@ -758,11 +815,16 @@ void TableEditorView::teacherDeleteRecord()
 
 void TableEditorView::teacherEditRecord()
 {
+    if (teacherBeforeEditing == teacherAfterEditing)
+    {
+        return;
+    }
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(teacherBeforeEditing).arg(teacherAfterEditing)), QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
     {
         teacherModelReference->revertAll();
+        teacherBeforeEditing = teacherAfterEditing;
         return;
     }
     else
@@ -772,6 +834,7 @@ void TableEditorView::teacherEditRecord()
         {
             emit updateError(teacherModelReference->lastError().text());
             teacherModelReference->revertAll();
+            teacherBeforeEditing = teacherAfterEditing;
             return;
         }
         resizeTable(teacherTable);

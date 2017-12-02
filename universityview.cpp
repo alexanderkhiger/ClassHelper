@@ -28,8 +28,8 @@ void UniversityView::createUI()
     shortnameField->setToolTip(tr("Аббревиатура университета"));
     confirmAddition = new QPushButton(tr("OK"));
     universityTableView = new QTableView;
-    //    universityTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    universityTableView->setEditTriggers(QAbstractItemView::DoubleClicked);
+//    universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     universityTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     universityTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     universityTableView->verticalHeader()->setVisible(0);
@@ -107,6 +107,8 @@ void UniversityView::setModel(QSqlTableModel *model)
     modelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     modelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     universityTableView->setModel(model);
+    connect(universityTableView->selectionModel(),&QItemSelectionModel::selectionChanged,this,&UniversityView::changedFrom);
+    connect(universityTableView->model(),&QAbstractItemModel::dataChanged,this,&UniversityView::changedTo);
 }
 
 void UniversityView::deleteRecord()
@@ -165,11 +167,16 @@ void UniversityView::addRecord()
 
 void UniversityView::editRecord()
 {
+    if (universityBeforeUpdate == universityAfterUpdate)
+    {
+        return;
+    }
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Внести изменения?")), QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(universityBeforeUpdate).arg(universityAfterUpdate)), QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
     {
         modelReference->revertAll();
+        universityAfterUpdate = universityBeforeUpdate;
         return;
     }
     else
@@ -179,6 +186,7 @@ void UniversityView::editRecord()
         {
             emit updateError(modelReference->lastError().text());
             modelReference->revertAll();
+            universityAfterUpdate = universityBeforeUpdate;
             return;
         }
         resizeTable();
@@ -218,7 +226,18 @@ void UniversityView::changeAddButtonStyle()
 void UniversityView::getError(QSqlError error)
 {
     QMessageBox::StandardButton errorMsg;
-    errorMsg = QMessageBox::information(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+}
+
+void UniversityView::changedFrom(const QItemSelection &selected)
+{
+    universityBeforeUpdate = universityTableView->model()->data(selected.indexes()[0]).toString();
+    universityAfterUpdate = universityTableView->model()->data(selected.indexes()[0]).toString();
+}
+
+void UniversityView::changedTo(const QModelIndex &bIndex)
+{
+    universityAfterUpdate = universityTableView->model()->data(bIndex).toString();
 }
 
 
