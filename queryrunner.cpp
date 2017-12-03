@@ -2,18 +2,24 @@
 
 QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
 {
+    if (QSqlDatabase::contains("dbConnection"))
+    {
+        db = QSqlDatabase::database("dbConnection");
+    }
+    else
+        db = QSqlDatabase::addDatabase("QMYSQL","dbConnection");
+    defaultQuery = new QSqlQuery(db);
     defaultModel = new QSqlQueryModel;
-    defaultTableModel = new QSqlTableModel;
+    defaultTableModel = new QSqlTableModel(this,db);
 }
 
 void QueryRunner::tryAuth(const QString login, const QString password, const QString database, const QString hostname)
 {
-    QSqlDatabase db;
-    db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName(hostname);
     db.setDatabaseName(database);
     db.setUserName(login);
     db.setPassword(password);
+    db.close();
     if (login == "" || password == "" || database == "" || hostname == "")
         emit authError(tr("Необходимо заполнить все поля"));
     else
@@ -32,20 +38,20 @@ void QueryRunner::tryQuery(const QString query, bool isModelNeeded)
 {
     if (isModelNeeded)
     {
-        defaultModel->setQuery(query);
+        defaultModel->setQuery(query,db);
         emit querySuccessReturnModel(defaultModel);
     }
 
     else
     {
-        check = defaultQuery.exec(query);
+        check = defaultQuery->exec(query);
         if(check)
         {
             emit querySuccess();
         }
         else
         {
-            emit queryError(defaultQuery.lastError());
+            emit queryError(defaultQuery->lastError());
         }
     }
 }

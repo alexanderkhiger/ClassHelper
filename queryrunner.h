@@ -14,6 +14,7 @@ class QueryRunner : public QObject
     Q_OBJECT
 public:
     explicit QueryRunner(QObject *parent = nullptr);
+    QSqlDatabase db;
 
 signals:
     void authError(const QString error);
@@ -30,7 +31,7 @@ public slots:
 
 private:
     int check = 0;
-    QSqlQuery defaultQuery;
+    QSqlQuery *defaultQuery;
     QSqlQueryModel *defaultModel;
     QSqlTableModel *defaultTableModel;
 };

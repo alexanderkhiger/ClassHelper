@@ -2,8 +2,6 @@
 #define LOADNEWFILEMODEL_H
 
 #include <QObject>
-#include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QSqlError>
 #include <QFile>
 #include <QTextStream>

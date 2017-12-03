@@ -3,8 +3,6 @@
 
 #include <QWidget>
 #include <QtWidgets>
-#include <QSqlDatabase>
-#include <QSqlQuery>
 
 #include <queryrunner.h>
 #include <universityview.h>
@@ -23,7 +21,6 @@ class AuthView : public QWidget
 
 public:
     AuthView();
-    QSqlDatabase db;
 
 private:
     QPushButton *authButton;

@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <QtWidgets>
-#include <QSqlDatabase>
 #include <QDebug>
 
 #include "loadnewfilemodel.h"

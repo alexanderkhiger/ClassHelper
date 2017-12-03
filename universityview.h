@@ -42,6 +42,8 @@ public slots:
     void getError(QSqlError error);
     void changedFrom(const QItemSelection &selected);
     void changedTo(const QModelIndex &bIndex);
+    void turnOffButtons();
+    void turnOnButtons();
 
 private:
     QueryRunner *runner;

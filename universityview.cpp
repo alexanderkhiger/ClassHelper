@@ -5,6 +5,7 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     createUI();
     getModel();
     resizeTable();
+
     connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
     connect(confirmButton, &QAbstractButton::pressed, this, &UniversityView::choiceConfirmed);
     connect(universityTableView,&QTableView::clicked,this,&UniversityView::enableButtons);
@@ -13,7 +14,10 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     connect(confirmAddition,&QPushButton::clicked,this,&UniversityView::addRecord);
     connect(this,&UniversityView::updateError,this,&UniversityView::getError);
     connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::editRecord);
+    connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::turnOnButtons);
+    connect(universityTableView,&QTableView::doubleClicked,this,&UniversityView::turnOffButtons);
 }
+
 
 void UniversityView::createUI()
 {
@@ -67,6 +71,27 @@ void UniversityView::createUI()
     this->setWindowTitle(tr("Выбор университета"));
 }
 
+void UniversityView::turnOffButtons()
+{
+    deleteButton->setVisible(0);
+    confirmButton->setVisible(0);
+    addButton->setVisible(0);
+    nameField->setVisible(0);
+    shortnameField->setVisible(0);
+    confirmAddition->setVisible(0);
+}
+
+void UniversityView::turnOnButtons()
+{
+    deleteButton->setVisible(1);
+    confirmButton->setVisible(1);
+    addButton->setVisible(1);
+    nameField->setVisible(1);
+    shortnameField->setVisible(1);
+    confirmAddition->setVisible(1);
+    changeAddButtonStyle();
+    changeAddButtonStyle();
+}
 void UniversityView::resizeTable()
 {
     hHeader = universityTableView->horizontalHeader();
@@ -136,7 +161,10 @@ void UniversityView::deleteRecord()
         disconnect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
         connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
         uModel->updateModel(modelReference,UniversityModel::operationType::uDELETE,universityTableView->currentIndex().row());
+        deleteButton->setEnabled(0);
+        confirmButton->setEnabled(0);
     }
+
 
 }
 
@@ -162,7 +190,8 @@ void UniversityView::addRecord()
     uModel->updateModel(modelReference,UniversityModel::operationType::uINSERT,universityTableView->currentIndex().row(),nameField->text(),shortnameField->text());
     nameField->clear();
     shortnameField->clear();
-
+    deleteButton->setEnabled(0);
+    confirmButton->setEnabled(0);
 }
 
 void UniversityView::editRecord()

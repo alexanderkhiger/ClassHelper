@@ -82,6 +82,12 @@ public slots:
     void changedFromData(const QItemSelection &selected);
     void changedToData(const QModelIndex &bIndex);
 
+    void disableFacultyWidgets();
+    void disableChairWidgets();
+    void disableTeacherWidgets();
+
+    void enableWidgets();
+
 private:
     QueryRunner *chairRunner;
     QueryRunner *facultyRunner;
@@ -120,7 +126,6 @@ private:
     QHBoxLayout *chairBotHLayout;
     QLineEdit *chairName;
     QLineEdit *chairShortname;
-    QLineEdit *chairFacultyID;
     CustomLineEdit *chairChooseFaculty;
     QPushButton *chairConfirmAddition;
     QPushButton *chairAddButton;
