@@ -8,9 +8,9 @@
 #include "queryrunner.h"
 #include "tableeditormodel.h"
 #include "customlineedit.h"
+#include "customtableview.h"
 #include <QComboBox>
 #include <QLabel>
-#include <customitemdelegate.h>
 
 class QLineEdit;
 class QPushButton;
@@ -27,7 +27,7 @@ class TableEditorView : public QWidget
     Q_OBJECT
 public:
     explicit TableEditorView(QString uID, QString uName, QString uShortname,QWidget *parent = nullptr);
-
+    virtual bool TableEditorView::eventFilter(QObject *obj, QEvent *event);
 signals:
     void updateError(QSqlError error);
     void dataBeforeUpdate(QString bData);
@@ -105,7 +105,7 @@ private:
     QSqlTableModel *teacherModelReference = 0;
 
     QWidget *facultyWidget;
-    QTableView *facultyTable;
+    CustomTableView *facultyTable;
     QVBoxLayout *facultyVLayout;
     QHBoxLayout *facultyTopHLayout;
     QHBoxLayout *facultyBotHLayout;
@@ -117,10 +117,9 @@ private:
     int facultyAddButtonState = buttonState::INACTIVE;
     QString facultyBeforeEditing;
     QString facultyAfterEditing;
-    CustomItemDelegate *facultyItemDelegate;
 
     QWidget *chairWidget;
-    QTableView *chairTable;
+    CustomTableView *chairTable;
     QVBoxLayout *chairVLayout;
     QHBoxLayout *chairTopHLayout;
     QHBoxLayout *chairBotHLayout;
@@ -135,7 +134,7 @@ private:
     QString chairAfterEditing;
 
     QWidget *teacherWidget;
-    QTableView *teacherTable;
+    CustomTableView *teacherTable;
     QVBoxLayout *teacherVLayout;
     QHBoxLayout *teacherTopHLayout;
     QHBoxLayout *teacherMidHLayout;

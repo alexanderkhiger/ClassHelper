@@ -10,7 +10,8 @@
 
 #include <queryrunner.h>
 #include <universitymodel.h>
-#include <mainwindow.h>
+#include "customtableview.h"
+#include <mainwindowview.h>
 
 class QTableView;
 class QPushButton;
@@ -26,6 +27,7 @@ class UniversityView : public QWidget
     Q_OBJECT
 public:
     explicit UniversityView(QWidget *parent = nullptr);
+    virtual bool UniversityView::eventFilter(QObject *obj, QEvent *event);
 
 signals:
     void updateError(QSqlError error);
@@ -49,7 +51,7 @@ private:
     QueryRunner *runner;
     UniversityModel *uModel;
     QGroupBox *workField;
-    QTableView *universityTableView;
+    CustomTableView *universityTableView;
     QPushButton *addButton;
     QPushButton *deleteButton;
     QPushButton *confirmButton;

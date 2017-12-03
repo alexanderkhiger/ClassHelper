@@ -5,6 +5,7 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     createUI();
     getModel();
     resizeTable();
+    universityTableView->viewport()->installEventFilter(this);
 
     connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
     connect(confirmButton, &QAbstractButton::pressed, this, &UniversityView::choiceConfirmed);
@@ -15,9 +16,20 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     connect(this,&UniversityView::updateError,this,&UniversityView::getError);
     connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::editRecord);
     connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::turnOnButtons);
-    connect(universityTableView,&QTableView::doubleClicked,this,&UniversityView::turnOffButtons);
 }
 
+bool UniversityView::eventFilter(QObject *obj, QEvent *event)
+{
+
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
+
+        if (mouseEvent -> button() == Qt::LeftButton) {
+            turnOffButtons();
+        }
+    }
+    return QWidget::eventFilter(obj, event);
+}
 
 void UniversityView::createUI()
 {
@@ -31,12 +43,13 @@ void UniversityView::createUI()
     shortnameField->setPlaceholderText(tr("Аббревиатура"));
     shortnameField->setToolTip(tr("Аббревиатура университета"));
     confirmAddition = new QPushButton(tr("OK"));
-    universityTableView = new QTableView;
+    universityTableView = new CustomTableView(this);
     universityTableView->setEditTriggers(QAbstractItemView::DoubleClicked);
-//    universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //    universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     universityTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     universityTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     universityTableView->verticalHeader()->setVisible(0);
+    connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
     addButton = new QPushButton(tr("Добавить"));;
     deleteButton = new QPushButton(tr("Удалить"));;
     deleteButton->setEnabled(0);
@@ -158,8 +171,6 @@ void UniversityView::deleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        disconnect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
-        connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
         uModel->updateModel(modelReference,UniversityModel::operationType::uDELETE,universityTableView->currentIndex().row());
         deleteButton->setEnabled(0);
         confirmButton->setEnabled(0);
@@ -185,8 +196,6 @@ void UniversityView::addRecord()
         return;
     }
 
-    disconnect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
-    connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
     uModel->updateModel(modelReference,UniversityModel::operationType::uINSERT,universityTableView->currentIndex().row(),nameField->text(),shortnameField->text());
     nameField->clear();
     shortnameField->clear();
@@ -221,9 +230,9 @@ void UniversityView::editRecord()
         resizeTable();
         deleteButton->setEnabled(0);
         confirmButton->setEnabled(0);
-//        QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows;
-//        QModelIndex index = universityTableView->model()->index(0, 0);
-//        universityTableView->selectionModel()->select(index,flags);
+        //        QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows;
+        //        QModelIndex index = universityTableView->model()->index(0, 0);
+        //        universityTableView->selectionModel()->select(index,flags);
     }
 }
 
@@ -270,7 +279,6 @@ void UniversityView::changedTo(const QModelIndex &bIndex)
 }
 
 
-
 void UniversityView::choiceConfirmed()
 {
     QModelIndex idIndex = universityTableView->model()->index(universityTableView->currentIndex().row(),0,QModelIndex());
@@ -281,7 +289,7 @@ void UniversityView::choiceConfirmed()
     QString nameData = universityTableView->model()->data(nameIndex).toString();
     QString shortnameData = universityTableView->model()->data(shortnameIndex).toString();
 
-    MainWindow *frm = new MainWindow(idData, nameData, shortnameData,this);
+    MainWindowView *frm = new MainWindowView(idData, nameData, shortnameData,this);
     frm->show();
     this->hide();
 }

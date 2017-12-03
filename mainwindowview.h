@@ -1,11 +1,12 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef MAINWINDOWVIEW_H
+#define MAINWINDOWVIEW_H
 
 #include <QMainWindow>
 #include <QtWidgets>
 #include "tableeditorview.h"
 #include "droparea.h"
 #include "loadnewfileview.h"
+#include "mainwindowmodel.h"
 
 class QDialogButtonBox;
 class QLabel;
@@ -25,24 +26,25 @@ class QHBoxLayout;
 class QMenu;
 class QAction;
 
-class MainWindow : public QMainWindow
+class MainWindowView : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent = nullptr);
+    explicit MainWindowView(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent = nullptr);
 
 public slots:
 
-    void updateParameters(const QObject *myObject, const QMimeData *mimeData);
     void clearParameters();
     void doubleClickClassUpdate(const QListWidgetItem *myItem);
     void doubleClickTeacherUpdate(const QListWidgetItem *myItem);
     void checkFields();
     void newFile();
     void back();
+    void getData(QString objName, QString containedData);
 
 private:
 
+    MainWindowModel *mwModel;
     QWidget *parentReference;
 
     QString receivedID;

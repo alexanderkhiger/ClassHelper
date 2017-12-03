@@ -26,7 +26,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     droparea.cpp \
-    mainwindow.cpp \
     universityview.cpp \
     queryrunner.cpp \
     authview.cpp \
@@ -36,11 +35,12 @@ SOURCES += \
     tableeditorview.cpp \
     tableeditormodel.cpp \
     customlineedit.cpp \
-    customitemdelegate.cpp
+    customtableview.cpp \
+    mainwindowmodel.cpp \
+    mainwindowview.cpp
 
 HEADERS += \
     droparea.h \
-    mainwindow.h \
     universityview.h \
     queryrunner.h \
     authview.h \
@@ -50,4 +50,6 @@ HEADERS += \
     tableeditorview.h \
     tableeditormodel.h \
     customlineedit.h \
-    customitemdelegate.h
+    customtableview.h \
+    mainwindowmodel.h \
+    mainwindowview.h

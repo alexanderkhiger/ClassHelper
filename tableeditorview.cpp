@@ -3,7 +3,6 @@
 TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname, QWidget *parent) : QWidget(parent)
 {
 
-
     receivedUID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
@@ -50,7 +49,34 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     createChairWidgetUI();
     createFacultyWidgetUI();
     createTeacherWidgetUI();
+
+    facultyTable->viewport()->installEventFilter(this);
+    chairTable->viewport()->installEventFilter(this);
+    teacherTable->viewport()->installEventFilter(this);
+
     resizeTable(facultyTable);
+}
+
+bool TableEditorView::eventFilter(QObject *obj, QEvent *event) {
+
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
+        if (mouseEvent -> button() == Qt::LeftButton) {
+            if (obj == facultyTable->viewport())
+            {
+                disableFacultyWidgets();
+            }
+            else if (obj == chairTable->viewport())
+            {
+                disableChairWidgets();
+            }
+            else if (obj == teacherTable->viewport())
+            {
+                disableTeacherWidgets();
+            }
+        }
+    }
+    return QWidget::eventFilter(obj, event);
 }
 
 void TableEditorView::resizeTable(QTableView *table)
@@ -135,7 +161,7 @@ void TableEditorView::enableGetIDButtons()
 
 void TableEditorView::createFacultyWidgetUI()
 {
-    facultyTable = new QTableView;
+    facultyTable = new CustomTableView;
     facultyTable->setEditTriggers(QAbstractItemView::DoubleClicked);
     //    facultyTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     facultyTable->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -164,7 +190,7 @@ void TableEditorView::createFacultyWidgetUI()
     connect(facultyTable,&QTableView::clicked,this,&TableEditorView::enableFacultyButtons);
     connect(facultyTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::facultyEditRecord);
     connect(facultyTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::enableWidgets);
-    connect(facultyTable,&QTableView::doubleClicked,this,&TableEditorView::disableFacultyWidgets);
+//    connect(facultyTable,&QTableView::doubleClicked,this,&TableEditorView::disableFacultyWidgets);
     facultyConfirmAddition->setVisible(0);
     facultyName->setVisible(0);
     facultyShortname->setVisible(0);
@@ -189,7 +215,7 @@ void TableEditorView::createFacultyWidgetUI()
 
 void TableEditorView::createChairWidgetUI()
 {
-    chairTable = new QTableView;
+    chairTable = new CustomTableView;
     chairTable->setEditTriggers(QAbstractItemView::DoubleClicked);
     //    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -221,7 +247,7 @@ void TableEditorView::createChairWidgetUI()
     connect(chairTable,&QTableView::clicked,this,&TableEditorView::enableChairButtons);
     connect(chairTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::chairEditRecord);
     connect(chairTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::enableWidgets);
-    connect(chairTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
+//    connect(chairTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
 
     chairConfirmAddition->setVisible(0);
     chairName->setVisible(0);
@@ -250,7 +276,7 @@ void TableEditorView::createChairWidgetUI()
 
 void TableEditorView::createTeacherWidgetUI()
 {
-    teacherTable = new QTableView;
+    teacherTable = new CustomTableView;
     teacherTable->setEditTriggers(QAbstractItemView::DoubleClicked);
     //    teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     teacherTable->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -306,7 +332,7 @@ void TableEditorView::createTeacherWidgetUI()
     connect(teacherTable,&QTableView::clicked,this,&TableEditorView::enableTeacherButtons);
     connect(teacherTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::teacherEditRecord);
     connect(teacherTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::enableWidgets);
-    connect(teacherTable,&QTableView::doubleClicked,this,&TableEditorView::disableTeacherWidgets);
+//    connect(teacherTable,&QTableView::doubleClicked,this,&TableEditorView::disableTeacherWidgets);
 
     teacherConfirmAddition->setVisible(0);
     teacherFirstName->setVisible(0);

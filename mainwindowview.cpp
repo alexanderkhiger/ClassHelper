@@ -1,26 +1,28 @@
-#include "mainwindow.h"
+#include "mainwindowview.h"
 
-MainWindow::MainWindow(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent) : QMainWindow(parent)
+MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent) : QMainWindow(parent)
 {
     parentReference = ref;
     receivedID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
+    mwModel = new MainWindowModel;
 
     createUI();
-    connect(dropArea, &DropArea::changed, this, &MainWindow::updateParameters);
-    connect(dropArea, &DropArea::clearParameters, this, &MainWindow::clearParameters);
+    connect(dropArea, &DropArea::changed, mwModel, &MainWindowModel::updateParameters);
+    connect(mwModel,&MainWindowModel::sendData,this,&MainWindowView::getData);
+    connect(dropArea, &DropArea::clearParameters, this, &MainWindowView::clearParameters);
     connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
-    connect(backButton,&QAbstractButton::pressed,this,&MainWindow::back);
-    connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickClassUpdate);
-    connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindow::doubleClickTeacherUpdate);
-    connect(newFileAction, &QAction::triggered, this, &MainWindow::newFile);
+    connect(backButton,&QAbstractButton::pressed,this,&MainWindowView::back);
+    connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindowView::doubleClickClassUpdate);
+    connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindowView::doubleClickTeacherUpdate);
+    connect(newFileAction, &QAction::triggered, this, &MainWindowView::newFile);
 
     TableEditorView *frm = new TableEditorView(receivedID,receivedName,receivedShortname);
     frm->show();
 }
 
-void MainWindow::createUI()
+void MainWindowView::createUI()
 {
     setMinimumHeight(500);
     dropArea = new DropArea;
@@ -127,42 +129,27 @@ void MainWindow::createUI()
     setWindowTitle(QString(tr("Time Tracker | %1 | %2")).arg(receivedName).arg(receivedShortname));
 }
 
-void MainWindow::back()
+void MainWindowView::back()
 {
     parentReference->show();
     QWidget::close();
 }
 
-void MainWindow::updateParameters(const QObject *myObject, const QMimeData *mimeData)
+void MainWindowView::getData(QString objName, QString containedData)
 {
-
-    QByteArray encoded = mimeData->data("application/x-qabstractitemmodeldatalist");
-    QDataStream stream(&encoded, QIODevice::ReadOnly);
-    while (!stream.atEnd())
+    if (objName == "classesList")
     {
-        int row, col;
-        QMap<int,  QVariant> roleDataMap;
-        stream >> row >> col >> roleDataMap;
-        listViewData = roleDataMap[0].toString();
+        chosenClass->setText(containedData);
     }
-
-
-    if (myObject->objectName()=="classesList")
+    else if (objName == "teachersList")
     {
-        chosenClass->setText(listViewData);
+        chosenTeacher->setText(containedData);
     }
-    else if (myObject->objectName()=="teachersList")
-    {
-        chosenTeacher->setText(listViewData);
-    }
-    else
-        return;
-
-    MainWindow::checkFields();
-
+    checkFields();
 }
 
-void MainWindow::checkFields()
+
+void MainWindowView::checkFields()
 {
     if ((chosenClass->text() != "") && (chosenTeacher->text() != ""))
     {
@@ -171,19 +158,19 @@ void MainWindow::checkFields()
     }
 }
 
-void MainWindow::doubleClickClassUpdate(const QListWidgetItem *myItem)
+void MainWindowView::doubleClickClassUpdate(const QListWidgetItem *myItem)
 {
     chosenClass->setText(myItem->text());
-    MainWindow::checkFields();
+    MainWindowView::checkFields();
 }
 
-void MainWindow::doubleClickTeacherUpdate(const QListWidgetItem *myItem)
+void MainWindowView::doubleClickTeacherUpdate(const QListWidgetItem *myItem)
 {
     chosenTeacher->setText(myItem->text());
-    MainWindow::checkFields();
+    MainWindowView::checkFields();
 }
 
-void MainWindow::clearParameters()
+void MainWindowView::clearParameters()
 {
     chosenClass->clear();
     chosenTeacher->clear();
@@ -191,7 +178,7 @@ void MainWindow::clearParameters()
     workField->setEnabled(false);
 }
 
-void MainWindow::newFile()
+void MainWindowView::newFile()
 {
     LoadNewFileView *frm = new LoadNewFileView;
     frm->show();
