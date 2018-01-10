@@ -7,6 +7,9 @@
 #include "droparea.h"
 #include "loadnewfileview.h"
 #include "mainwindowmodel.h"
+#include <QSqlTableModel>
+#include <QCheckBox>
+#include "queryrunner.h"
 
 class QDialogButtonBox;
 class QLabel;
@@ -20,11 +23,13 @@ class QGroupBox;
 class QWidget;
 class QLineEdit;
 class QListWidgetItem;
+class QListView;
 class QDebug;
 class QVBoxLayout;
 class QHBoxLayout;
 class QMenu;
 class QAction;
+
 
 class MainWindowView : public QMainWindow
 {
@@ -35,18 +40,26 @@ public:
 public slots:
 
     void clearParameters();
-    void doubleClickClassUpdate(const QListWidgetItem *myItem);
-    void doubleClickTeacherUpdate(const QListWidgetItem *myItem);
+    void doubleClickClassUpdate(const QModelIndex index);
+    void doubleClickTeacherUpdate(const QModelIndex index);
     void checkFields();
     void newFile();
     void back();
     void getData(QString objName, QString containedData);
+    void getModel();
+    void setClassesModel(QSqlQueryModel *model);
+    void setTeachersModel(QSqlQueryModel *model);
+    void getError(QSqlError error);
 
 private:
 
+    QueryRunner *teachersRunner;
+    QueryRunner *classesRunner;
     MainWindowModel *mwModel;
     QWidget *parentReference;
-
+    QSqlQueryModel *classModelReference;
+    QSqlQueryModel *teacherModelReference;
+    QString query;
     QString receivedID;
     QString receivedName;
     QString receivedShortname;
@@ -57,8 +70,8 @@ private:
 
     QString listViewData;
 
-    QListWidget *classesList;
-    QListWidget *teachersList;
+    QListView *classesList;
+    QListView *teachersList;
 
     QLineEdit *chosenClass;
     QLineEdit *chosenTeacher;
@@ -76,6 +89,7 @@ private:
     QVBoxLayout *internalRightVLayout;
     QHBoxLayout *externalHLayout;
     QHBoxLayout *internalHLayout;
+    QHBoxLayout *classesColumns;
 
     QWidget *myWorkField;
 

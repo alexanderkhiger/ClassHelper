@@ -221,7 +221,6 @@ void TableEditorView::createChairWidgetUI()
     chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
     chairTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     chairTable->verticalHeader()->setVisible(0);
-
     chairName = new QLineEdit;
     chairShortname = new QLineEdit;
     chairChooseFaculty = new CustomLineEdit(this);

@@ -7,6 +7,10 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QDate>
+#include <QTimer>
+#include <QEventLoop>
+#include "queryrunner.h"
+#include "dataselectorview.h"
 
 class LoadNewFileView;
 class QString;
@@ -16,7 +20,8 @@ class LoadNewFileModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit LoadNewFileModel(QObject *parent = nullptr);
+    explicit LoadNewFileModel(QString uID, QObject *parent = nullptr);
+    QString rtfToPlainText(const QString rtf);
 
 signals:
     void sendProgress(const int percentage);
@@ -25,20 +30,21 @@ signals:
 
 public slots:
     void processData(const QString dir);
+    void convertRtf(const QString dir);
 
 private:
-
+    QString receivedID;
     QString singleLine;
-
+    QueryRunner *runner;
+    QString query;
     QStringList streamInfo;
-
+    DataSelectorView *mySelector;
     QString facultyName;
     int year;
     QString specialty;
     int studentsCount;
     int groupsCount;
     int subgroupsCount;
-
     QStringList disciplineInfo;
 
     QString disciplineName;

@@ -37,7 +37,9 @@ SOURCES += \
     customlineedit.cpp \
     customtableview.cpp \
     mainwindowmodel.cpp \
-    mainwindowview.cpp
+    mainwindowview.cpp \
+    dataselectorview.cpp \
+    dataselectormodel.cpp
 
 HEADERS += \
     droparea.h \
@@ -52,4 +54,6 @@ HEADERS += \
     customlineedit.h \
     customtableview.h \
     mainwindowmodel.h \
-    mainwindowview.h
+    mainwindowview.h \
+    dataselectorview.h \
+    dataselectormodel.h

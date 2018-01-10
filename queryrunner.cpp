@@ -34,7 +34,7 @@ void QueryRunner::tryAuth(const QString login, const QString password, const QSt
     }
 }
 
-void QueryRunner::tryQuery(const QString query, bool isModelNeeded)
+QSqlQuery QueryRunner::tryQuery(const QString query, bool isModelNeeded)
 {
     if (isModelNeeded)
     {
@@ -53,6 +53,7 @@ void QueryRunner::tryQuery(const QString query, bool isModelNeeded)
         {
             emit queryError(defaultQuery->lastError());
         }
+        return *defaultQuery;
     }
 }
 

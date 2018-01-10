@@ -24,7 +24,7 @@ class LoadNewFileView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LoadNewFileView(QWidget *parent = nullptr);
+    explicit LoadNewFileView(QString uID, QWidget *parent = nullptr);
 
 signals:
 
@@ -41,7 +41,7 @@ private:
     QString directory = "";
     QString buffer = "";
     int errorCount = 0;
-
+    QString receivedID;
     QPushButton *chooseFileButton;
     QPushButton *startButton;
     QPushButton *exitButton;

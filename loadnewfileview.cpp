@@ -1,7 +1,8 @@
 #include "loadnewfileview.h"
 
-LoadNewFileView::LoadNewFileView(QWidget *parent) : QWidget(parent)
+LoadNewFileView::LoadNewFileView(QString uID, QWidget *parent) : QWidget(parent)
 {
+    receivedID = uID;
     createUI();
     connect(chooseFileButton, &QAbstractButton::pressed, this, &LoadNewFileView::chooseFile);
     connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
@@ -101,7 +102,7 @@ void LoadNewFileView::finishProcessing()
 }
 void LoadNewFileView::startProcessing()
 {
-    processor = new LoadNewFileModel(this);
+    processor = new LoadNewFileModel(receivedID,this);
 
     disconnect(processor,&LoadNewFileModel::processingFinished,this,&LoadNewFileView::finishProcessing);
     disconnect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
@@ -110,7 +111,7 @@ void LoadNewFileView::startProcessing()
     connect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
     connect(processor,&LoadNewFileModel::sendProgress,this,&LoadNewFileView::getProgress);
     processor->processData(directory);
-
+//    processor->convertRtf(directory);
 }
 
 void LoadNewFileView::getInformation(const QString info)

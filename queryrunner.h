@@ -25,7 +25,7 @@ signals:
     void returnTableModel(QSqlTableModel *model);
 
 public slots:
-    void tryQuery(const QString query, bool isModelNeeded = 0);
+    QSqlQuery tryQuery(const QString query, bool isModelNeeded = 0);
     void tryAuth(const QString login, const QString password, const QString database, const QString hostname);
     void tryTableModel(const QString tableName);
 

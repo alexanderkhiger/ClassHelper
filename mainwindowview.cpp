@@ -7,15 +7,17 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     receivedName = uName;
     receivedShortname = uShortname;
     mwModel = new MainWindowModel;
-
+    teacherModelReference = new QSqlQueryModel;
+    classModelReference = new QSqlQueryModel;
     createUI();
     connect(dropArea, &DropArea::changed, mwModel, &MainWindowModel::updateParameters);
     connect(mwModel,&MainWindowModel::sendData,this,&MainWindowView::getData);
     connect(dropArea, &DropArea::clearParameters, this, &MainWindowView::clearParameters);
     connect(clearButton, &QAbstractButton::pressed, dropArea, &DropArea::clear);
     connect(backButton,&QAbstractButton::pressed,this,&MainWindowView::back);
-    connect(classesList, &QListWidget::itemDoubleClicked, this, &MainWindowView::doubleClickClassUpdate);
-    connect(teachersList, &QListWidget::itemDoubleClicked, this, &MainWindowView::doubleClickTeacherUpdate);
+
+    connect(classesList, &QListView::doubleClicked, this, &MainWindowView::doubleClickClassUpdate);
+    connect(teachersList, &QListView::doubleClicked, this, &MainWindowView::doubleClickTeacherUpdate);
     connect(newFileAction, &QAction::triggered, this, &MainWindowView::newFile);
 
     TableEditorView *frm = new TableEditorView(receivedID,receivedName,receivedShortname);
@@ -24,6 +26,7 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
 
 void MainWindowView::createUI()
 {
+
     setMinimumHeight(500);
     dropArea = new DropArea;
     dropArea->setFixedHeight(75);
@@ -35,29 +38,32 @@ void MainWindowView::createUI()
     buttonBox->addButton(clearButton, QDialogButtonBox::ResetRole);
     buttonBox->addButton(backButton, QDialogButtonBox::RejectRole);
 
-    teachersList = new QListWidget;
-    classesList = new QListWidget;
+
+    teachersList = new QListView;
+    classesList = new QListView;
+
+    teachersList->setDragDropMode(QAbstractItemView::DragDrop);
+    classesList->setDragDropMode(QAbstractItemView::DragDrop);
 
     teachersList->setDragEnabled(true);
     classesList->setDragEnabled(true);
 
-    teachersList->setFixedWidth(150);
-    classesList->setFixedWidth(150);
+
+    teachersRunner = new QueryRunner;
+    classesRunner = new QueryRunner;
+    connect(teachersRunner,&QueryRunner::querySuccessReturnModel,this,&MainWindowView::setTeachersModel);
+    connect(classesRunner,&QueryRunner::querySuccessReturnModel,this,&MainWindowView::setClassesModel);
+    //classesRunner->tryQuery("Select nazvanie_discipliny from disciplina",1);
+    classesRunner->tryQuery("Select concat(nazvanie_potoka,' | ',nazvanie_discipliny) from zanyatost left join disciplina on zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka",1);
+    teachersRunner->tryQuery("Select concat(familiya,' ',imya,' ',otchestvo) from prepodavatel",1);
+
+
+
+    teachersList->setFixedWidth(300);
+    classesList->setFixedWidth(300);
 
     teachersList->setObjectName("teachersList");
     classesList->setObjectName("classesList");
-
-    classesList->addItem("Физика");
-    classesList->addItem("Математика");
-    classesList->addItem("Химия");
-    classesList->addItem("Русский язык");
-    classesList->addItem("Английский язык");
-
-    teachersList->addItem("Бубнов А.П.");
-    teachersList->addItem("Соколова Е.С.");
-    teachersList->addItem("Кротов И.Д.");
-    teachersList->addItem("Русаков С.С.");
-    teachersList->addItem("Коломойский П.И.");
 
     chosenClass = new QLineEdit;
     chosenTeacher = new QLineEdit;
@@ -86,6 +92,21 @@ void MainWindowView::createUI()
     internalRightVLayout = new QVBoxLayout;
     externalHLayout = new QHBoxLayout;
     internalHLayout = new QHBoxLayout;
+//    classesColumns = new QHBoxLayout;
+
+//    QCheckBox *cb1 = new QCheckBox;
+//    QCheckBox *cb2 = new QCheckBox;
+//    QCheckBox *cb3 = new QCheckBox;
+//    QCheckBox *cb4 = new QCheckBox;
+//    QCheckBox *cb5 = new QCheckBox;
+//    QCheckBox *cb6 = new QCheckBox;
+
+//    classesColumns->addWidget(cb1);
+//    classesColumns->addWidget(cb2);
+//    classesColumns->addWidget(cb3);
+//    classesColumns->addWidget(cb4);
+//    classesColumns->addWidget(cb5);
+//    classesColumns->addWidget(cb6);
 
     internalHLayout->addWidget(chosenClass);
     internalHLayout->addWidget(chosenTeacher);
@@ -95,6 +116,7 @@ void MainWindowView::createUI()
     internalMiddleVLayout->addWidget(workField);
 
     internalLeftVLayout->addWidget(classesHeader);
+    internalLeftVLayout->addLayout(classesColumns);
     internalLeftVLayout->addWidget(classesList);
 
     internalRightVLayout->addWidget(teachersHeader);
@@ -148,6 +170,31 @@ void MainWindowView::getData(QString objName, QString containedData)
     checkFields();
 }
 
+void MainWindowView::getModel()
+{
+//    connect(runner,&QueryRunner::returnTableModel,this,&MainWindowView::setModel);
+//    runner->tryTableModel("universitet");
+}
+
+
+void MainWindowView::setClassesModel(QSqlQueryModel *model)
+{
+    classModelReference = model;
+    classesList->setModel(classModelReference);
+}
+
+void MainWindowView::setTeachersModel(QSqlQueryModel *model)
+{
+    teacherModelReference = model;
+    teachersList->setModel(teacherModelReference);
+}
+
+void MainWindowView::getError(QSqlError error)
+{
+    QMessageBox::StandardButton errorMsg;
+    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+}
+
 
 void MainWindowView::checkFields()
 {
@@ -158,15 +205,15 @@ void MainWindowView::checkFields()
     }
 }
 
-void MainWindowView::doubleClickClassUpdate(const QListWidgetItem *myItem)
+void MainWindowView::doubleClickClassUpdate(const QModelIndex index)
 {
-    chosenClass->setText(myItem->text());
+    chosenClass->setText(classModelReference->data(index).toString());
     MainWindowView::checkFields();
 }
 
-void MainWindowView::doubleClickTeacherUpdate(const QListWidgetItem *myItem)
+void MainWindowView::doubleClickTeacherUpdate(const QModelIndex index)
 {
-    chosenTeacher->setText(myItem->text());
+    chosenTeacher->setText(teacherModelReference->data(index).toString());
     MainWindowView::checkFields();
 }
 
@@ -180,6 +227,6 @@ void MainWindowView::clearParameters()
 
 void MainWindowView::newFile()
 {
-    LoadNewFileView *frm = new LoadNewFileView;
+    LoadNewFileView *frm = new LoadNewFileView(receivedID);
     frm->show();
 }
