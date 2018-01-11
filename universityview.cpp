@@ -7,15 +7,15 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     resizeTable();
     universityTableView->viewport()->installEventFilter(this);
 
-    connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(confirmButton, &QAbstractButton::pressed, this, &UniversityView::choiceConfirmed);
-    connect(universityTableView,&QTableView::clicked,this,&UniversityView::enableButtons);
-    connect(deleteButton,&QPushButton::clicked,this,&UniversityView::deleteRecord);
-    connect(addButton,&QPushButton::clicked,this,&UniversityView::changeAddButtonStyle);
-    connect(confirmAddition,&QPushButton::clicked,this,&UniversityView::addRecord);
-    connect(this,&UniversityView::updateError,this,&UniversityView::getError);
-    connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::editRecord);
-    connect(universityTableView->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&UniversityView::turnOnButtons);
+    connect(exitButton, SIGNAL(clicked(bool)), this, SLOT(close()));
+    connect(confirmButton, SIGNAL(clicked(bool)), this, SLOT(choiceConfirmed()));
+    connect(universityTableView,SIGNAL(clicked(QModelIndex)),this,SLOT(enableButtons()));
+    connect(deleteButton,SIGNAL(clicked(bool)),this,SLOT(deleteRecord()));
+    connect(addButton,SIGNAL(clicked(bool)),this,SLOT(changeAddButtonStyle()));
+    connect(confirmAddition,SIGNAL(clicked(bool)),this,SLOT(addRecord()));
+    connect(this,SIGNAL(updateError(QSqlError)),this,SLOT(getError(QSqlError)));
+    connect(universityTableView->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(editRecord()));
+    connect(universityTableView->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(turnOnButtons()));
 }
 
 bool UniversityView::eventFilter(QObject *obj, QEvent *event)
@@ -49,7 +49,7 @@ void UniversityView::createUI()
     universityTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     universityTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     universityTableView->verticalHeader()->setVisible(0);
-    connect(uModel,&UniversityModel::updateError,this,&UniversityView::getError);
+    connect(uModel,SIGNAL(updateError(QSqlError)),this,SLOT(getError(QSqlError)));
     addButton = new QPushButton(tr("Добавить"));;
     deleteButton = new QPushButton(tr("Удалить"));;
     deleteButton->setEnabled(0);
@@ -133,7 +133,7 @@ void UniversityView::enableButtons()
 
 void UniversityView::getModel()
 {
-    connect(runner,&QueryRunner::returnTableModel,this,&UniversityView::setModel);
+    connect(runner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setModel(QSqlTableModel*)));
     runner->tryTableModel("universitet");
 }
 
@@ -145,8 +145,8 @@ void UniversityView::setModel(QSqlTableModel *model)
     modelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     modelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     universityTableView->setModel(model);
-    connect(universityTableView->selectionModel(),&QItemSelectionModel::selectionChanged,this,&UniversityView::changedFrom);
-    connect(universityTableView->model(),&QAbstractItemModel::dataChanged,this,&UniversityView::changedTo);
+    connect(universityTableView->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFrom(QItemSelection)));
+    connect(universityTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedTo(QModelIndex)));
 }
 
 void UniversityView::deleteRecord()

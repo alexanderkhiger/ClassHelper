@@ -1,5 +1,5 @@
 #include "tableeditormodel.h"
-#include <QDebug>
+
 TableEditorModel::TableEditorModel(QObject *parent) : QObject(parent)
 {
 

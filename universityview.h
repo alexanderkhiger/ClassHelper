@@ -2,7 +2,6 @@
 #define UNIVERSITYVIEW_H
 
 #include <QWidget>
-#include <QtWidgets>
 #include <QSqlQuery>
 #include <QSqlQueryModel>
 #include <QSqlTableModel>
@@ -13,14 +12,14 @@
 #include "customtableview.h"
 #include <mainwindowview.h>
 
-class QTableView;
-class QPushButton;
-class QDialogButtonBox;
-class QVBoxLayout;
-class QHBoxLayout;
-class QGroupBox;
-class QHeaderView;
-class QLineEdit;
+#include <QTableView>
+#include <QPushButton>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QLineEdit>
 
 class UniversityView : public QWidget
 {

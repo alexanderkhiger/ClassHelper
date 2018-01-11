@@ -39,7 +39,8 @@ SOURCES += \
     mainwindowmodel.cpp \
     mainwindowview.cpp \
     dataselectorview.cpp \
-    dataselectormodel.cpp
+    dataselectormodel.cpp \
+    customdoublevalidator.cpp
 
 HEADERS += \
     droparea.h \
@@ -56,4 +57,5 @@ HEADERS += \
     mainwindowmodel.h \
     mainwindowview.h \
     dataselectorview.h \
-    dataselectormodel.h
+    dataselectormodel.h \
+    customdoublevalidator.h

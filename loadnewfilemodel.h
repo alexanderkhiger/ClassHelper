@@ -11,10 +11,9 @@
 #include <QEventLoop>
 #include "queryrunner.h"
 #include "dataselectorview.h"
-
-class LoadNewFileView;
-class QString;
-class QStringList;
+#include <QString>
+#include <QStringList>
+#include <QDebug>
 
 class LoadNewFileModel : public QObject
 {

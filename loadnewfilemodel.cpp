@@ -1,5 +1,4 @@
 #include "loadnewfilemodel.h"
-#include <QDebug>
 
 LoadNewFileModel::LoadNewFileModel(QString uID, QObject *parent) : QObject(parent)
 {

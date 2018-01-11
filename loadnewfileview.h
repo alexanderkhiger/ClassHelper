@@ -2,22 +2,21 @@
 #define LOADNEWFILEVIEW_H
 
 #include <QWidget>
-#include <QtWidgets>
 #include <QDebug>
 
 #include "loadnewfilemodel.h"
 
-class QString;
-class QPushButton;
-class QLineEdit;
-class QLabel;
-class QTextEdit;
-class QHBoxLayout;
-class QVBoxLayout;
-class QProgressBar;
-class QFileDialog;
-class QDialogButtonBox;
-class QMessageBox;
+#include <QString>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTextEdit>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QProgressBar>
+#include <QFileDialog>
+#include <QDialogButtonBox>
+#include <QMessageBox>
 
 
 class LoadNewFileView : public QWidget

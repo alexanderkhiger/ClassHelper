@@ -3,8 +3,8 @@
 AuthView::AuthView()
 {
     createUI();
-    connect(quitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(authButton, &QAbstractButton::pressed, this, &AuthView::tryAuth);
+    connect(quitButton, SIGNAL(pressed()), this, SLOT(close()));
+    connect(authButton, SIGNAL(pressed()), this, SLOT(tryAuth()));
 }
 
 void AuthView::createUI()
@@ -100,7 +100,7 @@ void AuthView::authSuccess()
 void AuthView::tryAuth()
 {
     runner = new QueryRunner(this);
-    connect(runner,&QueryRunner::authError,this,&AuthView::authError);
-    connect(runner,&QueryRunner::authSuccess,this,&AuthView::authSuccess);
+    connect(runner,SIGNAL(authError(QString)),this,SLOT(authError(QString)));
+    connect(runner,SIGNAL(authSuccess()),this,SLOT(authSuccess()));
     runner->tryAuth(usernameField->text(),passwordField->text(),databaseField->text(),hostnameField->text());
 }

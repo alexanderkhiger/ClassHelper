@@ -1,5 +1,4 @@
 #include "mainwindowmodel.h"
-#include <QDebug>
 
 MainWindowModel::MainWindowModel(QObject *parent) : QObject(parent)
 {

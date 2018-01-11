@@ -2,18 +2,16 @@
 #define AUTHVIEW_H
 
 #include <QWidget>
-#include <QtWidgets>
 
 #include <queryrunner.h>
 #include <universityview.h>
-
-class QPushButton;
-class QDialogButtonBox;
-class QLineEdit;
-class QLabel;
-class QTextEdit;
-class QVBoxLayout;
-class QHBoxLayout;
+#include <QPushButton>
+#include <QDialogButtonBox>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 class AuthView : public QWidget
 {

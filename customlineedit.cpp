@@ -1,7 +1,4 @@
 #include "customlineedit.h"
-#include <QToolButton>
-#include <QStyle>
-#include <QLabel>
 
 CustomLineEdit::CustomLineEdit(QWidget *ref)
 {

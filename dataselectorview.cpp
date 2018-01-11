@@ -16,21 +16,21 @@ DataSelectorView::DataSelectorView(QString tableName, QString receivedFacultyNam
     {
         topLabel->setText(tr("Факультет с названием %1 не найден. Выберите подходящий факультет или создайте новую запись").arg(receivedFacultyName));
         createButton->setText(tr("Создать факультет с названием %1").arg(receivedFacultyName));
-        connect(runner,&QueryRunner::returnTableModel,this,&DataSelectorView::setFacultyModel);
+        connect(runner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setFacultyModel(QSqlTableModel*)));
         runner->tryTableModel(tableName);
     }
     else if (specialtyName != "noValue")
     {
         topLabel->setText(tr("Специальность с названием %1 не найдена. Выберите подходящую специальность или создайте новую запись").arg(receivedSpecialtyName));
         createButton->setText(tr("Создать специальность с названием %1").arg(receivedSpecialtyName));
-        connect(runner,&QueryRunner::returnTableModel,this,&DataSelectorView::setSpecialtyModel);
+        connect(runner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setSpecialtyModel(QSqlTableModel*)));
         runner->tryTableModel(tableName);
     }
     else if (disciplineName != "noValue")
     {
         topLabel->setText(tr("Дисциплина с названием %1 не найдена. Выберите подходящую дисциплину или создайте новую запись").arg(disciplineName));
         createButton->setText(tr("Создать дисциплину с названием %1").arg(disciplineName));
-        connect(runner,&QueryRunner::returnTableModel,this,&DataSelectorView::setDisciplineModel);
+        connect(runner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setDisciplineModel(QSqlTableModel*)));
         runner->tryTableModel(tableName);
     }
 
@@ -44,14 +44,14 @@ void DataSelectorView::createUI()
     externalVLayout = new QVBoxLayout(this);
     externalVLayout->addWidget(topLabel);
     myTableView = new QTableView;
-    connect(myTableView,&QTableView::doubleClicked,this,&DataSelectorView::setData);
+    connect(myTableView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(setData(QModelIndex)));
     myTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     myTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     myTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     myTableView->verticalHeader()->setVisible(0);
     externalVLayout->addWidget(myTableView);
     createButton = new QPushButton;
-    connect(createButton,&QPushButton::clicked,this,&DataSelectorView::createButtonClicked);
+    connect(createButton,SIGNAL(clicked(bool)),this,SLOT(createButtonClicked()));
     externalVLayout->addWidget(createButton);
 }
 

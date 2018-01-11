@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSqlError>
 #include <QSqlTableModel>
+#include <QDebug>
 
 class TableEditorModel : public QObject
 {

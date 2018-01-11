@@ -7,8 +7,8 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     receivedName = uName;
     receivedShortname = uShortname;
     teModel = new TableEditorModel;
-    connect(teModel,&TableEditorModel::updateError,this,&TableEditorView::getError);
-    connect(this,&TableEditorView::updateError,this,&TableEditorView::getError);
+    connect(teModel,SIGNAL(updateError(QSqlError)),this,SLOT(getError(QSqlError)));
+    connect(this,SIGNAL(updateError(QSqlError)),this,SLOT(getError(QSqlError)));
     chairRunner = new QueryRunner;
     facultyRunner = new QueryRunner;
     teacherRunner = new QueryRunner;
@@ -24,7 +24,7 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     tableTab->addTab(chairWidget,tr("Кафедры"));
     tableTab->addTab(teacherWidget,tr("Преподаватели"));
 
-    connect(tableTab,&QTabWidget::currentChanged,this,&TableEditorView::checkSize);
+    connect(tableTab,SIGNAL(currentChanged(int)),this,SLOT(checkSize(int)));
 
     getIDTable = new QTableView;
     agree = new QPushButton(tr("ОК"));
@@ -32,7 +32,7 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     buttonBox = new QDialogButtonBox;
     buttonBox->addButton(agree,QDialogButtonBox::AcceptRole);
     buttonBox->addButton(disagree,QDialogButtonBox::RejectRole);
-    connect(disagree,&QPushButton::clicked,this,&TableEditorView::setSmallTablesInvisible);
+    connect(disagree,SIGNAL(clicked(bool)),this,SLOT(setSmallTablesInvisible()));
     getIDTable->setVisible(0);
     buttonBox->setVisible(0);
     getIDTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -40,7 +40,7 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     getIDTable->setSelectionMode(QAbstractItemView::SingleSelection);
     getIDTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     getIDTable->verticalHeader()->setVisible(0);
-    connect(getIDTable,&QTableView::clicked,this,&TableEditorView::enableGetIDButtons);
+    connect(getIDTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableGetIDButtons()));
 
     vLayout = new QVBoxLayout(this);
     vLayout->addWidget(tableTab);
@@ -184,12 +184,12 @@ void TableEditorView::createFacultyWidgetUI()
     //    facultyItemDelegate = new CustomItemDelegate;
     //    facultyTable->setItemDelegate(facultyItemDelegate);
 
-    connect(facultyAddButton,&QPushButton::clicked,this,&TableEditorView::changeFacultyAddButtonStyle);
-    connect(facultyConfirmAddition,&QPushButton::clicked,this,&TableEditorView::facultyAddRecord);
-    connect(facultyDeleteButton,&QPushButton::clicked,this,&TableEditorView::facultyDeleteRecord);
-    connect(facultyTable,&QTableView::clicked,this,&TableEditorView::enableFacultyButtons);
-    connect(facultyTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::facultyEditRecord);
-    connect(facultyTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::enableWidgets);
+    connect(facultyAddButton,SIGNAL(clicked(bool)),this,SLOT(changeFacultyAddButtonStyle()));
+    connect(facultyConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(facultyAddRecord()));
+    connect(facultyDeleteButton,SIGNAL(clicked(bool)),this,SLOT(facultyDeleteRecord()));
+    connect(facultyTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableFacultyButtons()));
+    connect(facultyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(facultyEditRecord()));
+    connect(facultyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
 //    connect(facultyTable,&QTableView::doubleClicked,this,&TableEditorView::disableFacultyWidgets);
     facultyConfirmAddition->setVisible(0);
     facultyName->setVisible(0);
@@ -227,7 +227,7 @@ void TableEditorView::createChairWidgetUI()
     chairChooseFaculty->setPlaceholderText(tr("ID факультета"));
     chairChooseFaculty->setToolTip(tr("ID факультета"));
 
-    connect(chairChooseFaculty->chooseButton,&QToolButton::clicked,this,&TableEditorView::openFacultyList);
+    connect(chairChooseFaculty->chooseButton,SIGNAL(clicked(bool)),this,SLOT(openFacultyList()));
 
     chairConfirmAddition = new QPushButton(tr("ОК"));
     chairAddButton = new QPushButton(tr("Добавить"));
@@ -240,12 +240,12 @@ void TableEditorView::createChairWidgetUI()
     chairShortname->setPlaceholderText(tr("Аббревиатура"));
     chairShortname->setToolTip(tr("Аббревиатура факультета"));
 
-    connect(chairAddButton,&QPushButton::clicked,this,&TableEditorView::changeChairAddButtonStyle);
-    connect(chairConfirmAddition,&QPushButton::clicked,this,&TableEditorView::chairAddRecord);
-    connect(chairDeleteButton,&QPushButton::clicked,this,&TableEditorView::chairDeleteRecord);
-    connect(chairTable,&QTableView::clicked,this,&TableEditorView::enableChairButtons);
-    connect(chairTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::chairEditRecord);
-    connect(chairTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::enableWidgets);
+    connect(chairAddButton,SIGNAL(clicked(bool)),this,SLOT(changeChairAddButtonStyle()));
+    connect(chairConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(chairAddRecord()));
+    connect(chairDeleteButton,SIGNAL(clicked(bool)),this,SLOT(chairDeleteRecord()));
+    connect(chairTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableChairButtons()));
+    connect(chairTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(chairEditRecord()));
+    connect(chairTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
 //    connect(chairTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
 
     chairConfirmAddition->setVisible(0);
@@ -300,7 +300,7 @@ void TableEditorView::createTeacherWidgetUI()
     teacherDegree->addItem(tr("Доктор наук"));
 
     teacherChooseChair = new CustomLineEdit(this);
-    connect(teacherChooseChair->chooseButton,&QToolButton::clicked,this,&TableEditorView::openChairList);
+    connect(teacherChooseChair->chooseButton,SIGNAL(clicked(bool)),this,SLOT(openChairList()));
 
     teacherConfirmAddition = new QPushButton(tr("ОК"));
     teacherAddButton = new QPushButton(tr("Добавить"));
@@ -325,12 +325,12 @@ void TableEditorView::createTeacherWidgetUI()
     teacherChooseChair->setPlaceholderText(tr("ID кафедры"));
     teacherChooseChair->setToolTip(tr("ID кафедры"));
 
-    connect(teacherAddButton,&QPushButton::clicked,this,&TableEditorView::changeTeacherAddButtonStyle);
-    connect(teacherConfirmAddition,&QPushButton::clicked,this,&TableEditorView::teacherAddRecord);
-    connect(teacherDeleteButton,&QPushButton::clicked,this,&TableEditorView::teacherDeleteRecord);
-    connect(teacherTable,&QTableView::clicked,this,&TableEditorView::enableTeacherButtons);
-    connect(teacherTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::teacherEditRecord);
-    connect(teacherTable->itemDelegate(),&QAbstractItemDelegate::closeEditor,this,&TableEditorView::enableWidgets);
+    connect(teacherAddButton,SIGNAL(clicked(bool)),this,SLOT(changeTeacherAddButtonStyle()));
+    connect(teacherConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(teacherAddRecord()));
+    connect(teacherDeleteButton,SIGNAL(clicked(bool)),this,SLOT(teacherDeleteRecord()));
+    connect(teacherTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableTeacherButtons()));
+    connect(teacherTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(teacherEditRecord()));
+    connect(teacherTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
 //    connect(teacherTable,&QTableView::doubleClicked,this,&TableEditorView::disableTeacherWidgets);
 
     teacherConfirmAddition->setVisible(0);
@@ -476,7 +476,7 @@ void TableEditorView::openFacultyList()
     setSmallTablesVisible();
     getIDTable->setModel(facultyModelReference);
     resizeTable(getIDTable);
-    connect(agree,&QPushButton::clicked,this,&TableEditorView::getFacultyID);
+    connect(agree,SIGNAL(clicked(bool)),this,SLOT(getFacultyID()));
 
 }
 
@@ -485,7 +485,7 @@ void TableEditorView::openChairList()
     setSmallTablesVisible();
     getIDTable->setModel(chairModelReference);
     resizeTable(getIDTable);
-    connect(agree,&QPushButton::clicked,this,&TableEditorView::getChairID);
+    connect(agree,SIGNAL(clicked(bool)),this,SLOT(getChairID()));
 }
 
 void TableEditorView::getFacultyID()
@@ -494,7 +494,7 @@ void TableEditorView::getFacultyID()
     QString idData = getIDTable->model()->data(idIndex).toString();
     chairChooseFaculty->setText(idData);
     setSmallTablesInvisible();
-    disconnect(agree,&QPushButton::clicked,this,&TableEditorView::getFacultyID);
+    disconnect(agree,SIGNAL(clicked(bool)),this,SLOT(getFacultyID()));
 }
 
 
@@ -504,7 +504,7 @@ void TableEditorView::getChairID()
     QString idData = getIDTable->model()->data(idIndex).toString();
     teacherChooseChair->setText(idData);
     setSmallTablesInvisible();
-    disconnect(agree,&QPushButton::clicked,this,&TableEditorView::getChairID);
+    disconnect(agree,SIGNAL(clicked(bool)),this,SLOT(getChairID()));
 }
 
 
@@ -512,7 +512,7 @@ void TableEditorView::getChairID()
 
 void TableEditorView::getFacultyModel()
 {
-    connect(facultyRunner,&QueryRunner::returnTableModel,this,&TableEditorView::setFacultyModel);
+    connect(facultyRunner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setFacultyModel(QSqlTableModel*)));
     facultyRunner->tryTableModel("fakultet");
 }
 
@@ -526,13 +526,13 @@ void TableEditorView::setFacultyModel(QSqlTableModel *model)
     facultyModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     facultyModelReference->setHeaderData(3,Qt::Horizontal,tr("ID университета"));
     facultyTable->setModel(model);
-    connect(facultyTable->selectionModel(),&QItemSelectionModel::selectionChanged,this,&TableEditorView::changedFromData);
-    connect(facultyTable->model(),&QAbstractItemModel::dataChanged,this,&TableEditorView::changedToData);
+    connect(facultyTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
+    connect(facultyTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedToData(QModelIndex)));
 }
 
 void TableEditorView::getChairModel()
 {
-    connect(chairRunner,&QueryRunner::returnTableModel,this,&TableEditorView::setChairModel);
+    connect(chairRunner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setChairModel(QSqlTableModel*)));
     chairRunner->tryTableModel("kafedra");
 }
 
@@ -545,13 +545,13 @@ void TableEditorView::setChairModel(QSqlTableModel *model)
     chairModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     chairModelReference->setHeaderData(3,Qt::Horizontal,tr("ID факультета"));
     chairTable->setModel(model);
-    connect(chairTable->selectionModel(),&QItemSelectionModel::selectionChanged,this,&TableEditorView::changedFromData);
-    connect(chairTable->model(),&QAbstractItemModel::dataChanged,this,&TableEditorView::changedToData);
+    connect(chairTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
+    connect(chairTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedToData(QModelIndex)));
 }
 
 void TableEditorView::getTeacherModel()
 {
-    connect(teacherRunner,&QueryRunner::returnTableModel,this,&TableEditorView::setTeacherModel);
+    connect(teacherRunner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setTeacherModel(QSqlTableModel*)));
     teacherRunner->tryTableModel("prepodavatel");
 }
 
@@ -568,8 +568,8 @@ void TableEditorView::setTeacherModel(QSqlTableModel *model)
     teacherModelReference->setHeaderData(6,Qt::Horizontal,tr("Ученая степень"));
     teacherModelReference->setHeaderData(7,Qt::Horizontal,tr("Ученое звание"));
     teacherTable->setModel(model);
-    connect(teacherTable->selectionModel(),&QItemSelectionModel::selectionChanged,this,&TableEditorView::changedFromData);
-    connect(teacherTable->model(),&QAbstractItemModel::dataChanged,this,&TableEditorView::changedToData);
+    connect(teacherTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
+    connect(teacherTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedToData(QModelIndex)));
 }
 
 void TableEditorView::changedFromData(const QItemSelection &selected)

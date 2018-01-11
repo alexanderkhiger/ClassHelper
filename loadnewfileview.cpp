@@ -4,10 +4,10 @@ LoadNewFileView::LoadNewFileView(QString uID, QWidget *parent) : QWidget(parent)
 {
     receivedID = uID;
     createUI();
-    connect(chooseFileButton, &QAbstractButton::pressed, this, &LoadNewFileView::chooseFile);
-    connect(exitButton, &QAbstractButton::pressed, this, &QWidget::close);
-    connect(clearButton, &QAbstractButton::pressed, this, &LoadNewFileView::clear);
-    connect(startButton, &QAbstractButton::pressed, this, &LoadNewFileView::startProcessing);
+    connect(chooseFileButton, SIGNAL(pressed()), this, SLOT(chooseFile()));
+    connect(exitButton, SIGNAL(pressed()), this, SLOT(close()));
+    connect(clearButton, SIGNAL(pressed()), this, SLOT(clear()));
+    connect(startButton, SIGNAL(pressed()), this, SLOT(startProcessing()));
 }
 
 void LoadNewFileView::createUI()
@@ -104,12 +104,12 @@ void LoadNewFileView::startProcessing()
 {
     processor = new LoadNewFileModel(receivedID,this);
 
-    disconnect(processor,&LoadNewFileModel::processingFinished,this,&LoadNewFileView::finishProcessing);
-    disconnect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
-    disconnect(processor,&LoadNewFileModel::sendProgress,this,&LoadNewFileView::getProgress);
-    connect(processor,&LoadNewFileModel::processingFinished,this,&LoadNewFileView::finishProcessing);
-    connect(processor,&LoadNewFileModel::sendInformation,this,&LoadNewFileView::getInformation);
-    connect(processor,&LoadNewFileModel::sendProgress,this,&LoadNewFileView::getProgress);
+    disconnect(processor,SIGNAL(processingFinished()),this,SLOT(finishProcessing()));
+    disconnect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
+    disconnect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
+    connect(processor,SIGNAL(processingFinished()),this,SLOT(finishProcessing()));
+    connect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
+    connect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
     processor->processData(directory);
 //    processor->convertRtf(directory);
 }

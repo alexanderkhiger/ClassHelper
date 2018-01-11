@@ -2,7 +2,6 @@
 #define MAINWINDOWVIEW_H
 
 #include <QMainWindow>
-#include <QtWidgets>
 #include "tableeditorview.h"
 #include "droparea.h"
 #include "loadnewfileview.h"
@@ -13,25 +12,27 @@
 #include <QTextEdit>
 #include <QHeaderView>
 #include <QTableView>
+#include <QModelIndex>
+#include "customdoublevalidator.h"
 
-class QDialogButtonBox;
-class QLabel;
-class QMimeData;
-class QPushButton;
-class QTableWidget;
-class DropArea;
-class QListWidget;
-class QString;
-class QGroupBox;
-class QWidget;
-class QLineEdit;
-class QListWidgetItem;
-class QListView;
-class QDebug;
-class QVBoxLayout;
-class QHBoxLayout;
-class QMenu;
-class QAction;
+#include <QDialogButtonBox>
+#include <QLabel>
+#include <QMimeData>
+#include <QPushButton>
+#include <QTableWidget>
+#include "droparea.h"
+#include <QListWidget>
+#include <QString>
+#include <QGroupBox>
+#include <QWidget>
+#include <QLineEdit>
+#include <QListWidgetItem>
+#include <QListView>
+#include <QDebug>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QMenu>
+#include <QAction>
 
 
 class MainWindowView : public QMainWindow
@@ -58,10 +59,29 @@ public slots:
 
 private:
 
+    CustomDoubleValidator *val1;
+    CustomDoubleValidator *val2;
+    CustomDoubleValidator *val3;
+    CustomDoubleValidator *val4;
+    CustomDoubleValidator *val5;
+    CustomDoubleValidator *val6;
+    CustomDoubleValidator *val7;
+    CustomDoubleValidator *val8;
+    CustomDoubleValidator *val9;
+    CustomDoubleValidator *val10;
+    CustomDoubleValidator *val11;
+    CustomDoubleValidator *val12;
+    CustomDoubleValidator *val13;
+    CustomDoubleValidator *val14;
+    CustomDoubleValidator *val15;
+    CustomDoubleValidator *val16;
+
     QueryRunner *teachersRunner;
     QueryRunner *classesRunner;
     QueryRunner *runner;
     MainWindowModel *mwModel;
+    QModelIndex savedTeacherIndex = QModelIndex();
+    QModelIndex savedClassIndex = QModelIndex();
     QWidget *parentReference;
     QSqlQueryModel *classModelReference;
     QSqlQueryModel *teacherModelReference;

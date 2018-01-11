@@ -2,7 +2,6 @@
 #define TABLEEDITORVIEW_H
 
 #include <QWidget>
-#include <QtWidgets>
 #include <QTabWidget>
 #include <QSqlTableModel>
 #include "queryrunner.h"
@@ -12,15 +11,17 @@
 #include <QComboBox>
 #include <QLabel>
 
-class QLineEdit;
-class QPushButton;
-class QTableView;
-class QDialogButtonBox;
-class QVBoxLayout;
-class QHBoxLayout;
-class QGroupBox;
-class QHeaderView;
-class QMessageBox;
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTableView>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QToolButton>
+#include <QMenuBar>
 
 class TableEditorView : public QWidget
 {

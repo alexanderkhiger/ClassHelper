@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QMimeData>
 #include <QDataStream>
+#include <QDebug>
 
 class MainWindowModel : public QObject
 {

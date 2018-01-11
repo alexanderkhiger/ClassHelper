@@ -6,7 +6,7 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 
-class QMimeData;
+#include <QMimeData>
 
 class DropArea : public QLabel
 {

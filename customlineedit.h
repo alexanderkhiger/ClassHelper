@@ -4,6 +4,10 @@
 #include <QObject>
 #include <QLineEdit>
 #include <QWidget>
+#include <QToolButton>
+#include <QStyle>
+#include <QLabel>
+
 
 class CustomLineEdit : public QLineEdit
 {
