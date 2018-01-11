@@ -2,7 +2,9 @@
 
 TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname, QWidget *parent) : QWidget(parent)
 {
-
+    facultyAddButtonState = INACTIVE;
+    chairAddButtonState = INACTIVE;
+    teacherAddButtonState = INACTIVE;
     receivedUID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
@@ -382,12 +384,12 @@ void TableEditorView::changeFacultyAddButtonStyle()
 {
     facultyName->clear();
     facultyShortname->clear();
-    if (facultyAddButtonState == buttonState::INACTIVE)
+    if (facultyAddButtonState == INACTIVE)
     {
         facultyName->setVisible(1);
         facultyShortname->setVisible(1);
         facultyConfirmAddition->setVisible(1);
-        facultyAddButtonState = buttonState::ACTIVE;
+        facultyAddButtonState = ACTIVE;
         facultyAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
     }
     else
@@ -395,7 +397,7 @@ void TableEditorView::changeFacultyAddButtonStyle()
         facultyName->setVisible(0);
         facultyShortname->setVisible(0);
         facultyConfirmAddition->setVisible(0);
-        facultyAddButtonState = buttonState::INACTIVE;
+        facultyAddButtonState = INACTIVE;
         facultyAddButton->setStyleSheet("");
     }
 
@@ -406,13 +408,13 @@ void TableEditorView::changeChairAddButtonStyle()
     chairName->clear();
     chairShortname->clear();
     chairChooseFaculty->clear();
-    if (chairAddButtonState == buttonState::INACTIVE)
+    if (chairAddButtonState == INACTIVE)
     {
         chairName->setVisible(1);
         chairShortname->setVisible(1);
         chairConfirmAddition->setVisible(1);
         chairChooseFaculty->setVisible(1);
-        chairAddButtonState = buttonState::ACTIVE;
+        chairAddButtonState = ACTIVE;
         chairAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
     }
     else
@@ -421,7 +423,7 @@ void TableEditorView::changeChairAddButtonStyle()
         chairShortname->setVisible(0);
         chairConfirmAddition->setVisible(0);
         chairChooseFaculty->setVisible(0);
-        chairAddButtonState = buttonState::INACTIVE;
+        chairAddButtonState = INACTIVE;
         chairAddButton->setStyleSheet("");
     }
 
@@ -437,7 +439,7 @@ void TableEditorView::changeTeacherAddButtonStyle()
     teacherPost->clear();
     teacherChooseChair->clear();
 
-    if (teacherAddButtonState == buttonState::INACTIVE)
+    if (teacherAddButtonState == INACTIVE)
     {
         teacherConfirmAddition->setVisible(1);
         teacherFirstName->setVisible(1);
@@ -449,7 +451,7 @@ void TableEditorView::changeTeacherAddButtonStyle()
         degreeLabel->setVisible(1);
         teacherPost->setVisible(1);
         teacherChooseChair->setVisible(1);
-        teacherAddButtonState = buttonState::ACTIVE;
+        teacherAddButtonState = ACTIVE;
         teacherAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
     }
     else
@@ -464,7 +466,7 @@ void TableEditorView::changeTeacherAddButtonStyle()
         degreeLabel->setVisible(0);
         teacherPost->setVisible(0);
         teacherChooseChair->setVisible(0);
-        teacherAddButtonState = buttonState::INACTIVE;
+        teacherAddButtonState = INACTIVE;
         teacherAddButton->setStyleSheet("");
 
     }
@@ -690,7 +692,7 @@ void TableEditorView::facultyAddRecord()
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    teModel->updateFacultyModel(facultyModelReference,TableEditorModel::operationType::fINSERT,facultyTable->currentIndex().row(),facultyName->text(),facultyShortname->text(),receivedUID);
+    teModel->updateFacultyModel(facultyModelReference,TableEditorModel::fINSERT,facultyTable->currentIndex().row(),facultyName->text(),facultyShortname->text(),receivedUID);
     facultyName->clear();
     facultyShortname->clear();
     facultyDeleteButton->setEnabled(0);
@@ -718,7 +720,7 @@ void TableEditorView::facultyDeleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        teModel->updateFacultyModel(facultyModelReference,TableEditorModel::operationType::fDELETE,facultyTable->currentIndex().row());
+        teModel->updateFacultyModel(facultyModelReference,TableEditorModel::fDELETE,facultyTable->currentIndex().row());
         facultyDeleteButton->setEnabled(0);
     }
 
@@ -778,7 +780,7 @@ void TableEditorView::chairAddRecord()
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    teModel->updateFacultyModel(chairModelReference,TableEditorModel::operationType::fINSERT,chairTable->currentIndex().row(),chairName->text(),chairShortname->text(),chairChooseFaculty->text());
+    teModel->updateFacultyModel(chairModelReference,TableEditorModel::fINSERT,chairTable->currentIndex().row(),chairName->text(),chairShortname->text(),chairChooseFaculty->text());
     chairName->clear();
     chairShortname->clear();
     chairChooseFaculty->clear();
@@ -808,7 +810,7 @@ void TableEditorView::chairDeleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        teModel->updateFacultyModel(chairModelReference,TableEditorModel::operationType::fDELETE,chairTable->currentIndex().row());
+        teModel->updateFacultyModel(chairModelReference,TableEditorModel::fDELETE,chairTable->currentIndex().row());
         chairDeleteButton->setEnabled(0);
     }
 
@@ -868,7 +870,7 @@ void TableEditorView::teacherAddRecord()
         errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
         return;
     }
-    teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fINSERT,teacherTable->currentIndex().row(),teacherSurname->text(),teacherFirstName->text(),teacherMiddleName->text(),teacherChooseChair->text(),teacherPost->text(),teacherDegree->currentText(),teacherTitle->currentText());
+    teModel->updateTeacherModel(teacherModelReference,TableEditorModel::fINSERT,teacherTable->currentIndex().row(),teacherSurname->text(),teacherFirstName->text(),teacherMiddleName->text(),teacherChooseChair->text(),teacherPost->text(),teacherDegree->currentText(),teacherTitle->currentText());
     teacherFirstName->clear();
     teacherMiddleName->clear();
     teacherSurname->clear();
@@ -910,7 +912,7 @@ void TableEditorView::teacherDeleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        teModel->updateTeacherModel(teacherModelReference,TableEditorModel::operationType::fDELETE,teacherTable->currentIndex().row());
+        teModel->updateTeacherModel(teacherModelReference,TableEditorModel::fDELETE,teacherTable->currentIndex().row());
         teacherDeleteButton->setEnabled(0);
     }
 

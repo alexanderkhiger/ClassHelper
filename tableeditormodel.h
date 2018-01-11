@@ -10,7 +10,7 @@ class TableEditorModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit TableEditorModel(QObject *parent = nullptr);
+    explicit TableEditorModel(QObject *parent = 0);
     enum operationType {fINSERT,fDELETE,fUPDATE};
 
 signals:

@@ -2,6 +2,12 @@
 
 MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent) : QMainWindow(parent)
 {
+
+    savedTeacherIndex = QModelIndex();
+    savedClassIndex = QModelIndex();
+    chosenClassID = 0;
+    chosenTeacherID = 0;
+
     parentReference = ref;
     receivedID = uID;
     receivedName = uName;

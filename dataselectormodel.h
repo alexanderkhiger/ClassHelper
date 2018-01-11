@@ -7,7 +7,7 @@ class DataSelectorModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataSelectorModel(QObject *parent = nullptr);
+    explicit DataSelectorModel(QObject *parent = 0);
 
 signals:
 

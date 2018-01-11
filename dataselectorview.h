@@ -15,7 +15,7 @@ class DataSelectorView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DataSelectorView(QString tableName, QString receivedFacultyName = 0, QString receivedSpecialtyName = 0, QString receivedDisciplineName = 0, QString uID = 0, QWidget *parent = nullptr);
+    explicit DataSelectorView(QString tableName, QString receivedFacultyName = 0, QString receivedSpecialtyName = 0, QString receivedDisciplineName = 0, QString uID = 0, QWidget *parent = 0);
     QTableView *myTableView;
     QVBoxLayout *externalVLayout;
     QueryRunner *runner;
@@ -25,9 +25,9 @@ public:
     QHeaderView *hHeader;
     QPushButton *createButton;
     QLabel *topLabel;
-    int faculty_id = 0;
-    int specialty_id = 0;
-    int discipline_id = 0;
+    int faculty_id;
+    int specialty_id;
+    int discipline_id;
 
 signals:
     void sendData();

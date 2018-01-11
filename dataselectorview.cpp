@@ -2,6 +2,9 @@
 
 DataSelectorView::DataSelectorView(QString tableName, QString receivedFacultyName, QString receivedSpecialtyName, QString receivedDisciplineName, QString uID, QWidget *parent) : QWidget(parent)
 {
+    faculty_id = 0;
+    specialty_id = 0;
+    discipline_id = 0;
     createUI();
     receivedID = uID;
     facultyName = receivedFacultyName;

@@ -25,7 +25,7 @@ class UniversityView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit UniversityView(QWidget *parent = nullptr);
+    explicit UniversityView(QWidget *parent = 0);
     virtual bool UniversityView::eventFilter(QObject *obj, QEvent *event);
 
 signals:
@@ -61,12 +61,12 @@ private:
     QVBoxLayout *internalVLayout;
     QVBoxLayout *externalVLayout;
     QHeaderView *hHeader;
-    QSqlTableModel *modelReference = 0;
+    QSqlTableModel *modelReference;
     QLineEdit *nameField;
     QLineEdit *shortnameField;
     QPushButton *confirmAddition;
     enum buttonState {INACTIVE,ACTIVE};
-    int addButtonState = buttonState::INACTIVE;
+    int addButtonState;
     QString universityBeforeUpdate;
     QString universityAfterUpdate;
 

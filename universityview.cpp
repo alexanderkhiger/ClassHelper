@@ -2,6 +2,8 @@
 
 UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
 {
+    modelReference = 0;
+    addButtonState = INACTIVE;
     createUI();
     getModel();
     resizeTable();
@@ -171,7 +173,7 @@ void UniversityView::deleteRecord()
 
     if (reply == QMessageBox::Yes)
     {
-        uModel->updateModel(modelReference,UniversityModel::operationType::uDELETE,universityTableView->currentIndex().row());
+        uModel->updateModel(modelReference,UniversityModel::uDELETE,universityTableView->currentIndex().row());
         deleteButton->setEnabled(0);
         confirmButton->setEnabled(0);
     }
@@ -196,7 +198,7 @@ void UniversityView::addRecord()
         return;
     }
 
-    uModel->updateModel(modelReference,UniversityModel::operationType::uINSERT,universityTableView->currentIndex().row(),nameField->text(),shortnameField->text());
+    uModel->updateModel(modelReference,UniversityModel::uINSERT,universityTableView->currentIndex().row(),nameField->text(),shortnameField->text());
     nameField->clear();
     shortnameField->clear();
     deleteButton->setEnabled(0);
@@ -243,12 +245,12 @@ void UniversityView::changeAddButtonStyle()
 {
     nameField->clear();
     shortnameField->clear();
-    if (addButtonState == buttonState::INACTIVE)
+    if (addButtonState == INACTIVE)
     {
         nameField->setVisible(1);
         shortnameField->setVisible(1);
         confirmAddition->setVisible(1);
-        addButtonState = buttonState::ACTIVE;
+        addButtonState = ACTIVE;
         addButton->setStyleSheet("background-color:gray; border-color:black; color:white");
     }
     else
@@ -256,7 +258,7 @@ void UniversityView::changeAddButtonStyle()
         nameField->setVisible(0);
         shortnameField->setVisible(0);
         confirmAddition->setVisible(0);
-        addButtonState = buttonState::INACTIVE;
+        addButtonState = INACTIVE;
         addButton->setStyleSheet("");
     }
 }

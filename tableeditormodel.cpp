@@ -7,7 +7,7 @@ TableEditorModel::TableEditorModel(QObject *parent) : QObject(parent)
 
 void TableEditorModel::updateFacultyModel(QSqlTableModel *model, operationType type, int row, QString arg1, QString arg2, QString arg3)
 {
-    if (type == TableEditorModel::fDELETE)
+    if (type == fDELETE)
     {
         model->removeRow(row);
         int check = model->submitAll();
@@ -17,7 +17,7 @@ void TableEditorModel::updateFacultyModel(QSqlTableModel *model, operationType t
             model->revertAll();
         }
     }
-    else if (type == TableEditorModel::fINSERT)
+    else if (type == fINSERT)
     {
         const int rowNumber = model->rowCount();
         model->insertRows(rowNumber, 1);
@@ -31,7 +31,7 @@ void TableEditorModel::updateFacultyModel(QSqlTableModel *model, operationType t
             model->revertAll();
         }
     }
-    else if (type == TableEditorModel::fUPDATE)
+    else if (type == fUPDATE)
     {
         int check = model->submitAll();
         if (!check)

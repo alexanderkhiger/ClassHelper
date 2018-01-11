@@ -27,7 +27,7 @@ class TableEditorView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TableEditorView(QString uID = 0, QString uName = 0, QString uShortname = 0,QWidget *parent = nullptr);
+    explicit TableEditorView(QString uID = 0, QString uName = 0, QString uShortname = 0,QWidget *parent = 0);
     virtual bool TableEditorView::eventFilter(QObject *obj, QEvent *event);
 
 
@@ -104,9 +104,9 @@ private:
     QString receivedName;
     QString receivedShortname;
     QHeaderView *hHeader;
-    QSqlTableModel *facultyModelReference = 0;
-    QSqlTableModel *chairModelReference = 0;
-    QSqlTableModel *teacherModelReference = 0;
+    QSqlTableModel *facultyModelReference;
+    QSqlTableModel *chairModelReference;
+    QSqlTableModel *teacherModelReference;
 
     QWidget *facultyWidget;
     CustomTableView *facultyTable;
@@ -118,7 +118,7 @@ private:
     QPushButton *facultyConfirmAddition;
     QPushButton *facultyAddButton;
     QPushButton *facultyDeleteButton;
-    int facultyAddButtonState = buttonState::INACTIVE;
+    int facultyAddButtonState;
     QString facultyBeforeEditing;
     QString facultyAfterEditing;
 
@@ -133,7 +133,7 @@ private:
     QPushButton *chairConfirmAddition;
     QPushButton *chairAddButton;
     QPushButton *chairDeleteButton;
-    int chairAddButtonState = buttonState::INACTIVE;
+    int chairAddButtonState;
     QString chairBeforeEditing;
     QString chairAfterEditing;
 
@@ -159,7 +159,7 @@ private:
     QPushButton *teacherConfirmAddition;
     QPushButton *teacherAddButton;
     QPushButton *teacherDeleteButton;
-    int teacherAddButtonState = buttonState::INACTIVE;
+    int teacherAddButtonState;
     QString teacherBeforeEditing;
     QString teacherAfterEditing;
 

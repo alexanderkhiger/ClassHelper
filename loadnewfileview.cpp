@@ -2,6 +2,9 @@
 
 LoadNewFileView::LoadNewFileView(QString uID, QWidget *parent) : QWidget(parent)
 {
+    directory = "";
+    buffer = "";
+    errorCount = 0;
     receivedID = uID;
     createUI();
     connect(chooseFileButton, SIGNAL(pressed()), this, SLOT(chooseFile()));

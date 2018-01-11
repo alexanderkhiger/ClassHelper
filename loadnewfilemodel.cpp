@@ -121,7 +121,7 @@ void LoadNewFileModel::processData(const QString dir)
 
         while (!stream.atEnd()&&!singleLine.contains("ИТОГИ"))
         {
-            while (singleLine[0]!="|")
+            while (singleLine[0]!='|')
                 singleLine=stream.readLine();
 
             //
@@ -176,7 +176,7 @@ void LoadNewFileModel::processData(const QString dir)
                     if (querySize == 1)
                     {
                         returnedQuery.next();
-                        facultyId = returnedQuery.value("id_fakulteta").toInt();
+                        facultyId = returnedQuery.value(0).toInt();
                     }
 
                     else if (querySize == 0)
@@ -206,7 +206,7 @@ void LoadNewFileModel::processData(const QString dir)
                     if (querySize == 1)
                     {
                         returnedQuery.next();
-                        specialtyID = returnedQuery.value("id_spec").toInt();
+                        specialtyID = returnedQuery.value(0).toInt();
                     }
 
 
@@ -264,7 +264,7 @@ void LoadNewFileModel::processData(const QString dir)
                 if (querySize == 1)
                 {
                     returnedQuery.next();
-                    streamID = returnedQuery.value("id_potoka").toInt();
+                    streamID = returnedQuery.value(0).toInt();
                 }
 
                 else if (querySize == 0)
@@ -314,7 +314,7 @@ void LoadNewFileModel::processData(const QString dir)
                 if (querySize == 1)
                 {
                     returnedQuery.next();
-                    disciplineID = returnedQuery.value("id_discipliny").toInt();
+                    disciplineID = returnedQuery.value(0).toInt();
                 }
 
                 else if (querySize == 0)

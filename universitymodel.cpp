@@ -7,7 +7,7 @@ UniversityModel::UniversityModel(QObject *parent) : QObject(parent)
 
 void UniversityModel::updateModel(QSqlTableModel *model, operationType type, int row, QString arg1, QString arg2)
 {
-    if (type == UniversityModel::uDELETE)
+    if (type == uDELETE)
     {
         model->removeRow(row);
         int check = model->submitAll();
@@ -17,7 +17,7 @@ void UniversityModel::updateModel(QSqlTableModel *model, operationType type, int
             model->revertAll();
         }
     }
-    else if (type == UniversityModel::uINSERT)
+    else if (type == uINSERT)
     {
         const int rowNumber = model->rowCount();
         model->insertRows(rowNumber, 1);

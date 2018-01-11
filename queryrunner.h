@@ -13,7 +13,7 @@ class QueryRunner : public QObject
 {
     Q_OBJECT
 public:
-    explicit QueryRunner(QObject *parent = nullptr);
+    explicit QueryRunner(QObject *parent = 0);
     QSqlDatabase db;
 
 signals:
@@ -30,7 +30,7 @@ public slots:
     void tryTableModel(const QString tableName);
 
 private:
-    int check = 0;
+    int check;
     QSqlQuery *defaultQuery;
     QSqlQueryModel *defaultModel;
     QSqlTableModel *defaultTableModel;

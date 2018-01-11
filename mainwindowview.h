@@ -39,7 +39,7 @@ class MainWindowView : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindowView(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent = nullptr);
+    explicit MainWindowView(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent = 0);
 
 public slots:
 
@@ -80,8 +80,8 @@ private:
     QueryRunner *classesRunner;
     QueryRunner *runner;
     MainWindowModel *mwModel;
-    QModelIndex savedTeacherIndex = QModelIndex();
-    QModelIndex savedClassIndex = QModelIndex();
+    QModelIndex savedTeacherIndex;
+    QModelIndex savedClassIndex;
     QWidget *parentReference;
     QSqlQueryModel *classModelReference;
     QSqlQueryModel *teacherModelReference;
@@ -183,8 +183,8 @@ private:
 
     QGridLayout *distrGrid;
 
-    int chosenClassID = 0;
-    int chosenTeacherID = 0;
+    int chosenClassID;
+    int chosenTeacherID;
 
 
 

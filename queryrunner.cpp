@@ -2,6 +2,8 @@
 
 QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
 {
+    check = 0;
+
     if (QSqlDatabase::contains("dbConnection"))
     {
         db = QSqlDatabase::database("dbConnection");
@@ -9,6 +11,7 @@ QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
     else
         db = QSqlDatabase::addDatabase("QMYSQL","dbConnection");
     defaultQuery = new QSqlQuery(db);
+//    defaultQuery = QSqlQuery(db);
     defaultModel = new QSqlQueryModel;
     defaultTableModel = new QSqlTableModel(this,db);
 }

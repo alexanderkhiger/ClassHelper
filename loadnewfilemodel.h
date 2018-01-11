@@ -19,7 +19,7 @@ class LoadNewFileModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit LoadNewFileModel(QString uID, QObject *parent = nullptr);
+    explicit LoadNewFileModel(QString uID, QObject *parent = 0);
     QString rtfToPlainText(const QString rtf);
 
 signals:

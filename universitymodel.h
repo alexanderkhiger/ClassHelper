@@ -8,7 +8,7 @@ class UniversityModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit UniversityModel(QObject *parent = nullptr);
+    explicit UniversityModel(QObject *parent = 0);
 
     enum operationType {uINSERT,uDELETE,uUPDATE};
 
