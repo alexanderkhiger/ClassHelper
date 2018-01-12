@@ -4,6 +4,7 @@ LoadNewFileModel::LoadNewFileModel(QString uID, QObject *parent) : QObject(paren
 {
     receivedID = uID;
     runner = new QueryRunner;
+    connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
 }
 
 QString LoadNewFileModel::rtfToPlainText(const QString rtf)
@@ -73,6 +74,12 @@ void LoadNewFileModel::convertRtf(const QString dir)
         }
     }
 }
+
+void LoadNewFileModel::setData(QList<double> list)
+{
+    myList = list;
+}
+
 
 void LoadNewFileModel::processData(const QString dir)
 {
@@ -162,7 +169,7 @@ void LoadNewFileModel::processData(const QString dir)
                 //______________________________________________________________вставка специальности начата_______________________________________________
 
                 int facultyId = 1;
-                QSqlQuery returnedQuery;
+
                 int querySize = 5;
 
 
@@ -170,13 +177,11 @@ void LoadNewFileModel::processData(const QString dir)
 
 
                     query = QString("SELECT id_fakulteta FROM fakultet WHERE nazvanie_fakulteta = '%1'").arg(facultyName);
-                    returnedQuery = runner->tryQuery(query);
-                    querySize = returnedQuery.size();
+                    querySize = runner->tryQuery(query,0,1);
 
                     if (querySize == 1)
                     {
-                        returnedQuery.next();
-                        facultyId = returnedQuery.value(0).toInt();
+                        facultyId = int(myList.value(0));
                     }
 
                     else if (querySize == 0)
@@ -199,14 +204,12 @@ void LoadNewFileModel::processData(const QString dir)
                     query = QString("SELECT id_spec FROM specialnost WHERE nazvanie_spec = '%1' AND id_fakulteta = %2").arg(specialty).arg(facultyId);
                     //                delete runner;
                     //                runner = new QueryRunner;
-                    returnedQuery = runner->tryQuery(query);
-                    querySize = returnedQuery.size();
+                    querySize = runner->tryQuery(query,0,1);
                     int specialtyID = 0;
 
                     if (querySize == 1)
                     {
-                        returnedQuery.next();
-                        specialtyID = returnedQuery.value(0).toInt();
+                        specialtyID = int(myList.value(0));
                     }
 
 
@@ -257,14 +260,12 @@ void LoadNewFileModel::processData(const QString dir)
 
 
                 query = QString("SELECT id_potoka FROM potok WHERE kurs = %1 AND id_spec = %2").arg(year).arg(specialtyID);
-                returnedQuery = runner->tryQuery(query);
-                querySize = returnedQuery.size();
+                querySize = runner->tryQuery(query,0,1);
                 int streamID = 0;
 
                 if (querySize == 1)
                 {
-                    returnedQuery.next();
-                    streamID = returnedQuery.value(0).toInt();
+                    streamID = int(myList.value(0));
                 }
 
                 else if (querySize == 0)
@@ -275,9 +276,9 @@ void LoadNewFileModel::processData(const QString dir)
                     runner->tryQuery(query);
 
                     query = QString("SELECT LAST_INSERT_ID() AS id");
-                    returnedQuery = runner->tryQuery(query);
-                    returnedQuery.next();
-                    streamID = returnedQuery.value(0).toInt();
+                    runner->tryQuery(query,0,1);
+
+                    streamID = int(myList.value(0));
 
                 }
 
@@ -307,14 +308,12 @@ void LoadNewFileModel::processData(const QString dir)
                 //______________________________________________________________вставка дисциплины начата_______________________________________________
 
                 query = QString("SELECT id_discipliny FROM disciplina WHERE nazvanie_discipliny = '%1'").arg(disciplineName);
-                returnedQuery = runner->tryQuery(query);
-                querySize = returnedQuery.size();
+                querySize = runner->tryQuery(query,0,1);
                 int disciplineID = 0;
 
                 if (querySize == 1)
                 {
-                    returnedQuery.next();
-                    disciplineID = returnedQuery.value(0).toInt();
+                    disciplineID = int(myList.value(0));
                 }
 
                 else if (querySize == 0)
@@ -403,7 +402,6 @@ void LoadNewFileModel::processData(const QString dir)
                     reportType = tr("Госэкзамен");
                 }
 
-                //
                // QString streamName = specialty + tr(" (Переименуйте)");
                 query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                 "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"

@@ -34,6 +34,7 @@ public slots:
     void finishProcessing();
     void getInformation(const QString info);
     void getProgress(const int percentage);
+    void getError(QSqlError error);
 
 private:
 

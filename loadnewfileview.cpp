@@ -113,6 +113,7 @@ void LoadNewFileView::startProcessing()
     connect(processor,SIGNAL(processingFinished()),this,SLOT(finishProcessing()));
     connect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     connect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
+    connect(processor->runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
     processor->processData(directory);
 //    processor->convertRtf(directory);
 }
@@ -125,4 +126,10 @@ void LoadNewFileView::getInformation(const QString info)
 void LoadNewFileView::getProgress(const int percentage)
 {
     processingProgress->setValue(percentage);
+}
+
+void LoadNewFileView::getError(QSqlError error)
+{
+    QMessageBox::StandardButton errorMsg;
+    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
 }

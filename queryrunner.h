@@ -8,6 +8,8 @@
 #include <QSqlQueryModel>
 #include <QSqlTableModel>
 #include <QDebug>
+#include <QSqlRecord>
+#include <QList>
 
 class QueryRunner : public QObject
 {
@@ -23,15 +25,16 @@ signals:
     void querySuccess();
     void querySuccessReturnModel(QSqlQueryModel *model);
     void returnTableModel(QSqlTableModel *model);
+    void returnValues(QList<double> myList);
 
 public slots:
-    QSqlQuery tryQuery(const QString query, bool isModelNeeded = 0);
+    int tryQuery(const QString query, bool isModelNeeded = 0, bool isDataNeeded = 0);
     void tryAuth(const QString login, const QString password, const QString database, const QString hostname);
     void tryTableModel(const QString tableName);
 
 private:
     int check;
-    QSqlQuery *defaultQuery;
+    QSqlQuery defaultQuery;
     QSqlQueryModel *defaultModel;
     QSqlTableModel *defaultTableModel;
 };

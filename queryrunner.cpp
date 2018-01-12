@@ -10,8 +10,8 @@ QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
     }
     else
         db = QSqlDatabase::addDatabase("QMYSQL","dbConnection");
-    defaultQuery = new QSqlQuery(db);
-//    defaultQuery = QSqlQuery(db);
+//    defaultQuery = new QSqlQuery(db);
+    defaultQuery = QSqlQuery(db);
     defaultModel = new QSqlQueryModel;
     defaultTableModel = new QSqlTableModel(this,db);
 }
@@ -37,8 +37,9 @@ void QueryRunner::tryAuth(const QString login, const QString password, const QSt
     }
 }
 
-QSqlQuery QueryRunner::tryQuery(const QString query, bool isModelNeeded)
+int QueryRunner::tryQuery(const QString query, bool isModelNeeded, bool isDataNeeded)
 {
+    QList<double> *myList = new QList<double>;
     if (isModelNeeded)
     {
         defaultModel->setQuery(query,db);
@@ -47,18 +48,31 @@ QSqlQuery QueryRunner::tryQuery(const QString query, bool isModelNeeded)
 
     else
     {
-        check = defaultQuery->exec(query);
+        check = defaultQuery.exec(query);
         if(check)
         {
             emit querySuccess();
+            if (isDataNeeded)
+            {
+                while (defaultQuery.next())
+                {
+                    for (int i = 0; i < defaultQuery.record().count(); i++)
+                    {
+                        myList->append(defaultQuery.value(i).toDouble());
+                    }
+                }
+                emit returnValues(*myList);
+            }
         }
         else
         {
-            emit queryError(defaultQuery->lastError());
+            emit queryError(defaultQuery.lastError());
         }
-        return *defaultQuery;
+        return defaultQuery.size();
     }
+    return -1;
 }
+
 
 void QueryRunner::tryTableModel(const QString tableName)
 {

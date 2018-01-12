@@ -14,6 +14,10 @@
 #include <QString>
 #include <QStringList>
 #include <QDebug>
+#include <QList>
+#include <QSqlError>
+#include <QMessageBox>
+
 
 class LoadNewFileModel : public QObject
 {
@@ -21,6 +25,7 @@ class LoadNewFileModel : public QObject
 public:
     explicit LoadNewFileModel(QString uID, QObject *parent = 0);
     QString rtfToPlainText(const QString rtf);
+    QueryRunner *runner;
 
 signals:
     void sendProgress(const int percentage);
@@ -30,11 +35,12 @@ signals:
 public slots:
     void processData(const QString dir);
     void convertRtf(const QString dir);
+    void setData(QList<double> list);
 
 private:
+    QList<double> myList;
     QString receivedID;
     QString singleLine;
-    QueryRunner *runner;
     QString query;
     QStringList streamInfo;
     DataSelectorView *mySelector;

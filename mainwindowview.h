@@ -56,9 +56,11 @@ public slots:
     void setDiffModel(QSqlQueryModel *model);
     void getError(QSqlError error);
     void distributeHours();
+    void setData(QList<double> list);
 
 private:
 
+    QList<double> myList;
     CustomDoubleValidator *val1;
     CustomDoubleValidator *val2;
     CustomDoubleValidator *val3;

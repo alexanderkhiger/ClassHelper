@@ -28,7 +28,7 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     connect(classesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickClassUpdate(QModelIndex)));
     connect(teachersList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickTeacherUpdate(QModelIndex)));
     connect(newFileAction, SIGNAL(triggered(bool)), this, SLOT(newFile()));
-
+    connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
     TableEditorView *frm = new TableEditorView(receivedID,receivedName,receivedShortname);
     frm->show();
 }
@@ -67,9 +67,11 @@ void MainWindowView::createUI()
     connect(teachersRunner,SIGNAL(querySuccessReturnModel(QSqlQueryModel*)),this,SLOT(setTeachersModel(QSqlQueryModel*)));
     connect(classesRunner,SIGNAL(querySuccessReturnModel(QSqlQueryModel*)),this,SLOT(setClassesModel(QSqlQueryModel*)));
     //classesRunner->tryQuery("Select nazvanie_discipliny from disciplina",1);
-    classesRunner->tryQuery("Select id_zapisi as 'ID',concat(nazvanie_potoka,' | ',nazvanie_discipliny) as 'Название', lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
+    classesRunner->tryQuery(QString("Select id_zapisi as 'ID',concat(nazvanie_potoka,' | ',nazvanie_discipliny) as 'Название', lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                             "zachet_chasov,ekzamen_chasov,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
-                            "asp_dokt_chasov from zanyatost left join disciplina on zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka",1);
+                            "asp_dokt_chasov from zanyatost left join disciplina on zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
+                                    "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
+                                    "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 ORDER BY id_zapisi").arg(receivedID),1);
     teachersRunner->tryQuery("Select id_prep as 'ID',concat(familiya,' ',imya,' ',otchestvo) as 'Имя' from prepodavatel",1);
 
     classesList->resizeColumnsToContents();
@@ -516,6 +518,11 @@ void MainWindowView::distributeHours()
     doubleClickTeacherUpdate(savedTeacherIndex);
 }
 
+void MainWindowView::setData(QList<double> list)
+{
+    myList = list;
+}
+
 
 void MainWindowView::checkFields()
 {
@@ -538,59 +545,42 @@ void MainWindowView::doubleClickClassUpdate(const QModelIndex index)
     QString query = QString("Select id_zapisi, lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                             "zachet_chasov,ekzamen_chasov,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
                             "asp_dokt_chasov from zanyatost where id_zapisi = %1").arg(chosenClassID);
-    QSqlQuery myQuery = runner->tryQuery(query);
-    myQuery.next();
+    runner->tryQuery(query,0,1);
 
-//    classesTextEdit->append("Часы лекций: "+(classModelReference->data(classModelReference->index(index.row(),2,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы семинаров: "+(classModelReference->data(classModelReference->index(index.row(),3,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы лабораторных: "+(classModelReference->data(classModelReference->index(index.row(),4,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы контрольных: "+(classModelReference->data(classModelReference->index(index.row(),5,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы консультаций: "+(classModelReference->data(classModelReference->index(index.row(),6,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы зачета: "+(classModelReference->data(classModelReference->index(index.row(),7,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы экзамена: "+(classModelReference->data(classModelReference->index(index.row(),8,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы курсовых: "+(classModelReference->data(classModelReference->index(index.row(),9,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы учебной практики: "+(classModelReference->data(classModelReference->index(index.row(),10,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы произв. практики: "+(classModelReference->data(classModelReference->index(index.row(),11,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы преддипл. практики: "+(classModelReference->data(classModelReference->index(index.row(),12,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы вкл: "+(classModelReference->data(classModelReference->index(index.row(),13,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы обз. лекций: "+(classModelReference->data(classModelReference->index(index.row(),14,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы ГЭК: "+(classModelReference->data(classModelReference->index(index.row(),15,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы НИРС: "+(classModelReference->data(classModelReference->index(index.row(),16,QModelIndex())).toString()));
-//    classesTextEdit->append("Часы асп/докторских: "+(classModelReference->data(classModelReference->index(index.row(),17,QModelIndex())).toString()));
 
-    val1->setTop(myQuery.value(1).toDouble());
-    val2->setTop(myQuery.value(2).toDouble());
-    val3->setTop(myQuery.value(3).toDouble());
-    val4->setTop(myQuery.value(4).toDouble());
-    val5->setTop(myQuery.value(5).toDouble());
-    val6->setTop(myQuery.value(6).toDouble());
-    val7->setTop(myQuery.value(7).toDouble());
-    val8->setTop(myQuery.value(8).toDouble());
-    val9->setTop(myQuery.value(9).toDouble());
-    val10->setTop(myQuery.value(10).toDouble());
-    val11->setTop(myQuery.value(11).toDouble());
-    val12->setTop(myQuery.value(12).toDouble());
-    val13->setTop(myQuery.value(13).toDouble());
-    val14->setTop(myQuery.value(14).toDouble());
-    val15->setTop(myQuery.value(15).toDouble());
-    val16->setTop(myQuery.value(16).toDouble());
+    val1->setTop(myList.value(1));
+    val2->setTop(myList.value(2));
+    val3->setTop(myList.value(3));
+    val4->setTop(myList.value(4));
+    val5->setTop(myList.value(5));
+    val6->setTop(myList.value(6));
+    val7->setTop(myList.value(7));
+    val8->setTop(myList.value(8));
+    val9->setTop(myList.value(9));
+    val10->setTop(myList.value(10));
+    val11->setTop(myList.value(11));
+    val12->setTop(myList.value(12));
+    val13->setTop(myList.value(13));
+    val14->setTop(myList.value(14));
+    val15->setTop(myList.value(15));
+    val16->setTop(myList.value(16));
 
-    classesTextEdit->append("Часы лекций: "+myQuery.value(1).toString());
-    classesTextEdit->append("Часы семинаров: "+myQuery.value(2).toString());
-    classesTextEdit->append("Часы лабораторных: "+myQuery.value(3).toString());
-    classesTextEdit->append("Часы контрольных: "+myQuery.value(4).toString());
-    classesTextEdit->append("Часы консультаций: "+myQuery.value(5).toString());
-    classesTextEdit->append("Часы зачета: "+myQuery.value(6).toString());
-    classesTextEdit->append("Часы экзамена: "+myQuery.value(7).toString());
-    classesTextEdit->append("Часы курсовых: "+myQuery.value(8).toString());
-    classesTextEdit->append("Часы учебной практики: "+myQuery.value(9).toString());
-    classesTextEdit->append("Часы произв. практики: "+myQuery.value(10).toString());
-    classesTextEdit->append("Часы преддипл. практики: "+myQuery.value(11).toString());
-    classesTextEdit->append("Часы вкл: "+myQuery.value(12).toString());
-    classesTextEdit->append("Часы обз. лекций: "+myQuery.value(13).toString());
-    classesTextEdit->append("Часы ГЭК: "+myQuery.value(14).toString());
-    classesTextEdit->append("Часы НИРС: "+myQuery.value(15).toString());
-    classesTextEdit->append("Часы асп/докторских: "+myQuery.value(16).toString());
+    classesTextEdit->append("Часы лекций: "+QString::number(myList.value(1)));
+    classesTextEdit->append("Часы семинаров: "+QString::number(myList.value(2)));
+    classesTextEdit->append("Часы лабораторных: "+QString::number(myList.value(3)));
+    classesTextEdit->append("Часы контрольных: "+QString::number(myList.value(4)));
+    classesTextEdit->append("Часы консультаций: "+QString::number(myList.value(5)));
+    classesTextEdit->append("Часы зачета: "+QString::number(myList.value(6)));
+    classesTextEdit->append("Часы экзамена: "+QString::number(myList.value(7)));
+    classesTextEdit->append("Часы курсовых: "+QString::number(myList.value(8)));
+    classesTextEdit->append("Часы учебной практики: "+QString::number(myList.value(9)));
+    classesTextEdit->append("Часы произв. практики: "+QString::number(myList.value(10)));
+    classesTextEdit->append("Часы преддипл. практики: "+QString::number(myList.value(11)));
+    classesTextEdit->append("Часы вкл: "+QString::number(myList.value(12)));
+    classesTextEdit->append("Часы обз. лекций: "+QString::number(myList.value(13)));
+    classesTextEdit->append("Часы ГЭК: "+QString::number(myList.value(14)));
+    classesTextEdit->append("Часы НИРС: "+QString::number(myList.value(15)));
+    classesTextEdit->append("Часы асп/докторских: "+QString::number(myList.value(16)));
 
     MainWindowView::checkFields();
 }
@@ -638,25 +628,25 @@ void MainWindowView::doubleClickTeacherUpdate(const QModelIndex index)
                             "sum(raspredelenie.gek_chasov) as N,"
                             "sum(raspredelenie.nirs_chasov) as O,"
                             "sum(raspredelenie.asp_dokt_chasov) as P FROM raspredelenie WHERE id_prep = %1 group by id_prep) as tab;").arg(chosenTeacherID);
-    QSqlQuery myQuery = runner->tryQuery(query);
+    runner->tryQuery(query,0,1);
 
-    myQuery.next();
-    teachersTextEdit->append("Часы лекций: "+myQuery.value(1).toString());
-    teachersTextEdit->append("Часы семинаров: "+myQuery.value(2).toString());
-    teachersTextEdit->append("Часы лабораторных: "+myQuery.value(3).toString());
-    teachersTextEdit->append("Часы контрольных: "+myQuery.value(4).toString());
-    teachersTextEdit->append("Часы консультаций: "+myQuery.value(5).toString());
-    teachersTextEdit->append("Часы зачета: "+myQuery.value(6).toString());
-    teachersTextEdit->append("Часы экзамена: "+myQuery.value(7).toString());
-    teachersTextEdit->append("Часы курсовых: "+myQuery.value(8).toString());
-    teachersTextEdit->append("Часы учебной практики: "+myQuery.value(9).toString());
-    teachersTextEdit->append("Часы произв. практики: "+myQuery.value(10).toString());
-    teachersTextEdit->append("Часы преддипл. практики: "+myQuery.value(11).toString());
-    teachersTextEdit->append("Часы вкл: "+myQuery.value(12).toString());
-    teachersTextEdit->append("Часы обз. лекций: "+myQuery.value(13).toString());
-    teachersTextEdit->append("Часы ГЭК: "+myQuery.value(14).toString());
-    teachersTextEdit->append("Часы НИРС: "+myQuery.value(15).toString());
-    teachersTextEdit->append("Часы асп/докторских: "+myQuery.value(16).toString());
+    teachersTextEdit->append("Часы лекций: "+QString::number(myList.value(1)));
+    teachersTextEdit->append("Часы семинаров: "+QString::number(myList.value(2)));
+    teachersTextEdit->append("Часы лабораторных: "+QString::number(myList.value(3)));
+    teachersTextEdit->append("Часы контрольных: "+QString::number(myList.value(4)));
+    teachersTextEdit->append("Часы консультаций: "+QString::number(myList.value(5)));
+    teachersTextEdit->append("Часы зачета: "+QString::number(myList.value(6)));
+    teachersTextEdit->append("Часы экзамена: "+QString::number(myList.value(7)));
+    teachersTextEdit->append("Часы курсовых: "+QString::number(myList.value(8)));
+    teachersTextEdit->append("Часы учебной практики: "+QString::number(myList.value(9)));
+    teachersTextEdit->append("Часы произв. практики: "+QString::number(myList.value(10)));
+    teachersTextEdit->append("Часы преддипл. практики: "+QString::number(myList.value(11)));
+    teachersTextEdit->append("Часы вкл: "+QString::number(myList.value(12)));
+    teachersTextEdit->append("Часы обз. лекций: "+QString::number(myList.value(13)));
+    teachersTextEdit->append("Часы ГЭК: "+QString::number(myList.value(14)));
+    teachersTextEdit->append("Часы НИРС: "+QString::number(myList.value(15)));
+    teachersTextEdit->append("Часы асп/докторских: "+QString::number(myList.value(16)));
+
     MainWindowView::checkFields();
 }
 

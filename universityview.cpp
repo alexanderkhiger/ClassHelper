@@ -18,6 +18,8 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     connect(this,SIGNAL(updateError(QSqlError)),this,SLOT(getError(QSqlError)));
     connect(universityTableView->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(editRecord()));
     connect(universityTableView->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(turnOnButtons()));
+    connect(universityTableView->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFrom(QItemSelection)));
+    connect(universityTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedTo(QModelIndex)));
 }
 
 bool UniversityView::eventFilter(QObject *obj, QEvent *event)
@@ -147,8 +149,7 @@ void UniversityView::setModel(QSqlTableModel *model)
     modelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     modelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
     universityTableView->setModel(model);
-    connect(universityTableView->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFrom(QItemSelection)));
-    connect(universityTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedTo(QModelIndex)));
+
 }
 
 void UniversityView::deleteRecord()

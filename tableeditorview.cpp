@@ -529,7 +529,7 @@ void TableEditorView::setFacultyModel(QSqlTableModel *model)
     facultyModelReference->setHeaderData(3,Qt::Horizontal,tr("ID университета"));
     facultyTable->setModel(model);
     connect(facultyTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
-    connect(facultyTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedToData(QModelIndex)));
+    connect(facultyTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
 }
 
 void TableEditorView::getChairModel()
@@ -548,7 +548,7 @@ void TableEditorView::setChairModel(QSqlTableModel *model)
     chairModelReference->setHeaderData(3,Qt::Horizontal,tr("ID факультета"));
     chairTable->setModel(model);
     connect(chairTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
-    connect(chairTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedToData(QModelIndex)));
+    connect(chairTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
 }
 
 void TableEditorView::getTeacherModel()
@@ -571,7 +571,7 @@ void TableEditorView::setTeacherModel(QSqlTableModel *model)
     teacherModelReference->setHeaderData(7,Qt::Horizontal,tr("Ученое звание"));
     teacherTable->setModel(model);
     connect(teacherTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
-    connect(teacherTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),this,SLOT(changedToData(QModelIndex)));
+    connect(teacherTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
 }
 
 void TableEditorView::changedFromData(const QItemSelection &selected)
