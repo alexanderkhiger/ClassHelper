@@ -486,6 +486,62 @@ void LoadNewFileModel::processData(const QString dir)
                 //                qDebug() << totalHours;
                 singleLine=stream.readLine();
                 singleLine=stream.readLine();
+
+
+                reportType = "";
+
+                if (zExamHours == 0 && examHours == 0 && gExamHours == 0)
+                {
+                    reportType = tr("Нет отчетности");
+                }
+                else if (zExamHours != 0 && examHours == 0 && gExamHours == 0)
+                {
+                    reportType = tr("Зачет");
+                }
+                else if (zExamHours == 0 && examHours != 0 && gExamHours == 0)
+                {
+                    reportType = tr("Экзамен");
+                }
+                else if (zExamHours == 0 && examHours == 0 && gExamHours != 0)
+                {
+                    reportType = tr("Госэкзамен");
+                }
+
+                query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
+                                "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
+                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24)")
+                        .arg(streamID)
+                        .arg(disciplineID)
+                        .arg(reportType)
+                        .arg(weeks)
+                        .arg(lectureHours)
+                        .arg(seminarHours)
+                        .arg(labHours)
+                        .arg(kontHours)
+                        .arg(consultEx+consultTek)
+                        .arg(zExamHours)
+                        .arg(examHours)
+                        .arg(semester)
+                        .arg(qualHours)
+                        .arg(practiceHours)
+                        .arg(0)
+                        .arg(0)
+                        .arg(0)
+                        .arg(0)
+                        .arg(0)
+                        .arg(0)
+                        .arg(0)
+                        .arg(lectureMultiplier)
+                        .arg(seminarMultiplier)
+                        .arg(labMultiplier);
+
+
+
+                runner->tryQuery(query);
+
+
+
+
                 //
 
             }

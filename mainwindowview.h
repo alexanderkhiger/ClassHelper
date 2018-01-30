@@ -14,7 +14,6 @@
 #include <QTableView>
 #include <QModelIndex>
 #include "customdoublevalidator.h"
-
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QMimeData>
@@ -33,6 +32,7 @@
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QAction>
+#include <QToolButton>
 
 
 class MainWindowView : public QMainWindow
@@ -46,6 +46,7 @@ public slots:
     void clearParameters();
     void doubleClickClassUpdate(const QModelIndex index);
     void doubleClickTeacherUpdate(const QModelIndex index);
+    void updateDataForSelectedClass();
     void checkFields();
     void newFile();
     void back();
@@ -57,9 +58,13 @@ public slots:
     void getError(QSqlError error);
     void distributeHours();
     void setData(QList<double> list);
+    void distributeAllHours();
 
 private:
 
+    QList<double> totalHoursDistributedList;
+    QList<double> hoursDistributedForSelectedList;
+    QList<double> totalHoursLeftList;
     QList<double> myList;
     CustomDoubleValidator *val1;
     CustomDoubleValidator *val2;
@@ -129,8 +134,6 @@ private:
     QLabel *classesTextEditHeader;
     QLabel *teachersTextEditHeader;
 
-    QTextEdit *classesTextEdit;
-    QTextEdit *teachersTextEdit;
 
     QWidget *myWorkField;
 
@@ -181,13 +184,82 @@ private:
     QLabel *nirsLabel;
     QLabel *aspLabel;
 
+    QToolButton *lecButtonAdd;
+    QToolButton *semButtonAdd;
+    QToolButton *labButtonAdd;
+    QToolButton *contButtonAdd;
+    QToolButton *consButtonAdd;
+    QToolButton *zachButtonAdd;
+    QToolButton *examButtonAdd;
+    QToolButton *kursButtonAdd;
+    QToolButton *uchPrButtonAdd;
+    QToolButton *proizvPrButtonAdd;
+    QToolButton *predPrButtonAdd;
+    QToolButton *vklButtonAdd;
+    QToolButton *obzButtonAdd;
+    QToolButton *gekButtonAdd;
+    QToolButton *nirsButtonAdd;
+    QToolButton *aspButtonAdd;
+
+    QLabel *lecLabelAdd;
+    QLabel *semLabelAdd;
+    QLabel *labLabelAdd;
+    QLabel *contLabelAdd;
+    QLabel *consLabelAdd;
+    QLabel *zachLabelAdd;
+    QLabel *examLabelAdd;
+    QLabel *kursLabelAdd;
+    QLabel *uchPrLabelAdd;
+    QLabel *proizvPrLabelAdd;
+    QLabel *predPrLabelAdd;
+    QLabel *vklLabelAdd;
+    QLabel *obzLabelAdd;
+    QLabel *gekLabelAdd;
+    QLabel *nirsLabelAdd;
+    QLabel *aspLabelAdd;
+
+    QToolButton *lecButtonRemove;
+    QToolButton *semButtonRemove;
+    QToolButton *labButtonRemove;
+    QToolButton *contButtonRemove;
+    QToolButton *consButtonRemove;
+    QToolButton *zachButtonRemove;
+    QToolButton *examButtonRemove;
+    QToolButton *kursButtonRemove;
+    QToolButton *uchPrButtonRemove;
+    QToolButton *proizvPrButtonRemove;
+    QToolButton *predPrButtonRemove;
+    QToolButton *vklButtonRemove;
+    QToolButton *obzButtonRemove;
+    QToolButton *gekButtonRemove;
+    QToolButton *nirsButtonRemove;
+    QToolButton *aspButtonRemove;
+
+    QLabel *lecLabelRemove;
+    QLabel *semLabelRemove;
+    QLabel *labLabelRemove;
+    QLabel *contLabelRemove;
+    QLabel *consLabelRemove;
+    QLabel *zachLabelRemove;
+    QLabel *examLabelRemove;
+    QLabel *kursLabelRemove;
+    QLabel *uchPrLabelRemove;
+    QLabel *proizvPrLabelRemove;
+    QLabel *predPrLabelRemove;
+    QLabel *vklLabelRemove;
+    QLabel *obzLabelRemove;
+    QLabel *gekLabelRemove;
+    QLabel *nirsLabelRemove;
+    QLabel *aspLabelRemove;
 
 
     QGridLayout *distrGrid;
+    QGridLayout *hoursLeftGrid;
+    QGridLayout *hoursDistrGrid;
 
     int chosenClassID;
     int chosenTeacherID;
-
+    int currentSemester;
 
 
 
