@@ -1,6 +1,6 @@
 #include "dataselectorview.h"
 
-DataSelectorView::DataSelectorView(QString tableName, QString receivedFacultyName, QString receivedSpecialtyName, QString receivedDisciplineName, QString uID, QWidget *parent) : QWidget(parent)
+DataSelectorView::DataSelectorView(QString tableName, QString receivedFacultyName, QString receivedSpecialtyName, QString receivedDisciplineName, QString uID, QWidget *parent, int alwaysInsert) : QWidget(parent)
 {
     faculty_id = 0;
     specialty_id = 0;
@@ -37,6 +37,12 @@ DataSelectorView::DataSelectorView(QString tableName, QString receivedFacultyNam
         runner->tryTableModel(tableName);
     }
 
+
+    if (alwaysInsert == 1)
+    {
+        createButtonClicked();
+    }
+
 }
 
 void DataSelectorView::createUI()
@@ -62,6 +68,7 @@ void DataSelectorView::createUI()
 void DataSelectorView::setFacultyModel(QSqlTableModel *model)
 {
     facultyModelReference = model;
+    facultyModelReference->setFilter(QString("id_universiteta = %1").arg(receivedID.toInt()));
     facultyModelReference->setHeaderData(0,Qt::Horizontal,tr("ID факультета"));
     facultyModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     facultyModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
@@ -131,7 +138,6 @@ void DataSelectorView::setData(QModelIndex index)
 void DataSelectorView::createButtonClicked()
 {
     if (facultyName != "noValue")
-
     {
         int rowNumber = facultyModelReference->rowCount();
         facultyModelReference->insertRows(rowNumber, 1);
@@ -140,6 +146,7 @@ void DataSelectorView::createButtonClicked()
         int check = facultyModelReference->submitAll();
         if (!check)
         {
+                    qDebug() << facultyModelReference->lastError().text();
             facultyModelReference->revertAll();
         }
         else

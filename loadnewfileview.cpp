@@ -8,8 +8,6 @@ LoadNewFileView::LoadNewFileView(QString uID, QWidget *parent) : QWidget(parent)
     receivedID = uID;
     createUI();
     connect(chooseFileButton, SIGNAL(pressed()), this, SLOT(chooseFile()));
-    connect(exitButton, SIGNAL(pressed()), this, SLOT(close()));
-    connect(clearButton, SIGNAL(pressed()), this, SLOT(clear()));
     connect(startButton, SIGNAL(pressed()), this, SLOT(startProcessing()));
 }
 
@@ -18,19 +16,19 @@ void LoadNewFileView::createUI()
     this->setMinimumHeight(250);
     this->resize(300,250);
 
+    skipAllCheck = new QCheckBox;
+    skipAllCheck->setText(tr("Добавить все, как есть"));
+
     chooseFileButton = new QPushButton(tr("Выбрать файл"));
     startButton = new QPushButton(tr("Начать обработку"));
-    exitButton = new QPushButton(tr("Назад"));
-    clearButton = new QPushButton(tr("Очистить"));
-    buttonBox = new QDialogButtonBox;
-
-    buttonBox->addButton(clearButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(exitButton, QDialogButtonBox::RejectRole);
 
     startButton->setEnabled(false);
 
     chooseFileButton->setMinimumWidth(150);
     startButton->setMinimumWidth(150);
+
+    chooseFileButton->setMaximumWidth(150);
+    startButton->setMaximumWidth(150);
 
     chosenFile = new QLineEdit;
     chosenFile->setReadOnly(true);
@@ -58,6 +56,9 @@ void LoadNewFileView::createUI()
     topHLayout->addWidget(chooseFileButton);
     topHLayout->addWidget(chosenFile);
     middleHLayout->addWidget(startButton);
+
+    middleHLayout->addWidget(skipAllCheck);
+
     middleHLayout->addWidget(processingProgress);
     bottomHLayout->addWidget(errorCounterLabel);
     bottomHLayout->addWidget(errorCounterLE);
@@ -65,7 +66,6 @@ void LoadNewFileView::createUI()
     vLayout->addLayout(middleHLayout);
     vLayout->addWidget(actionsLog);
     vLayout->addLayout(bottomHLayout);
-    vLayout->addWidget(buttonBox);
 
     this->setLayout(vLayout);
 
@@ -102,10 +102,13 @@ void LoadNewFileView::finishProcessing()
     delete processor;
     QMessageBox::StandardButton infoMsg;
     infoMsg = QMessageBox::information(this,tr("Оповещение"),tr("Обработка завершена!"),QMessageBox::Ok);
+    chooseFileButton->setEnabled(1);
+    startButton->setEnabled(1);
+    skipAllCheck->setEnabled(1);
 }
 void LoadNewFileView::startProcessing()
 {
-    processor = new LoadNewFileModel(receivedID,this);
+    processor = new LoadNewFileModel(receivedID,skipAllCheck->isChecked(),this);
 
     disconnect(processor,SIGNAL(processingFinished()),this,SLOT(finishProcessing()));
     disconnect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
@@ -114,7 +117,17 @@ void LoadNewFileView::startProcessing()
     connect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     connect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
     connect(processor->runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
+
+    errorCount=0;
+    actionsLog->clear();
+    chooseFileButton->setEnabled(0);
+    startButton->setEnabled(0);
+    skipAllCheck->setEnabled(0);
+    errorCounterLE->setText(QString::number(errorCount));
+
     processor->processData(directory);
+
+
 //    processor->convertRtf(directory);
 }
 
@@ -130,6 +143,10 @@ void LoadNewFileView::getProgress(const int percentage)
 
 void LoadNewFileView::getError(QSqlError error)
 {
-    QMessageBox::StandardButton errorMsg;
-    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+    actionsLog->append(error.text());
+    errorCount++;
+    errorCounterLE->setText(QString::number(errorCount));
+
+//    QMessageBox::StandardButton errorMsg;
+//    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
 }

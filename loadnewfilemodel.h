@@ -23,7 +23,7 @@ class LoadNewFileModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit LoadNewFileModel(QString uID, QObject *parent = 0);
+    explicit LoadNewFileModel(QString uID, int skipAll = 0, QObject *parent = 0);
     QString rtfToPlainText(const QString rtf);
     QueryRunner *runner;
 
@@ -38,6 +38,7 @@ public slots:
     void setData(QList<double> list);
 
 private:
+    int isSkipping;
     QList<double> myList;
     QString receivedID;
     QString singleLine;

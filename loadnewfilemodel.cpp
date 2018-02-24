@@ -1,8 +1,9 @@
 #include "loadnewfilemodel.h"
 
-LoadNewFileModel::LoadNewFileModel(QString uID, QObject *parent) : QObject(parent)
+LoadNewFileModel::LoadNewFileModel(QString uID, int skipAll, QObject *parent) : QObject(parent)
 {
     receivedID = uID;
+    isSkipping = skipAll;
     runner = new QueryRunner;
     connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
 }
@@ -176,7 +177,7 @@ void LoadNewFileModel::processData(const QString dir)
                 if (facultyName != "")
 
 
-                    query = QString("SELECT id_fakulteta FROM fakultet WHERE nazvanie_fakulteta = '%1'").arg(facultyName);
+                    query = QString("SELECT id_fakulteta FROM fakultet WHERE nazvanie_fakulteta = '%1' AND id_universiteta = %2").arg(facultyName).arg(receivedID.toInt());
                     querySize = runner->tryQuery(query,0,1);
 
                     if (querySize == 1)
@@ -184,7 +185,7 @@ void LoadNewFileModel::processData(const QString dir)
                         facultyId = int(myList.value(0));
                     }
 
-                    else if (querySize == 0)
+                    else if (querySize >= 0 && isSkipping == 0)
                     {
                         mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID);
                         mySelector->show();
@@ -195,6 +196,14 @@ void LoadNewFileModel::processData(const QString dir)
                         //                    connect(&timer,SIGNAL(timeout()),&loop,SLOT(quit()));
                         //                    timer.start();
                         loop.exec();
+                        facultyId = mySelector->faculty_id;
+                        mySelector->close();
+                        delete mySelector;
+                    }
+
+                    else if (querySize >= 0 && isSkipping == 1)
+                    {
+                        mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID,0,1);
                         facultyId = mySelector->faculty_id;
                         mySelector->close();
                         delete mySelector;
@@ -213,13 +222,21 @@ void LoadNewFileModel::processData(const QString dir)
                     }
 
 
-                    else if (querySize >= 0)
+                    else if (querySize >= 0 && isSkipping == 0)
                     {
                         mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId));
                         mySelector->show();
                         QEventLoop loop;
                         connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
                         loop.exec();
+                        specialtyID = mySelector->specialty_id;
+                        mySelector->close();
+                        delete mySelector;
+                    }
+
+                    else if (querySize >= 0 && isSkipping == 1)
+                    {
+                        mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId),0,1);
                         specialtyID = mySelector->specialty_id;
                         mySelector->close();
                         delete mySelector;
@@ -316,7 +333,7 @@ void LoadNewFileModel::processData(const QString dir)
                     disciplineID = int(myList.value(0));
                 }
 
-                else if (querySize == 0)
+                else if (querySize >= 0 && isSkipping == 0)
                 {
 
                     mySelector = new DataSelectorView("disciplina","noValue","noValue",disciplineName,0);
@@ -328,6 +345,17 @@ void LoadNewFileModel::processData(const QString dir)
                     mySelector->close();
                     delete mySelector;
                 }
+
+                else if (querySize >= 0 && isSkipping == 1)
+                {
+
+                    mySelector = new DataSelectorView("disciplina","noValue","noValue",disciplineName,0,0,1);
+                    disciplineID = mySelector->discipline_id;
+                    mySelector->close();
+                    delete mySelector;
+                }
+
+
 
 //                query = QString("INSERT INTO disciplina(nazvanie_discipliny) VALUES ('%1')").arg(disciplineName);
 //                runner->tryQuery(query);
@@ -435,7 +463,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 runner->tryQuery(query);
 
-
+//                qDebug () << query;
 
 
                 singleLine[singleLine.indexOf("семестр")+7]='|';
@@ -536,10 +564,9 @@ void LoadNewFileModel::processData(const QString dir)
                         .arg(labMultiplier);
 
 
-
                 runner->tryQuery(query);
 
-
+//                qDebug () << query;
 
 
                 //

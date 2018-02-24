@@ -15,7 +15,7 @@ class DataSelectorView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DataSelectorView(QString tableName, QString receivedFacultyName = 0, QString receivedSpecialtyName = 0, QString receivedDisciplineName = 0, QString uID = 0, QWidget *parent = 0);
+    explicit DataSelectorView(QString tableName, QString receivedFacultyName = 0, QString receivedSpecialtyName = 0, QString receivedDisciplineName = 0, QString uID = 0, QWidget *parent = 0, int alwaysInsert = 0);
     QTableView *myTableView;
     QVBoxLayout *externalVLayout;
     QueryRunner *runner;

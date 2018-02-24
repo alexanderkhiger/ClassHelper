@@ -74,3 +74,74 @@ void TableEditorModel::updateTeacherModel(QSqlTableModel *model, operationType t
         }
     }
 }
+
+void TableEditorModel::updateSpecialtyModel(QSqlTableModel *model, TableEditorModel::operationType type, int row, QString arg1, QString arg2)
+{
+    if (type == fDELETE)
+    {
+        model->removeRow(row);
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
+    else if (type == fINSERT)
+    {
+        const int rowNumber = model->rowCount();
+        model->insertRows(rowNumber, 1);
+        model->setData(model->index(rowNumber, 1), arg1);
+        model->setData(model->index(rowNumber, 2), arg2);
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
+    else if (type == fUPDATE)
+    {
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
+}
+
+void TableEditorModel::updateDisciplineModel(QSqlTableModel *model, TableEditorModel::operationType type, int row, QString arg1)
+{
+    if (type == fDELETE)
+    {
+        model->removeRow(row);
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
+    else if (type == fINSERT)
+    {
+        const int rowNumber = model->rowCount();
+        model->insertRows(rowNumber, 1);
+        model->setData(model->index(rowNumber, 1), arg1);
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
+    else if (type == fUPDATE)
+    {
+        int check = model->submitAll();
+        if (!check)
+        {
+            emit updateError(model->lastError().text());
+            model->revertAll();
+        }
+    }
+}

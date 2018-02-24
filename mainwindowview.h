@@ -33,7 +33,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QToolButton>
-
+#include <QToolBar>
 
 class MainWindowView : public QMainWindow
 {
@@ -51,7 +51,6 @@ public slots:
     void newFile();
     void back();
     void getData(QString objName, QString containedData);
-    void getModel();
     void setClassesModel(QSqlQueryModel *model);
     void setTeachersModel(QSqlQueryModel *model);
     void setDiffModel(QSqlQueryModel *model);
@@ -59,9 +58,16 @@ public slots:
     void distributeHours();
     void setData(QList<double> list);
     void distributeAllHours();
+    void changeCurrentSemester();
+    void setTableEditorAsCentral();
+    void setWorkFieldAsCentral();
+    void chooseColumns(int state);
 
 private:
-
+    QToolBar *leftBar;
+    QToolBar *topBar;
+    QToolButton *clearTool;
+    QToolButton *changeSemesterTool;
     QList<double> totalHoursDistributedList;
     QList<double> hoursDistributedForSelectedList;
     QList<double> totalHoursLeftList;
@@ -113,9 +119,9 @@ private:
     QLabel *classesHeader;
     QLabel *teachersHeader;
 
-    QPushButton *clearButton;
-    QPushButton *backButton;
-    QDialogButtonBox *buttonBox;
+//    QPushButton *clearButton;
+//    QPushButton *backButton;
+//    QDialogButtonBox *buttonBox;
 
     QVBoxLayout *externalVLayout;
     QVBoxLayout *internalMiddleVLayout;
@@ -123,10 +129,20 @@ private:
     QVBoxLayout *internalRightVLayout;
     QHBoxLayout *externalHLayout;
     QHBoxLayout *internalHLayout;
-    QHBoxLayout *classesColumns;
-    QHBoxLayout *teachersColumns;
+
     QVBoxLayout *classesInfoVLayout;
     QVBoxLayout *teachersInfoVLayout;
+
+    QVBoxLayout *classesColumns;
+    QVBoxLayout *teachersColumns;
+
+    QCheckBox *teachersIDCheck;
+    QCheckBox *teachersChairCheck;
+    QCheckBox *teachersDegreeCheck;
+    QCheckBox *teachersTitleCheck;
+    QCheckBox *teachersPostCheck;
+
+    QCheckBox *classesIDCheck;
 
     QGroupBox *classesInfoGroupBox;
     QGroupBox *teachersInfoGroupBox;
@@ -143,7 +159,8 @@ private:
     QMenu *helpMenu;
 
     QAction *newFileAction;
-
+    QAction *tableEditorAction;
+    QAction *backToUniversityList;
 
 
 
@@ -259,13 +276,15 @@ private:
 
     int chosenClassID;
     int chosenTeacherID;
+    int chosenSemester;
     int currentSemester;
 
-
-
+    TableEditorView *tableEditor;
+    LoadNewFileView *loadNewFile;
 
 private slots:
     void createUI();
+    void createWorkfieldWidget();
 
 };
 

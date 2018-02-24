@@ -17,6 +17,7 @@
 #include <QFileDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QCheckBox>
 
 
 class LoadNewFileView : public QWidget
@@ -44,12 +45,11 @@ private:
     QString receivedID;
     QPushButton *chooseFileButton;
     QPushButton *startButton;
-    QPushButton *exitButton;
-    QPushButton *clearButton;
-    QDialogButtonBox *buttonBox;
 
     QLineEdit *chosenFile;
     QLineEdit *errorCounterLE;
+
+    QCheckBox *skipAllCheck;
 
     QLabel *errorCounterLabel;
 

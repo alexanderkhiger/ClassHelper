@@ -18,6 +18,8 @@ signals:
 public slots:
     void updateFacultyModel(QSqlTableModel *model, operationType type, int row = 0, QString arg1 = 0, QString arg2 = 0, QString arg3 = 0);
     void updateTeacherModel(QSqlTableModel *model, operationType type, int row = 0, QString arg1 = 0, QString arg2 = 0, QString arg3 = 0, QString arg4 = 0, QString arg5 = 0, QString arg6 = 0, QString arg7 = 0, QString arg8 = 0);
+    void updateSpecialtyModel(QSqlTableModel *model, operationType type, int row = 0, QString arg1 = 0, QString arg2 = 0);
+    void updateDisciplineModel(QSqlTableModel *model, operationType type, int row = 0, QString arg1 = 0);
 };
 
 #endif // TABLEEDITORMODEL_H

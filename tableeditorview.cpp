@@ -5,6 +5,10 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     facultyAddButtonState = INACTIVE;
     chairAddButtonState = INACTIVE;
     teacherAddButtonState = INACTIVE;
+    disciplineAddButtonState = INACTIVE;
+    specialtyAddButtonState = INACTIVE;
+    streamAddButtonState = INACTIVE;
+
     receivedUID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
@@ -14,6 +18,10 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     chairRunner = new QueryRunner;
     facultyRunner = new QueryRunner;
     teacherRunner = new QueryRunner;
+    disciplineRunner = new QueryRunner;
+    specialtyRunner = new QueryRunner;
+    streamRunner = new QueryRunner;
+
     setMinimumSize(300,300);
     setWindowTitle(tr("Работа с таблицами | %1 | %2").arg(uName).arg(uShortname));
 
@@ -21,10 +29,16 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     chairWidget = new QWidget;
     facultyWidget = new QWidget;
     teacherWidget = new QWidget;
+    disciplineWidget = new QWidget;
+    specialtyWidget = new QWidget;
+    streamWidget = new QWidget;
 
     tableTab->addTab(facultyWidget,tr("Факультеты"));
     tableTab->addTab(chairWidget,tr("Кафедры"));
     tableTab->addTab(teacherWidget,tr("Преподаватели"));
+    tableTab->addTab(disciplineWidget,tr("Дисциплины"));
+    tableTab->addTab(specialtyWidget,tr("Специальности"));
+    tableTab->addTab(streamWidget,tr("Потоки"));
 
     connect(tableTab,SIGNAL(currentChanged(int)),this,SLOT(checkSize(int)));
 
@@ -48,14 +62,20 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     vLayout->addWidget(tableTab);
     vLayout->addWidget(getIDTable);
     vLayout->addWidget(buttonBox);
+
     createChairWidgetUI();
     createFacultyWidgetUI();
     createTeacherWidgetUI();
+    createDisciplineWidgetUI();
+    createSpecialtyWidgetUI();
+    createStreamWidgetUI();
 
     facultyTable->viewport()->installEventFilter(this);
     chairTable->viewport()->installEventFilter(this);
     teacherTable->viewport()->installEventFilter(this);
-
+    disciplineTable->viewport()->installEventFilter(this);
+    specialtyTable->viewport()->installEventFilter(this);
+    streamTable->viewport()->installEventFilter(this);
     resizeTable(facultyTable);
 }
 
@@ -75,6 +95,18 @@ bool TableEditorView::eventFilter(QObject *obj, QEvent *event) {
             else if (obj == teacherTable->viewport())
             {
                 disableTeacherWidgets();
+            }
+            else if (obj == disciplineTable->viewport())
+            {
+                disableDisciplineWidgets();
+            }
+            else if (obj == specialtyTable->viewport())
+            {
+                disableSpecialtyWidgets();
+            }
+            else if (obj == streamTable->viewport())
+            {
+                disableStreamWidgets();
             }
         }
     }
@@ -111,9 +143,21 @@ void TableEditorView::checkSize(int index)
     {
         resizeTable(chairTable);
     }
-    else
+    else if (index == 2)
     {
         resizeTable(teacherTable);
+    }
+    else if (index == 3)
+    {
+        resizeTable(disciplineTable);
+    }
+    else if (index == 4)
+    {
+        resizeTable(specialtyTable);
+    }
+    else if (index == 5)
+    {
+        resizeTable(streamTable);
     }
 }
 
@@ -155,6 +199,23 @@ void TableEditorView::enableTeacherButtons()
 {
     teacherDeleteButton->setEnabled(1);
 }
+
+void TableEditorView::enableDisciplineButtons()
+{
+    disciplineDeleteButton->setEnabled(1);
+}
+
+void TableEditorView::enableSpecialtyButtons()
+{
+    specialtyDeleteButton->setEnabled(1);
+}
+
+void TableEditorView::enableStreamButtons()
+{
+    streamDeleteButton->setEnabled(1);
+}
+
+
 
 void TableEditorView::enableGetIDButtons()
 {
@@ -379,6 +440,195 @@ void TableEditorView::createTeacherWidgetUI()
     getTeacherModel();
 }
 
+void TableEditorView::createDisciplineWidgetUI()
+{
+    disciplineTable = new CustomTableView;
+    disciplineTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+    //    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    disciplineTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    disciplineTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    disciplineTable->verticalHeader()->setVisible(0);
+    disciplineName = new QLineEdit;
+    disciplineConfirmAddition = new QPushButton(tr("ОК"));
+    disciplineAddButton = new QPushButton(tr("Добавить"));
+    disciplineDeleteButton = new QPushButton(tr("Удалить"));
+    disciplineDeleteButton->setEnabled(0);
+
+    disciplineName->setPlaceholderText(tr("Название"));
+    disciplineName->setToolTip(tr("Название дисциплины"));
+
+    connect(disciplineAddButton,SIGNAL(clicked(bool)),this,SLOT(changeDisciplineAddButtonStyle()));
+    connect(disciplineConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(disciplineAddRecord()));
+    connect(disciplineDeleteButton,SIGNAL(clicked(bool)),this,SLOT(disciplineDeleteRecord()));
+
+    connect(disciplineTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableDisciplineButtons()));
+    connect(disciplineTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(disciplineEditRecord()));
+    connect(disciplineTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
+//    connect(disciplineTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
+
+    disciplineConfirmAddition->setVisible(0);
+    disciplineName->setVisible(0);
+
+    disciplineTopHLayout = new QHBoxLayout;
+    disciplineTopHLayout->addWidget(disciplineName);
+    disciplineTopHLayout->addWidget(disciplineConfirmAddition);
+
+    disciplineBotHLayout = new QHBoxLayout;
+    disciplineBotHLayout->addWidget(disciplineAddButton);
+    disciplineBotHLayout->addWidget(disciplineDeleteButton);
+
+    disciplineVLayout = new QVBoxLayout;
+    disciplineVLayout->addWidget(disciplineTable);
+    disciplineVLayout->addLayout(disciplineTopHLayout);
+    disciplineVLayout->addLayout(disciplineBotHLayout);
+
+    disciplineWidget->setLayout(disciplineVLayout);
+
+    getDisciplineModel();
+}
+
+void TableEditorView::createSpecialtyWidgetUI()
+{
+    specialtyTable = new CustomTableView;
+    specialtyTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+    //    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    specialtyTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    specialtyTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    specialtyTable->verticalHeader()->setVisible(0);
+    specialtyName = new QLineEdit;
+    specialtyChooseFaculty = new CustomLineEdit(this);
+    specialtyChooseFaculty->setPlaceholderText(tr("ID факультета"));
+    specialtyChooseFaculty->setToolTip(tr("ID факультета"));
+
+    connect(specialtyChooseFaculty->chooseButton,SIGNAL(clicked(bool)),this,SLOT(openFacultyList()));
+
+    specialtyConfirmAddition = new QPushButton(tr("ОК"));
+    specialtyAddButton = new QPushButton(tr("Добавить"));
+    specialtyDeleteButton = new QPushButton(tr("Удалить"));
+    specialtyDeleteButton->setEnabled(0);
+
+    specialtyName->setPlaceholderText(tr("Название"));
+    specialtyName->setToolTip(tr("Название специальности"));
+
+    connect(specialtyAddButton,SIGNAL(clicked(bool)),this,SLOT(changeSpecialtyAddButtonStyle()));
+    connect(specialtyConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(specialtyAddRecord()));
+    connect(specialtyDeleteButton,SIGNAL(clicked(bool)),this,SLOT(specialtyDeleteRecord()));
+    connect(specialtyTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableSpecialtyButtons()));
+    connect(specialtyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(specialtyEditRecord()));
+    connect(specialtyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
+//    connect(chairTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
+
+    specialtyConfirmAddition->setVisible(0);
+    specialtyName->setVisible(0);
+    specialtyChooseFaculty->setVisible(0);
+
+    specialtyTopHLayout = new QHBoxLayout;
+    specialtyTopHLayout->addWidget(specialtyName);
+    specialtyTopHLayout->addWidget(specialtyChooseFaculty);
+    specialtyTopHLayout->addWidget(specialtyConfirmAddition);
+
+    specialtyBotHLayout = new QHBoxLayout;
+    specialtyBotHLayout->addWidget(specialtyAddButton);
+    specialtyBotHLayout->addWidget(specialtyDeleteButton);
+
+    specialtyVLayout = new QVBoxLayout;
+    specialtyVLayout->addWidget(specialtyTable);
+    specialtyVLayout->addLayout(specialtyTopHLayout);
+    specialtyVLayout->addLayout(specialtyBotHLayout);
+    specialtyWidget->setLayout(specialtyVLayout);
+
+    getSpecialtyModel();
+}
+
+void TableEditorView::createStreamWidgetUI()
+{
+    streamTable = new CustomTableView;
+    streamTable->setEditTriggers(QAbstractItemView::DoubleClicked);
+    //    teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    streamTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    streamTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    streamTable->verticalHeader()->setVisible(0);
+
+
+    streamGroups = new QLineEdit;
+    streamSubgroups = new QLineEdit;
+    streamStudents = new QLineEdit;
+    streamName = new QLineEdit;
+    streamShortName = new QLineEdit;
+    streamYear = new QLineEdit;
+
+    streamChooseSpecialty = new CustomLineEdit(this);
+    connect(streamChooseSpecialty->chooseButton,SIGNAL(clicked(bool)),this,SLOT(openSpecialtyList()));
+
+    streamConfirmAddition = new QPushButton(tr("ОК"));
+    streamAddButton = new QPushButton(tr("Добавить"));
+    streamDeleteButton = new QPushButton(tr("Удалить"));
+    streamDeleteButton->setEnabled(0);
+
+    streamGroups->setPlaceholderText(tr("Кол-во групп"));
+    streamGroups->setToolTip(tr("Количество групп"));
+
+    streamSubgroups->setPlaceholderText(tr("Кол-во подгрупп"));
+    streamSubgroups->setToolTip(tr("Количество подгрупп"));
+
+    streamStudents->setPlaceholderText(tr("Кол-во студентов"));
+    streamStudents->setToolTip(tr("Количество студентов"));
+
+    streamName->setPlaceholderText(tr("Название потока"));
+    streamName->setToolTip(tr("Название потока"));
+
+    streamShortName->setPlaceholderText(tr("Аббревиатура"));
+    streamShortName->setToolTip(tr("Аббревиатура потока"));
+
+    streamChooseSpecialty->setPlaceholderText(tr("ID специальности"));
+    streamChooseSpecialty->setToolTip(tr("ID специальности"));
+
+    streamYear->setPlaceholderText(tr("Курс"));
+    streamYear->setToolTip(tr("Курс"));
+
+    connect(streamAddButton,SIGNAL(clicked(bool)),this,SLOT(changeStreamAddButtonStyle()));
+    connect(streamConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(streamAddRecord()));
+    connect(streamDeleteButton,SIGNAL(clicked(bool)),this,SLOT(streamDeleteRecord()));
+    connect(streamTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableStreamButtons()));
+    connect(streamTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(streamEditRecord()));
+    connect(streamTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
+//    connect(teacherTable,&QTableView::doubleClicked,this,&TableEditorView::disableTeacherWidgets);
+
+    streamConfirmAddition->setVisible(0);
+    streamGroups->setVisible(0);
+    streamSubgroups->setVisible(0);
+    streamStudents->setVisible(0);
+    streamName->setVisible(0);
+    streamShortName->setVisible(0);
+    streamChooseSpecialty->setVisible(0);
+    streamYear->setVisible(0);
+
+    streamTopHLayout = new QHBoxLayout;
+    streamTopHLayout->addWidget(streamName);
+    streamTopHLayout->addWidget(streamShortName);
+    streamTopHLayout->addWidget(streamChooseSpecialty);
+    streamTopHLayout->addWidget(streamYear);
+    streamTopHLayout->addWidget(streamConfirmAddition);
+
+    streamMidHLayout = new QHBoxLayout;
+    streamMidHLayout->addWidget(streamStudents);
+    streamMidHLayout->addWidget(streamGroups);
+    streamMidHLayout->addWidget(streamSubgroups);
+
+    streamBotHLayout = new QHBoxLayout;
+    streamBotHLayout->addWidget(streamAddButton);
+    streamBotHLayout->addWidget(streamDeleteButton);
+
+    streamVLayout = new QVBoxLayout;
+    streamVLayout->addWidget(streamTable);
+    streamVLayout->addLayout(streamTopHLayout);
+    streamVLayout->addLayout(streamMidHLayout);
+    streamVLayout->addLayout(streamBotHLayout);
+    streamWidget->setLayout(streamVLayout);
+
+    getStreamModel();
+}
+
 
 void TableEditorView::changeFacultyAddButtonStyle()
 {
@@ -473,6 +723,88 @@ void TableEditorView::changeTeacherAddButtonStyle()
 
 }
 
+
+void TableEditorView::changeStreamAddButtonStyle()
+{
+    streamGroups->clear();
+    streamSubgroups->clear();
+    streamStudents->clear();
+    streamName->clear();
+    streamShortName->clear();
+    streamYear->clear();
+
+    if (streamAddButtonState == INACTIVE)
+    {
+        streamConfirmAddition->setVisible(1);
+        streamGroups->setVisible(1);
+        streamSubgroups->setVisible(1);
+        streamStudents->setVisible(1);
+        streamName->setVisible(1);
+        streamShortName->setVisible(1);
+        streamChooseSpecialty->setVisible(1);
+        streamYear->setVisible(1);
+        streamAddButtonState = ACTIVE;
+        streamAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
+    }
+    else
+    {
+        streamConfirmAddition->setVisible(0);
+        streamGroups->setVisible(0);
+        streamSubgroups->setVisible(0);
+        streamStudents->setVisible(0);
+        streamName->setVisible(0);
+        streamShortName->setVisible(0);
+        streamChooseSpecialty->setVisible(0);
+        streamYear->setVisible(0);
+        streamAddButtonState = INACTIVE;
+        streamAddButton->setStyleSheet("");
+
+    }
+
+}
+
+
+void TableEditorView::changeDisciplineAddButtonStyle()
+{
+    disciplineName->clear();
+    if (disciplineAddButtonState == INACTIVE)
+    {
+        disciplineName->setVisible(1);
+        disciplineConfirmAddition->setVisible(1);
+        disciplineAddButtonState = ACTIVE;
+        disciplineAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
+    }
+    else
+    {
+        disciplineName->setVisible(0);
+        disciplineConfirmAddition->setVisible(0);
+        disciplineAddButtonState = INACTIVE;
+        disciplineAddButton->setStyleSheet("");
+    }
+}
+
+void TableEditorView::changeSpecialtyAddButtonStyle()
+{
+    specialtyName->clear();
+    specialtyChooseFaculty->clear();
+    if (specialtyAddButtonState == INACTIVE)
+    {
+        specialtyName->setVisible(1);
+        specialtyConfirmAddition->setVisible(1);
+        specialtyChooseFaculty->setVisible(1);
+        specialtyAddButtonState = ACTIVE;
+        specialtyAddButton->setStyleSheet("background-color:gray; border-color:black; color:white");
+    }
+    else
+    {
+        specialtyName->setVisible(0);
+        specialtyConfirmAddition->setVisible(0);
+        specialtyChooseFaculty->setVisible(0);
+        specialtyAddButtonState = INACTIVE;
+        specialtyAddButton->setStyleSheet("");
+    }
+}
+
 void TableEditorView::openFacultyList()
 {
     setSmallTablesVisible();
@@ -490,11 +822,20 @@ void TableEditorView::openChairList()
     connect(agree,SIGNAL(clicked(bool)),this,SLOT(getChairID()));
 }
 
+void TableEditorView::openSpecialtyList()
+{
+    setSmallTablesVisible();
+    getIDTable->setModel(specialtyModelReference);
+    resizeTable(getIDTable);
+    connect(agree,SIGNAL(clicked(bool)),this,SLOT(getSpecialtyID()));
+}
+
 void TableEditorView::getFacultyID()
 {
     QModelIndex idIndex = getIDTable->model()->index(getIDTable->currentIndex().row(),0,QModelIndex());
     QString idData = getIDTable->model()->data(idIndex).toString();
-    chairChooseFaculty->setText(idData);
+    if (tableTab->currentIndex()==1) chairChooseFaculty->setText(idData);
+    else if (tableTab->currentIndex()==4) specialtyChooseFaculty->setText(idData);
     setSmallTablesInvisible();
     disconnect(agree,SIGNAL(clicked(bool)),this,SLOT(getFacultyID()));
 }
@@ -507,6 +848,15 @@ void TableEditorView::getChairID()
     teacherChooseChair->setText(idData);
     setSmallTablesInvisible();
     disconnect(agree,SIGNAL(clicked(bool)),this,SLOT(getChairID()));
+}
+
+void TableEditorView::getSpecialtyID()
+{
+    QModelIndex idIndex = getIDTable->model()->index(getIDTable->currentIndex().row(),0,QModelIndex());
+    QString idData = getIDTable->model()->data(idIndex).toString();
+    streamChooseSpecialty->setText(idData);
+    setSmallTablesInvisible();
+    disconnect(agree,SIGNAL(clicked(bool)),this,SLOT(getSpecialtyID()));
 }
 
 
@@ -574,6 +924,65 @@ void TableEditorView::setTeacherModel(QSqlTableModel *model)
     connect(teacherTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
 }
 
+
+void TableEditorView::getStreamModel()
+{
+    connect(streamRunner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setStreamModel(QSqlTableModel*)));
+    streamRunner->tryTableModel("potok");
+}
+
+
+void TableEditorView::setStreamModel(QSqlTableModel *model)
+{
+    streamModelReference = model;
+    streamModelReference->setHeaderData(0,Qt::Horizontal,tr("ID потока"));
+    streamModelReference->setHeaderData(1,Qt::Horizontal,tr("Название потока"));
+    streamModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
+    streamModelReference->setHeaderData(3,Qt::Horizontal,tr("Курс"));
+    streamModelReference->setHeaderData(4,Qt::Horizontal,tr("ID специальности"));
+    streamModelReference->setHeaderData(5,Qt::Horizontal,tr("Кол-во студентов"));
+    streamModelReference->setHeaderData(6,Qt::Horizontal,tr("Кол-во групп"));
+    streamModelReference->setHeaderData(7,Qt::Horizontal,tr("Кол-во подгрупп"));
+    streamTable->setModel(model);
+    connect(streamTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
+    connect(streamTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
+}
+
+
+
+void TableEditorView::getDisciplineModel()
+{
+    connect(disciplineRunner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setDisciplineModel(QSqlTableModel*)));
+    disciplineRunner->tryTableModel("disciplina");
+}
+
+void TableEditorView::setDisciplineModel(QSqlTableModel *model)
+{
+    disciplineModelReference = model;
+    disciplineModelReference->setHeaderData(0,Qt::Horizontal,tr("ID дисциплины"));
+    disciplineModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
+    disciplineTable->setModel(model);
+    connect(disciplineTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
+    connect(disciplineTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
+}
+
+void TableEditorView::getSpecialtyModel()
+{
+    connect(specialtyRunner,SIGNAL(returnTableModel(QSqlTableModel*)),this,SLOT(setSpecialtyModel(QSqlTableModel*)));
+    specialtyRunner->tryTableModel("specialnost");
+}
+
+void TableEditorView::setSpecialtyModel(QSqlTableModel *model)
+{
+    specialtyModelReference = model;
+    specialtyModelReference->setHeaderData(0,Qt::Horizontal,tr("ID специальности"));
+    specialtyModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
+    specialtyModelReference->setHeaderData(2,Qt::Horizontal,tr("ID факультета"));
+    specialtyTable->setModel(model);
+    connect(specialtyTable->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFromData(QItemSelection)));
+    connect(specialtyTable->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedToData(QModelIndex)));
+}
+
 void TableEditorView::changedFromData(const QItemSelection &selected)
 {
     if (tableTab->currentIndex() == 0)
@@ -591,6 +1000,22 @@ void TableEditorView::changedFromData(const QItemSelection &selected)
         teacherBeforeEditing = teacherTable->model()->data(selected.indexes()[0]).toString();
         teacherAfterEditing = teacherTable->model()->data(selected.indexes()[0]).toString();
     }
+    else if (tableTab->currentIndex() == 3)
+    {
+        disciplineBeforeEditing = disciplineTable->model()->data(selected.indexes()[0]).toString();
+        disciplineAfterEditing = disciplineTable->model()->data(selected.indexes()[0]).toString();
+    }
+    else if (tableTab->currentIndex() == 4)
+    {
+        specialtyBeforeEditing = specialtyTable->model()->data(selected.indexes()[0]).toString();
+        specialtyAfterEditing = specialtyTable->model()->data(selected.indexes()[0]).toString();
+    }
+    else if (tableTab->currentIndex() == 5)
+    {
+        streamBeforeEditing = streamTable->model()->data(selected.indexes()[0]).toString();
+        streamAfterEditing = streamTable->model()->data(selected.indexes()[0]).toString();
+    }
+
 }
 
 void TableEditorView::changedToData(const QModelIndex &bIndex)
@@ -607,12 +1032,28 @@ void TableEditorView::changedToData(const QModelIndex &bIndex)
     {
         teacherAfterEditing = teacherTable->model()->data(bIndex).toString();
     }
+    else if (tableTab->currentIndex() == 3)
+    {
+        disciplineAfterEditing = disciplineTable->model()->data(bIndex).toString();
+    }
+    else if (tableTab->currentIndex() == 4)
+    {
+        specialtyAfterEditing = specialtyTable->model()->data(bIndex).toString();
+    }
+    else if (tableTab->currentIndex() == 5)
+    {
+        streamAfterEditing = streamTable->model()->data(bIndex).toString();
+    }
+
 }
 
 void TableEditorView::disableFacultyWidgets()
 {
     tableTab->setTabEnabled(1,0);
     tableTab->setTabEnabled(2,0);
+    tableTab->setTabEnabled(3,0);
+    tableTab->setTabEnabled(4,0);
+    tableTab->setTabEnabled(5,0);
     facultyAddButton->setVisible(0);
     facultyDeleteButton->setVisible(0);
     facultyName->setVisible(0);
@@ -625,6 +1066,9 @@ void TableEditorView::disableChairWidgets()
 {
     tableTab->setTabEnabled(0,0);
     tableTab->setTabEnabled(2,0);
+    tableTab->setTabEnabled(3,0);
+    tableTab->setTabEnabled(4,0);
+    tableTab->setTabEnabled(5,0);
     chairAddButton->setVisible(0);
     chairDeleteButton->setVisible(0);
     chairName->setVisible(0);
@@ -649,6 +1093,57 @@ void TableEditorView::disableTeacherWidgets()
     teacherChooseChair->setVisible(0);
     tableTab->setTabEnabled(0,0);
     tableTab->setTabEnabled(1,0);
+    tableTab->setTabEnabled(3,0);
+    tableTab->setTabEnabled(4,0);
+    tableTab->setTabEnabled(5,0);
+}
+
+
+void TableEditorView::disableDisciplineWidgets()
+{
+
+    disciplineAddButton->setVisible(0);
+    disciplineDeleteButton->setVisible(0);
+    disciplineName->setVisible(0);
+    disciplineConfirmAddition->setVisible(0);
+    tableTab->setTabEnabled(0,0);
+    tableTab->setTabEnabled(1,0);
+    tableTab->setTabEnabled(2,0);
+    tableTab->setTabEnabled(4,0);
+    tableTab->setTabEnabled(5,0);
+}
+
+void TableEditorView::disableSpecialtyWidgets()
+{
+    tableTab->setTabEnabled(0,0);
+    tableTab->setTabEnabled(1,0);
+    tableTab->setTabEnabled(2,0);
+    tableTab->setTabEnabled(3,0);
+    tableTab->setTabEnabled(5,0);
+    specialtyAddButton->setVisible(0);
+    specialtyDeleteButton->setVisible(0);
+    specialtyName->setVisible(0);
+    specialtyConfirmAddition->setVisible(0);
+    specialtyChooseFaculty->setVisible(0);
+}
+
+void TableEditorView::disableStreamWidgets()
+{
+    streamAddButton->setVisible(0);
+    streamDeleteButton->setVisible(0);
+    streamConfirmAddition->setVisible(0);
+    streamName->setVisible(0);
+    streamShortName->setVisible(0);
+    streamStudents->setVisible(0);
+    streamGroups->setVisible(0);
+    streamSubgroups->setVisible(0);
+    streamChooseSpecialty->setVisible(0);
+    streamYear->setVisible(0);
+    tableTab->setTabEnabled(0,0);
+    tableTab->setTabEnabled(1,0);
+    tableTab->setTabEnabled(2,0);
+    tableTab->setTabEnabled(3,0);
+    tableTab->setTabEnabled(4,0);
 }
 
 void TableEditorView::enableWidgets()
@@ -668,9 +1163,27 @@ void TableEditorView::enableWidgets()
     changeTeacherAddButtonStyle();
     changeTeacherAddButtonStyle();
 
+    disciplineAddButton->setVisible(1);
+    disciplineDeleteButton->setVisible(1);
+    changeDisciplineAddButtonStyle();
+    changeDisciplineAddButtonStyle();
+
+    specialtyAddButton->setVisible(1);
+    specialtyDeleteButton->setVisible(1);
+    changeSpecialtyAddButtonStyle();
+    changeSpecialtyAddButtonStyle();
+
+    streamAddButton->setVisible(1);
+    streamDeleteButton->setVisible(1);
+    changeStreamAddButtonStyle();
+    changeStreamAddButtonStyle();
+
     tableTab->setTabEnabled(0,1);
     tableTab->setTabEnabled(1,1);
     tableTab->setTabEnabled(2,1);
+    tableTab->setTabEnabled(3,1);
+    tableTab->setTabEnabled(4,1);
+    tableTab->setTabEnabled(5,1);
 }
 
 
@@ -766,7 +1279,7 @@ void TableEditorView::chairAddRecord()
         return;
     }
 
-    if (chairName->text() == "" || chairShortname->text() == "" || chairChooseFaculty->text() == "")
+    if (chairName->text() == "" || chairShortname->text() == "")
     {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Не все поля заполнены. Все равно добавить запись?")), QMessageBox::Yes|QMessageBox::No);
@@ -947,4 +1460,274 @@ void TableEditorView::teacherEditRecord()
         enableWidgets();
     }
 }
+
+void TableEditorView::disciplineAddRecord()
+{
+    if (disciplineName->text() == "")
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Не все поля заполнены. Все равно добавить запись?")), QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+    }
+
+    if (disciplineModelReference == 0)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+    teModel->updateDisciplineModel(disciplineModelReference,TableEditorModel::fINSERT,disciplineTable->currentIndex().row(),disciplineName->text());
+    disciplineName->clear();
+    disciplineDeleteButton->setEnabled(0);
+}
+
+void TableEditorView::disciplineDeleteRecord()
+{
+    if (disciplineModelReference == 0)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+    QModelIndex idIndex = disciplineTable->model()->index(disciplineTable->currentIndex().row(),0,QModelIndex());
+    QModelIndex nameIndex = disciplineTable->model()->index(disciplineTable->currentIndex().row(),1,QModelIndex());
+
+    QString idData = disciplineTable->model()->data(idIndex).toString();
+    QString nameData = disciplineTable->model()->data(nameIndex).toString();
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Удаление"), QString(tr("Удалить запись %1 | %2?")).arg(idData).arg(nameData), QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        teModel->updateDisciplineModel(disciplineModelReference,TableEditorModel::fDELETE,disciplineTable->currentIndex().row());
+        disciplineDeleteButton->setEnabled(0);
+    }
+}
+
+void TableEditorView::disciplineEditRecord()
+{
+    if (disciplineBeforeEditing == disciplineAfterEditing)
+    {
+        return;
+    }
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(disciplineBeforeEditing).arg(disciplineAfterEditing)), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        disciplineModelReference->revertAll();
+        disciplineAfterEditing = disciplineBeforeEditing;
+        return;
+    }
+    else
+    {
+        int check = disciplineModelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(disciplineModelReference->lastError().text());
+            disciplineModelReference->revertAll();
+            disciplineAfterEditing = disciplineBeforeEditing;
+            return;
+        }
+        resizeTable(disciplineTable);
+        disciplineDeleteButton->setEnabled(0);
+        enableWidgets();
+    }
+}
+
+void TableEditorView::specialtyAddRecord()
+{
+    if (specialtyChooseFaculty->text() == "")
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Поле ID факультета обязательно для заполнения"),QMessageBox::Ok);
+        return;
+    }
+
+    if (specialtyName->text() == "")
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Не все поля заполнены. Все равно добавить запись?")), QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+    }
+
+    if (specialtyModelReference == 0)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+    teModel->updateSpecialtyModel(specialtyModelReference,TableEditorModel::fINSERT,specialtyTable->currentIndex().row(),specialtyName->text(),specialtyChooseFaculty->text());
+    specialtyName->clear();
+    specialtyChooseFaculty->clear();
+    specialtyDeleteButton->setEnabled(0);
+}
+
+void TableEditorView::specialtyDeleteRecord()
+{
+    if (specialtyModelReference == 0)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+    QModelIndex idIndex = specialtyTable->model()->index(specialtyTable->currentIndex().row(),0,QModelIndex());
+    QModelIndex nameIndex = specialtyTable->model()->index(specialtyTable->currentIndex().row(),1,QModelIndex());
+    QModelIndex facultyIDIndex = specialtyTable->model()->index(specialtyTable->currentIndex().row(),2,QModelIndex());
+
+    QString idData = specialtyTable->model()->data(idIndex).toString();
+    QString nameData = specialtyTable->model()->data(nameIndex).toString();
+    QString facultyIDData = specialtyTable->model()->data(facultyIDIndex).toString();
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Удаление"), QString(tr("Удалить запись %1 | %2 | %3?")).arg(idData).arg(nameData).arg(facultyIDData), QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        teModel->updateSpecialtyModel(specialtyModelReference,TableEditorModel::fDELETE,specialtyTable->currentIndex().row());
+        specialtyDeleteButton->setEnabled(0);
+    }
+}
+
+void TableEditorView::specialtyEditRecord()
+{
+    if (specialtyBeforeEditing == specialtyAfterEditing)
+    {
+        return;
+    }
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(specialtyBeforeEditing).arg(specialtyAfterEditing)), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        specialtyModelReference->revertAll();
+        specialtyAfterEditing = specialtyBeforeEditing;
+        return;
+    }
+    else
+    {
+        int check = specialtyModelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(specialtyModelReference->lastError().text());
+            specialtyModelReference->revertAll();
+            specialtyAfterEditing = specialtyBeforeEditing;
+            return;
+        }
+        resizeTable(specialtyTable);
+        specialtyDeleteButton->setEnabled(0);
+        enableWidgets();
+    }
+}
+
+
+void TableEditorView::streamAddRecord()
+{
+    if (streamChooseSpecialty->text() == "")
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Поле ID специальности обязательно для заполнения"),QMessageBox::Ok);
+        return;
+    }
+
+    if (streamYear->text() == "")
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Поле Курс обязательно для заполнения"),QMessageBox::Ok);
+        return;
+    }
+
+    if (streamGroups->text() == "" || streamSubgroups->text() == "" || streamStudents->text() == "" || streamName->text() == "" || streamShortName->text() == "")
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Не все поля заполнены. Все равно добавить запись?")), QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+    }
+
+    if (streamModelReference == 0)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+    teModel->updateTeacherModel(streamModelReference,TableEditorModel::fINSERT,streamTable->currentIndex().row(),streamName->text(),streamShortName->text(),streamYear->text(),streamChooseSpecialty->text(),streamStudents->text(),streamGroups->text(),streamSubgroups->text());
+    streamGroups->clear();
+    streamSubgroups->clear();
+    streamStudents->clear();
+    streamYear->clear();
+    streamName->clear();
+    streamShortName->clear();
+    streamChooseSpecialty->clear();
+    streamDeleteButton->setEnabled(0);
+}
+
+void TableEditorView::streamDeleteRecord()
+{
+    if (streamModelReference == 0)
+    {
+        QMessageBox::StandardButton errorMsg;
+        errorMsg = QMessageBox::information(this,tr("Ошибка"),tr("Модель не загружена. Критическая ошибка"),QMessageBox::Ok);
+        return;
+    }
+    QModelIndex idIndex = streamTable->model()->index(streamTable->currentIndex().row(),0,QModelIndex());
+    QModelIndex nameIndex = streamTable->model()->index(streamTable->currentIndex().row(),2,QModelIndex());
+    QModelIndex shortNameIndex = streamTable->model()->index(streamTable->currentIndex().row(),1,QModelIndex());
+    QModelIndex yearIndex = streamTable->model()->index(streamTable->currentIndex().row(),3,QModelIndex());
+    QModelIndex specialtyIDIndex = streamTable->model()->index(streamTable->currentIndex().row(),6,QModelIndex());
+    QModelIndex studentsIndex = streamTable->model()->index(streamTable->currentIndex().row(),4,QModelIndex());
+    QModelIndex groupsIndex = streamTable->model()->index(streamTable->currentIndex().row(),5,QModelIndex());
+    QModelIndex subgroupsIndex = streamTable->model()->index(streamTable->currentIndex().row(),7,QModelIndex());
+
+    QString idData = streamTable->model()->data(idIndex).toString();
+    QString nameData = streamTable->model()->data(nameIndex).toString();
+    QString shortNameData = streamTable->model()->data(shortNameIndex).toString();
+    QString yearData = streamTable->model()->data(yearIndex).toString();
+    QString specialtyIDData = streamTable->model()->data(specialtyIDIndex).toString();
+    QString studentsData = streamTable->model()->data(studentsIndex).toString();
+    QString groupsData = streamTable->model()->data(groupsIndex).toString();
+    QString subgroupsData = streamTable->model()->data(subgroupsIndex).toString();
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Удаление"), QString(tr("Удалить запись %1 | %2 | %3 | %4 | %5 | %6 | %7 | %8?")).arg(idData).arg(nameData).arg(shortNameData).arg(yearData).arg(specialtyIDData).arg(studentsData).arg(groupsData).arg(subgroupsData), QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        teModel->updateTeacherModel(streamModelReference,TableEditorModel::fDELETE,streamTable->currentIndex().row());
+        streamDeleteButton->setEnabled(0);
+    }
+
+}
+
+void TableEditorView::streamEditRecord()
+{
+    if (streamBeforeEditing == streamAfterEditing)
+    {
+        return;
+    }
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Изменить: %1 на %2 ?").arg(streamBeforeEditing).arg(streamAfterEditing)), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+    {
+        streamModelReference->revertAll();
+        streamAfterEditing = streamBeforeEditing;
+        return;
+    }
+    else
+    {
+        int check = streamModelReference->submitAll();
+        if (!check)
+        {
+            emit updateError(streamModelReference->lastError().text());
+            streamModelReference->revertAll();
+            streamAfterEditing = streamBeforeEditing;
+            return;
+        }
+        resizeTable(streamTable);
+        streamDeleteButton->setEnabled(0);
+        enableWidgets();
+    }
+}
+
 
