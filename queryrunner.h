@@ -11,6 +11,13 @@
 #include <QSqlRecord>
 #include <QList>
 
+
+#include <QFile>
+#include <QPrintDialog>
+#include <QPrinter>
+#include <QFileDialog>
+#include <QTextDocument>
+
 class QueryRunner : public QObject
 {
     Q_OBJECT
@@ -31,6 +38,7 @@ public slots:
     int tryQuery(const QString query, bool isModelNeeded = 0, bool isDataNeeded = 0);
     void tryAuth(const QString login, const QString password, const QString database, const QString hostname);
     void tryTableModel(const QString tableName);
+    void outputToFile(int teacherID, QString path);
 
 private:
     int check;

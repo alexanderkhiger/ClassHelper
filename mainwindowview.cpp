@@ -92,12 +92,18 @@ void MainWindowView::createUI()
     newFileAction->setShortcuts(QKeySequence::New);
     newFileAction->setStatusTip(tr("Загрузить новый файл данных"));
     fileMenu->addAction(newFileAction);
+
+    outputAction = new QAction(tr("Вывод плана в файл"), this);
+    outputAction->setStatusTip(tr("Получить план для преподавателя"));
+    fileMenu->addAction(outputAction);
+
     fileMenu->addSeparator();
     backToUniversityList = new QAction(tr("Выбор университета"), this);
     backToUniversityList->setStatusTip(tr("Назад к выбору университета"));
     fileMenu->addAction(backToUniversityList);
 
     connect(newFileAction, SIGNAL(triggered(bool)), this, SLOT(newFile()));
+    connect(outputAction,SIGNAL(triggered(bool)),this,SLOT(outputToFile()));
     connect(backToUniversityList,SIGNAL(triggered(bool)),this,SLOT(back()));
 
     setWindowTitle(QString(tr("Time Tracker | Название университета: %1 | Аббревиатура: %2 | Выбранный семестр: %3 ")).arg(receivedName).arg(receivedShortname).arg(currentSemester));
@@ -1213,6 +1219,20 @@ void MainWindowView::chooseColumns(int state)
     classesList->resizeRowsToContents();
 
 
+}
+
+void MainWindowView::outputToFile()
+{
+    if (centralWidget()->objectName()!="outputToFile")
+    {
+        outFile = new OutputToFileView(receivedID);
+        outFile->setObjectName("outputToFile");
+        this->setCentralWidget(outFile);
+        changeSemesterTool->setEnabled(false);
+        disconnect(clearTool,SIGNAL(clicked(bool)),this,SLOT(clearParameters()));
+//        connect(clearTool,SIGNAL(clicked(bool)),loadNewFile,SLOT(clear()));
+        clearTool->setEnabled(false);
+    }
 }
 
 void MainWindowView::newFile()

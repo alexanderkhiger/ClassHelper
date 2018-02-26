@@ -14,6 +14,7 @@
 #include <QTableView>
 #include <QModelIndex>
 #include "customdoublevalidator.h"
+#include "outputtofileview.h"
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QMimeData>
@@ -62,6 +63,7 @@ public slots:
     void setTableEditorAsCentral();
     void setWorkFieldAsCentral();
     void chooseColumns(int state);
+    void outputToFile();
 
 private:
     QToolBar *leftBar;
@@ -159,6 +161,7 @@ private:
     QMenu *helpMenu;
 
     QAction *newFileAction;
+    QAction *outputAction;
     QAction *tableEditorAction;
     QAction *backToUniversityList;
 
@@ -281,6 +284,7 @@ private:
 
     TableEditorView *tableEditor;
     LoadNewFileView *loadNewFile;
+    OutputToFileView *outFile;
 
 private slots:
     void createUI();
