@@ -31,6 +31,7 @@ void MainWindowView::createUI()
 
     QToolButton *distributionTool = new QToolButton;
     QToolButton *tableEditorTool = new QToolButton;
+    QToolButton *outputTool = new QToolButton;
 
     distributionTool->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     distributionTool->setIcon(style()->standardIcon(QStyle::SP_FileDialogContentsView));
@@ -46,8 +47,17 @@ void MainWindowView::createUI()
     tableEditorTool->setToolTip(tr("Редактор таблиц (словарей)"));
     connect(tableEditorTool,SIGNAL(clicked(bool)),this,SLOT(setTableEditorAsCentral()));
 
+
+    outputTool->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    outputTool->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
+    outputTool->setText(tr("Отчеты"));
+    outputTool->setFixedSize(70,60);
+    outputTool->setToolTip(tr("Получение отчета"));
+    connect(outputTool,SIGNAL(clicked(bool)),this,SLOT(outputToFile()));
+
     leftBar->addWidget(distributionTool);
     leftBar->addWidget(tableEditorTool);
+    leftBar->addWidget(outputTool);
 
     this->addToolBar(Qt::LeftToolBarArea,leftBar);
 
@@ -93,9 +103,9 @@ void MainWindowView::createUI()
     newFileAction->setStatusTip(tr("Загрузить новый файл данных"));
     fileMenu->addAction(newFileAction);
 
-    outputAction = new QAction(tr("Вывод плана в файл"), this);
-    outputAction->setStatusTip(tr("Получить план для преподавателя"));
-    fileMenu->addAction(outputAction);
+//    outputAction = new QAction(tr("Вывод плана в файл"), this);
+//    outputAction->setStatusTip(tr("Получить план для преподавателя"));
+//    fileMenu->addAction(outputAction);
 
     fileMenu->addSeparator();
     backToUniversityList = new QAction(tr("Выбор университета"), this);
@@ -103,7 +113,7 @@ void MainWindowView::createUI()
     fileMenu->addAction(backToUniversityList);
 
     connect(newFileAction, SIGNAL(triggered(bool)), this, SLOT(newFile()));
-    connect(outputAction,SIGNAL(triggered(bool)),this,SLOT(outputToFile()));
+//    connect(outputAction,SIGNAL(triggered(bool)),this,SLOT(outputToFile()));
     connect(backToUniversityList,SIGNAL(triggered(bool)),this,SLOT(back()));
 
     setWindowTitle(QString(tr("Time Tracker | Название университета: %1 | Аббревиатура: %2 | Выбранный семестр: %3 ")).arg(receivedName).arg(receivedShortname).arg(currentSemester));
@@ -651,6 +661,12 @@ void MainWindowView::createWorkfieldWidget()
     classesTextEditHeader->setVisible(0);
     teachersTextEditHeader->setVisible(0);
 
+    classesShowChecks = new QPushButton("Открыть список полей");
+    teachersShowChecks = new QPushButton("Открыть список полей");
+
+    connect(classesShowChecks,SIGNAL(clicked(bool)),this,SLOT(toggleClassesChecks()));
+    connect(teachersShowChecks,SIGNAL(clicked(bool)),this,SLOT(toggleTeachersChecks()));
+
     teachersColumns = new QVBoxLayout;
 
     teachersIDCheck = new QCheckBox(tr("ID преподавателя"));
@@ -665,12 +681,21 @@ void MainWindowView::createWorkfieldWidget()
     teachersTitleCheck->setObjectName("teachersTitleCheck");
     teachersPostCheck->setObjectName("teachersPostCheck");
 
+
+    teachersIDCheck->setVisible(0);
+    teachersChairCheck->setVisible(0);
+    teachersDegreeCheck->setVisible(0);
+    teachersTitleCheck->setVisible(0);
+    teachersPostCheck->setVisible(0);
+
+
     connect(teachersIDCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
     connect(teachersChairCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
     connect(teachersDegreeCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
     connect(teachersTitleCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
     connect(teachersPostCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
 
+    teachersColumns->addWidget(teachersShowChecks);
     teachersColumns->addWidget(teachersIDCheck);
     teachersColumns->addWidget(teachersChairCheck);
     teachersColumns->addWidget(teachersPostCheck);
@@ -680,7 +705,10 @@ void MainWindowView::createWorkfieldWidget()
     classesColumns = new QVBoxLayout;
     classesIDCheck = new QCheckBox(tr("ID записи"));
     classesIDCheck->setObjectName("classesIDCheck");
+    classesIDCheck->setVisible(0);
     connect(classesIDCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
+
+    classesColumns->addWidget(classesShowChecks);
     classesColumns->addWidget(classesIDCheck);
 
 
@@ -1232,6 +1260,42 @@ void MainWindowView::outputToFile()
         disconnect(clearTool,SIGNAL(clicked(bool)),this,SLOT(clearParameters()));
 //        connect(clearTool,SIGNAL(clicked(bool)),loadNewFile,SLOT(clear()));
         clearTool->setEnabled(false);
+    }
+}
+
+void MainWindowView::toggleClassesChecks()
+{
+    if (classesIDCheck->isVisible())
+    {
+        classesShowChecks->setText(tr("Открыть список полей"));
+        classesIDCheck->setVisible(0);
+    }
+    else
+    {
+        classesShowChecks->setText(tr("Скрыть список полей"));
+        classesIDCheck->setVisible(1);
+    }
+}
+
+void MainWindowView::toggleTeachersChecks()
+{
+    if (teachersIDCheck->isVisible())
+    {
+        teachersShowChecks->setText(tr("Открыть список полей"));
+        teachersIDCheck->setVisible(0);
+        teachersChairCheck->setVisible(0);
+        teachersDegreeCheck->setVisible(0);
+        teachersTitleCheck->setVisible(0);
+        teachersPostCheck->setVisible(0);
+    }
+    else
+    {
+        teachersShowChecks->setText(tr("Скрыть список полей"));
+        teachersIDCheck->setVisible(1);
+        teachersChairCheck->setVisible(1);
+        teachersDegreeCheck->setVisible(1);
+        teachersTitleCheck->setVisible(1);
+        teachersPostCheck->setVisible(1);
     }
 }
 

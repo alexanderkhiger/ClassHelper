@@ -5,9 +5,10 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     receivedID = uID;
     teachersModel = new QSqlQueryModel;
     runner = new QueryRunner;
+    receivedHtmlData = QString();
 
     connect(runner,SIGNAL(querySuccessReturnModel(QSqlQueryModel*)),this,SLOT(setTeachersModel(QSqlQueryModel*)));
-
+    connect(runner,SIGNAL(returnHtml(QString)),this,SLOT(getHtmlData(QString)));
 
     teachersList = new QTableView;
 
@@ -22,17 +23,38 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     teachersList->setDragEnabled(true);
 
     connect(teachersList,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(setChosenTeacher(QModelIndex)));
+    connect(teachersList,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(process()));
 
     runner->tryQuery(QString("Select id_prep as 'ID',concat(familiya, ' ' ,imya,' ' , otchestvo) as 'Имя' from prepodavatel LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
                              "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta"
                              " WHERE universitet.id_universiteta = %1").arg(receivedID),1);
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+    myWebView = new QWebView;
+#endif
 
-//    teachersList->setColumnHidden(0,true);
-//    teachersList->setColumnHidden(1,true);
-//    teachersList->setColumnHidden(5,true);
-//    teachersList->setColumnHidden(6,true);
-//    teachersList->setColumnHidden(7,true);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    myWebView = new QWebEngineView;
+#endif
+
+    myWebView->setHtml("Выберите преподавателя, чтобы просмотреть отчет");
+    chosenTeacherLabel = new QLabel(tr("Выбранный преподаватель"));
+    fileSavePathLabel = new QLabel(tr("Выбранный путь"));
+    teachersLabel = new QLabel(tr("Список преподавателей"));
+    outputFormatLabel = new QLabel(tr("Формат вывода данных"));
+    previewLabel = new QLabel(tr("Предпросмотр отчета"));
+
+    chosenTeacherLabel->setAlignment(Qt::AlignCenter);
+    fileSavePathLabel->setAlignment(Qt::AlignCenter);
+    teachersLabel->setAlignment(Qt::AlignCenter);
+    outputFormatLabel->setAlignment(Qt::AlignCenter);
+    previewLabel->setAlignment(Qt::AlignCenter);
+
+    teachersList->setColumnHidden(0,true);
+    //    teachersList->setColumnHidden(1,true);
+    //    teachersList->setColumnHidden(5,true);
+    //    teachersList->setColumnHidden(6,true);
+    //    teachersList->setColumnHidden(7,true);
 
     teachersList->resizeColumnsToContents();
     teachersList->resizeRowsToContents();
@@ -40,20 +62,45 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
 
     chosenTeacher = new QLineEdit;
     chosenTeacher->setReadOnly(1);
-    fileSavePath = new QLineEdit;
 
-    confirmOutput = new QPushButton("OK");
-    connect(confirmOutput,SIGNAL(clicked(bool)),this,SLOT(process()));
+    confirmOutput = new QPushButton("Продолжить");
+    confirmOutput->setEnabled(0);
+    connect(confirmOutput,SIGNAL(clicked(bool)),this,SLOT(saveFile()));
 
     outputFormat = new QComboBox;
-    internalVBoxLayout = new QVBoxLayout;
-    internalVBoxLayout->addWidget(chosenTeacher);
-    internalVBoxLayout->addWidget(outputFormat);
-    internalVBoxLayout->addWidget(confirmOutput);
+    outputFormat->addItem(tr("Вывод в PDF файл"));
+    outputFormat->addItem(tr("Вывод в HTML файл"));
+    outputFormat->addItem(tr("Печать"));
+
+
+    t1VBoxLayout = new QVBoxLayout;
+    t2VBoxLayout = new QVBoxLayout;
+
+    t1VBoxLayout->addWidget(chosenTeacherLabel);
+    t2VBoxLayout->addWidget(chosenTeacher);
+
+    t1VBoxLayout->addWidget(outputFormatLabel);
+    t2VBoxLayout->addWidget(outputFormat);
+
+    internalTopHBoxLayout = new QHBoxLayout;
+
+    internalTopHBoxLayout->addLayout(t1VBoxLayout);
+    internalTopHBoxLayout->addLayout(t2VBoxLayout);
+
+    internalRightVBoxLayout = new QVBoxLayout;
+    internalRightVBoxLayout->addLayout(internalTopHBoxLayout);
+    internalRightVBoxLayout->addWidget(previewLabel);
+    internalRightVBoxLayout->addWidget(myWebView);
+    internalRightVBoxLayout->addWidget(confirmOutput);
+
+    internalLeftVBoxLayout = new QVBoxLayout;
+    internalLeftVBoxLayout->addWidget(teachersLabel);
+    internalLeftVBoxLayout->addWidget(teachersList);
+
 
     externalHBoxLayout = new QHBoxLayout(this);
-    externalHBoxLayout->addWidget(teachersList);
-    externalHBoxLayout->addLayout(internalVBoxLayout);
+    externalHBoxLayout->addLayout(internalLeftVBoxLayout);
+    externalHBoxLayout->addLayout(internalRightVBoxLayout);
 
 
 
@@ -68,118 +115,71 @@ void OutputToFileView::setTeachersModel(QSqlQueryModel *model)
 
 void OutputToFileView::setChosenTeacher(QModelIndex index)
 {
+    confirmOutput->setEnabled(0);
+    receivedHtmlData = "";
     savedIndex = index;
     chosenTeacher->setText(teachersList->model()->data(index).toString());
 }
 
 void OutputToFileView::process()
 {
-    QString filename = QFileDialog::getSaveFileName(this, QString::fromLocal8Bit("Сохранить"),
-                               ":/",
-                               ("PDF (*.pdf)"));
 
-    runner->outputToFile(teachersList->model()->data(teachersList->model()->index(savedIndex.row(),0)).toInt(),filename);
+    runner->outputToFile(teachersList->model()->data(teachersList->model()->index(savedIndex.row(),0)).toInt(),receivedID.toInt(),chosenTeacher->text());
 
+}
 
-
-
-
-
-
-
-
-
-    /*
-    QFile startFile("start.htm");
-    if (!startFile.open(QIODevice::ReadOnly|QIODevice::Text)) return;
-    QString text = startFile.readAll();
-
-
-    QFile middleFile("middle.htm");
-    if (!middleFile.open(QIODevice::ReadOnly|QIODevice::Text)) return;
-
-
-    QString queryStr = QString("SELECT "
-    "fakultet.nazvanie_fakulteta,"
-    "potok.kurs,"
-    "specialnost.nazvanie_spec,"
-    "potok.kolvo_studentov,"
-    "potok.kolvo_grupp,"
-    "potok.kolvo_podgrupp,"
-    "disciplina.nazvanie_discipliny,"
-    "zanyatost.semestr,"
-    "zanyatost.nedeli,"
-    "sum(raspredelenie.lekcii_chasov),sum(raspredelenie.seminary_chasov),sum(raspredelenie.lab_chasov),"
-    "sum(raspredelenie.kontrol_chasov),sum(raspredelenie.konsultacii_chasov),sum(raspredelenie.zachet_chasov),"
-    "sum(raspredelenie.ekzamen_chasov),sum(raspredelenie.kursovie_chasov),sum(raspredelenie.ucheb_praktika_chasov),"
-    "sum(raspredelenie.proizv_praktika_chasov),sum(raspredelenie.preddipl_praktika_chasov),sum(raspredelenie.vkl_chasov),"
-    "sum(raspredelenie.obz_lekcii_chasov),sum(raspredelenie.gek_chasov),sum(raspredelenie.nirs_chasov),sum(raspredelenie.asp_dokt_chasov) "
-    "FROM raspredelenie "
-    "LEFT JOIN zanyatost on raspredelenie.id_zanyatosti = zanyatost.id_zapisi "
-    "LEFT JOIN disciplina on zanyatost.id_discipliny = disciplina.id_discipliny "
-    "LEFT JOIN potok on zanyatost.id_potoka = potok.id_potoka "
-    "LEFT JOIN specialnost on potok.id_spec = specialnost.id_spec "
-    "LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta "
-    "where id_prep = %1 group by id_zanyatosti").arg(teachersList->model()->data(savedIndex).toInt());
-
-
-    QSqlDatabase db;
-
-    if (QSqlDatabase::contains("dbConnection"))
+int OutputToFileView::saveFile()
+{
+    if (outputFormat->currentIndex()==0)
     {
-        db = QSqlDatabase::database("dbConnection");
+        QString filename = QFileDialog::getSaveFileName(this, tr("Сохранить"),
+                                                        "",
+                                                        ("PDF (*.pdf)"));
+        QPrinter printer(QPrinter::HighResolution);
+        printer.setOutputFileName(filename);
+        QTextDocument textdocument;
+        textdocument.setHtml(receivedHtmlData);
+        textdocument.print(&printer);
     }
-    else
-        db = QSqlDatabase::addDatabase("QMYSQL","dbConnection");
 
-    QSqlQuery query(db);
-    query.exec(queryStr);
-    qDebug() << query.size();
-
-    for (int i = 0; i < query.size(); i++)
+    else if (outputFormat->currentIndex()==1)
     {
-        query.next();
-        text += middleFile.readAll();
+        QString filename = QFileDialog::getSaveFileName(this, tr("Сохранить"),
+                                                        "",
+                                                        ("HTML File (*.html,*.htm)"));
+        QFile outputFile(filename);
+        outputFile.open(QIODevice::WriteOnly);
 
-        text.replace(QString("%faculty%"),query.value(0).toString());
-        text.replace(QString("%year%"),query.value(1).toString());
-        text.replace(QString("%specialty%"),query.value(2).toString());
-        text.replace(QString("%students%"),query.value(3).toString());
-        text.replace(QString("%groups%"),query.value(4).toString());
-        text.replace(QString("%subgroups%"),query.value(5).toString());
-        text.replace(QString("%discipline%"),query.value(6).toString());
-        text.replace(QString("%semester%"),query.value(7).toString());
-        text.replace(QString("%weeks%"),query.value(8).toString());
-        text.replace(QString("%ind%"),"-");
-        text.replace(QString("%lec%"),query.value(9).toString());
-        text.replace(QString("%sem%"),query.value(10).toString());
-        text.replace(QString("%lab%"),query.value(11).toString());
-        text.replace(QString("%ctek%"),query.value(12).toString());
-        text.replace(QString("%cekz%"),query.value(13).toString());
-        text.replace(QString("%cont%"),query.value(14).toString());
-        text.replace(QString("%refr%"),query.value(15).toString());
-        text.replace(QString("%zach%"),query.value(16).toString());
-        text.replace(QString("%ekz%"),query.value(17).toString());
-        text.replace(QString("%gek%"),query.value(18).toString());
-        text.replace(QString("%prak%"),query.value(19).toString());
-        text.replace(QString("%dipl%"),query.value(20).toString());
-        text.replace(QString("%total%"),"-");
+        if(!outputFile.isOpen())
+        {
+            return 1;
+        }
+
+        QTextStream outStream(&outputFile);
+        outStream << receivedHtmlData;
+        outputFile.close();
+    }
+
+    else if (outputFormat->currentIndex()==2)
+    {
+        QPrinter printer;
+        QPrintDialog dialog(&printer,this);
+        if (dialog.exec())
+        {
+            QTextDocument textdocument;
+            textdocument.setHtml(receivedHtmlData);
+            textdocument.print(&printer);
+        }
 
     }
 
-    QFile endFile("end.htm");
-    if (!endFile.open(QIODevice::ReadOnly|QIODevice::Text)) return;
-    text += endFile.readAll();
+    return 0;
 
+}
 
-    QString filename = QFileDialog::getSaveFileName(this, QString::fromLocal8Bit("Сохранить"),
-                               ":/",
-                               ("PDF (*.pdf)"));
-    QPrinter printer(QPrinter::HighResolution);
-    printer.setOutputFileName(filename);
-    QTextDocument textdocument;
-    textdocument.setHtml(text);
-    textdocument.print(&printer);*/
-
-
+void OutputToFileView::getHtmlData(QString htmlData)
+{
+    receivedHtmlData = htmlData;
+    myWebView->setHtml(htmlData);
+    confirmOutput->setEnabled(1);
 }

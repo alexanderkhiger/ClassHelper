@@ -19,6 +19,20 @@
 #include <QTextDocument>
 #include <QSqlQuery>
 #include <QSqlDatabase>
+#include <QLabel>
+#include <QtGlobal>
+#include <QTextStream>
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    #include <QWebEngineView>
+#endif
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    #include <QWebEngine>
+#endif
+
+
 
 class OutputToFileView : public QWidget
 {
@@ -31,21 +45,42 @@ public slots:
     void setTeachersModel(QSqlQueryModel *model);
     void setChosenTeacher(QModelIndex index);
     void process();
+    int saveFile();
+    void getHtmlData(QString htmlData);
 
 private:
 
     QModelIndex savedIndex;
     QTableView *teachersList;
     QLineEdit *chosenTeacher;
-    QLineEdit *fileSavePath;
     QPushButton *confirmOutput;
     QComboBox *outputFormat;
-    QVBoxLayout *internalVBoxLayout;
+    QString receivedHtmlData;
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+        QWebView *myWebView;
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+        QWebEngineView *myWebView;
+#endif
+
+    QVBoxLayout *internalRightVBoxLayout;
+    QVBoxLayout *internalLeftVBoxLayout;
     QHBoxLayout *externalHBoxLayout;
+    QHBoxLayout *internalTopHBoxLayout;
+    QVBoxLayout *t1VBoxLayout;
+    QVBoxLayout *t2VBoxLayout;
 
     QSqlQueryModel *teachersModel;
     QueryRunner *runner;
     QString receivedID;
+
+    QLabel *chosenTeacherLabel;
+    QLabel *fileSavePathLabel;
+    QLabel *teachersLabel;
+    QLabel *outputFormatLabel;
+    QLabel *previewLabel;
 
 };
 

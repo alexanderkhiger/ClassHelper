@@ -64,6 +64,8 @@ public slots:
     void setWorkFieldAsCentral();
     void chooseColumns(int state);
     void outputToFile();
+    void toggleClassesChecks();
+    void toggleTeachersChecks();
 
 private:
     QToolBar *leftBar;
@@ -151,6 +153,9 @@ private:
 
     QLabel *classesTextEditHeader;
     QLabel *teachersTextEditHeader;
+
+    QPushButton *classesShowChecks;
+    QPushButton *teachersShowChecks;
 
 
     QWidget *myWorkField;

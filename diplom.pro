@@ -8,6 +8,11 @@ QT       += core gui sql printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+lessThan(QT_MAJOR_VERSION,5): QT += webkit webkitwidgets
+
+greaterThan(QT_MAJOR_VERSION, 5): QT += webenginewidgets
+
+
 TARGET = diplom
 TEMPLATE = app
 

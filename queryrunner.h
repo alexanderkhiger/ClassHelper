@@ -11,7 +11,6 @@
 #include <QSqlRecord>
 #include <QList>
 
-
 #include <QFile>
 #include <QPrintDialog>
 #include <QPrinter>
@@ -33,12 +32,13 @@ signals:
     void querySuccessReturnModel(QSqlQueryModel *model);
     void returnTableModel(QSqlTableModel *model);
     void returnValues(QList<double> myList);
+    void returnHtml(QString htmlData);
 
 public slots:
     int tryQuery(const QString query, bool isModelNeeded = 0, bool isDataNeeded = 0);
     void tryAuth(const QString login, const QString password, const QString database, const QString hostname);
     void tryTableModel(const QString tableName);
-    void outputToFile(int teacherID, QString path);
+    void outputToFile(int teacherID, int uID, QString name);
 
 private:
     int check;
