@@ -35,6 +35,7 @@
 #include <QAction>
 #include <QToolButton>
 #include <QToolBar>
+#include <customquerymodel.h>
 
 class MainWindowView : public QMainWindow
 {
@@ -52,13 +53,14 @@ public slots:
     void newFile();
     void back();
     void getData(QString objName, QString containedData);
-    void setClassesModel(QSqlQueryModel *model);
-    void setTeachersModel(QSqlQueryModel *model);
+    void setClassesModel(CustomQueryModel *model);
+    void setTeachersModel(CustomQueryModel *model);
     void setDiffModel(QSqlQueryModel *model);
     void getError(QSqlError error);
     void distributeHours();
     void setData(QList<double> list);
-    void distributeAllHours();
+    void distributeDiscipline();
+    void distributeAll(int classID, int teacherID, QString className, QString teacherName);
     void changeCurrentSemester();
     void setTableEditorAsCentral();
     void setWorkFieldAsCentral();
@@ -66,8 +68,13 @@ public slots:
     void outputToFile();
     void toggleClassesChecks();
     void toggleTeachersChecks();
+    void classToTeacherDrag(QModelIndex index);
+    void teacherToClassDrag(QModelIndex index);
 
 private:
+
+    QString eventSource;
+
     QToolBar *leftBar;
     QToolBar *topBar;
     QToolButton *clearTool;
@@ -100,9 +107,14 @@ private:
     QModelIndex savedTeacherIndex;
     QModelIndex savedClassIndex;
     QWidget *parentReference;
+
     QSqlQueryModel *classModelReference;
     QSqlQueryModel *teacherModelReference;
     QSqlQueryModel *diffModelReference;
+
+    CustomQueryModel *customClass;
+    CustomQueryModel *customTeacher;
+
     QString query;
     QString receivedID;
     QString receivedName;

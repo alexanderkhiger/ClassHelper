@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql printsupport
+QT       += core gui sql printsupport webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -46,7 +46,8 @@ SOURCES += \
     dataselectorview.cpp \
     dataselectormodel.cpp \
     customdoublevalidator.cpp \
-    outputtofileview.cpp
+    outputtofileview.cpp \
+    customquerymodel.cpp
 
 HEADERS += \
     droparea.h \
@@ -65,4 +66,5 @@ HEADERS += \
     dataselectorview.h \
     dataselectormodel.h \
     customdoublevalidator.h \
-    outputtofileview.h
+    outputtofileview.h \
+    customquerymodel.h

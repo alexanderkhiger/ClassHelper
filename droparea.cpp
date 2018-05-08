@@ -32,6 +32,7 @@ void DropArea::dropEvent(QDropEvent *event)
     setBackgroundRole(QPalette::Dark);
     event->acceptProposedAction();
     emit changed(event->source(), event->mimeData());
+
 }
 
 void DropArea::dragLeaveEvent(QDragLeaveEvent *event)

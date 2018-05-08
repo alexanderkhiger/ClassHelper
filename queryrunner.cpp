@@ -3,7 +3,6 @@
 QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
 {
     check = 0;
-
     if (QSqlDatabase::contains("dbConnection"))
     {
         db = QSqlDatabase::database("dbConnection");
@@ -13,6 +12,7 @@ QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
     //    defaultQuery = new QSqlQuery(db);
     defaultQuery = QSqlQuery(db);
     defaultModel = new QSqlQueryModel;
+    defaultCustomModel = new CustomQueryModel;
     defaultTableModel = new QSqlTableModel(this,db);
 }
 
@@ -42,8 +42,10 @@ int QueryRunner::tryQuery(const QString query, bool isModelNeeded, bool isDataNe
     QList<double> *myList = new QList<double>;
     if (isModelNeeded)
     {
+        defaultCustomModel->setQuery(query,db);
         defaultModel->setQuery(query,db);
-        emit querySuccessReturnModel(defaultModel);
+//        emit querySuccessReturnModel(defaultModel);
+        emit querySuccessReturnCustomModel(defaultCustomModel);
     }
 
     else
@@ -84,6 +86,7 @@ void QueryRunner::tryTableModel(const QString tableName)
 
 void QueryRunner::outputToFile(int teacherID, int uID, QString name)
 {
+
     QFile startFile("start.htm");
     if (!startFile.open(QIODevice::ReadOnly|QIODevice::Text)) return;
     QString text = startFile.readAll();
@@ -143,7 +146,6 @@ void QueryRunner::outputToFile(int teacherID, int uID, QString name)
                                "group by id_zanyatosti having total > 0 order by zanyatost.semestr").arg(teacherID).arg(uID);
 
     defaultQuery.exec(queryStr);
-
     for (int i = 0; i < defaultQuery.size(); i++)
     {
         defaultQuery.next();

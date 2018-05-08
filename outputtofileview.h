@@ -29,7 +29,7 @@
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    #include <QWebEngine>
+    #include <QWebView>
 #endif
 
 

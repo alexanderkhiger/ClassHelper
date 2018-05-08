@@ -18,6 +18,7 @@ signals:
 
 public slots:
     void updateParameters(const QObject *myObject, const QMimeData *mimeData);
+    void distributeAllToTeacher(int idZan, int idPrep);
 
 private:
     QString containedData;

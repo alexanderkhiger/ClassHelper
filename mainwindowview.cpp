@@ -2,6 +2,7 @@
 
 MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, QWidget *ref, QWidget *parent) : QMainWindow(parent)
 {
+    eventSource = "";
     currentSemester = 1;
     savedTeacherIndex = QModelIndex();
     savedClassIndex = QModelIndex();
@@ -12,14 +13,19 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     receivedName = uName;
     receivedShortname = uShortname;
     mwModel = new MainWindowModel;
-    teacherModelReference = new QSqlQueryModel;
-    classModelReference = new QSqlQueryModel;
+//    teacherModelReference = new QSqlQueryModel;
+//    classModelReference = new QSqlQueryModel;
     diffModelReference = new QSqlQueryModel;
+
+    customClass = new CustomQueryModel;
+    customTeacher = new CustomQueryModel;
+
     runner = new QueryRunner;
     connect(runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
     createUI();
     connect(mwModel,SIGNAL(sendData(QString,QString)),this,SLOT(getData(QString,QString)));
     connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
+
 }
 
 void MainWindowView::createUI()
@@ -146,12 +152,15 @@ void MainWindowView::createWorkfieldWidget()
 
     teachersList->setDragEnabled(true);
     classesList->setDragEnabled(true);
-
+    teachersList->setAcceptDrops(true);
+    classesList->setAcceptDrops(true);
+    teachersList->setDropIndicatorShown(true);
+    classesList->setDropIndicatorShown(true);
 
     teachersRunner = new QueryRunner;
     classesRunner = new QueryRunner;
-    connect(teachersRunner,SIGNAL(querySuccessReturnModel(QSqlQueryModel*)),this,SLOT(setTeachersModel(QSqlQueryModel*)));
-    connect(classesRunner,SIGNAL(querySuccessReturnModel(QSqlQueryModel*)),this,SLOT(setClassesModel(QSqlQueryModel*)));
+    connect(teachersRunner,SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setTeachersModel(CustomQueryModel*)));
+    connect(classesRunner,SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setClassesModel(CustomQueryModel*)));
 
     classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
                                     "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
@@ -385,22 +394,22 @@ void MainWindowView::createWorkfieldWidget()
     nirsButtonAdd->setObjectName("nirsButtonAdd");
     aspButtonAdd->setObjectName("aspButtonAdd");
 
-    connect(lecButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(semButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(labButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(contButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(consButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(zachButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(examButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(kursButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(uchPrButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(proizvPrButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(predPrButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(vklButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(obzButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(gekButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(nirsButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(aspButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
+    connect(lecButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(semButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(labButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(contButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(consButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(zachButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(examButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(kursButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(uchPrButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(proizvPrButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(predPrButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(vklButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(obzButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(gekButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(nirsButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(aspButtonAdd,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
 
     lecLabelAdd = new QLabel;
     semLabelAdd = new QLabel;
@@ -504,22 +513,22 @@ void MainWindowView::createWorkfieldWidget()
     nirsButtonRemove->setObjectName("nirsButtonRemove");
     aspButtonRemove->setObjectName("aspButtonRemove");
 
-    connect(lecButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(semButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(labButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(contButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(consButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(zachButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(examButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(kursButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(uchPrButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(proizvPrButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(predPrButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(vklButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(obzButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(gekButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(nirsButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
-    connect(aspButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeAllHours()));
+    connect(lecButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(semButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(labButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(contButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(consButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(zachButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(examButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(kursButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(uchPrButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(proizvPrButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(predPrButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(vklButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(obzButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(gekButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(nirsButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
+    connect(aspButtonRemove,SIGNAL(clicked(bool)),this,SLOT(distributeDiscipline()));
 
     lecLabelRemove = new QLabel;
     semLabelRemove = new QLabel;
@@ -762,16 +771,18 @@ void MainWindowView::getData(QString objName, QString containedData)
 }
 
 
-void MainWindowView::setClassesModel(QSqlQueryModel *model)
+void MainWindowView::setClassesModel(CustomQueryModel *model)
 {
-    classModelReference = model;
-    classesList->setModel(classModelReference);
+    customClass = model;
+    classesList->setModel(customClass);
+    connect(customClass,SIGNAL(targetIndex(QModelIndex)),this,SLOT(teacherToClassDrag(QModelIndex)));
 }
 
-void MainWindowView::setTeachersModel(QSqlQueryModel *model)
+void MainWindowView::setTeachersModel(CustomQueryModel *model)
 {
-    teacherModelReference = model;
-    teachersList->setModel(teacherModelReference);
+    customTeacher = model;
+    teachersList->setModel(customTeacher);
+    connect(customTeacher,SIGNAL(targetIndex(QModelIndex)),this,SLOT(classToTeacherDrag(QModelIndex)));
 }
 
 void MainWindowView::setDiffModel(QSqlQueryModel *model)
@@ -857,7 +868,7 @@ void MainWindowView::setData(QList<double> list)
 }
 
 
-void MainWindowView::distributeAllHours()
+void MainWindowView::distributeDiscipline()
 {
     doubleClickClassUpdate(savedClassIndex);
     if (sender()->objectName() == "lecButtonAdd")
@@ -1172,15 +1183,93 @@ void MainWindowView::distributeAllHours()
     doubleClickTeacherUpdate(savedTeacherIndex);
 }
 
+void MainWindowView::distributeAll(int classID, int teacherID, QString className, QString teacherName)
+{
+
+    QString query = QString("Select id_zapisi, lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
+                            "zachet_chasov,ekzamen_chasov,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
+                            "asp_dokt_chasov,semestr from zanyatost where id_zapisi = %1").arg(classID);
+    runner->tryQuery(query,0,1);
+    totalHoursLeftList = myList;
+
+    double value1 = totalHoursLeftList.value(1);
+    double value2 = totalHoursLeftList.value(2);
+    double value3 = totalHoursLeftList.value(3);
+    double value4 = totalHoursLeftList.value(4);
+    double value5 = totalHoursLeftList.value(5);
+    double value6 = totalHoursLeftList.value(6);
+    double value7 = totalHoursLeftList.value(7);
+    double value8 = totalHoursLeftList.value(8);
+    double value9 = totalHoursLeftList.value(9);
+    double value10 = totalHoursLeftList.value(10);
+    double value11 = totalHoursLeftList.value(11);
+    double value12 = totalHoursLeftList.value(12);
+    double value13 = totalHoursLeftList.value(13);
+    double value14 = totalHoursLeftList.value(14);
+    double value15 = totalHoursLeftList.value(15);
+    double value16 = totalHoursLeftList.value(16);
+
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Распределить все часы дисциплины %1 преподавателю %2?").arg(className).arg(teacherName)), QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+        return;
+
+    runner->tryQuery("START TRANSACTION;");
+
+    query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,zachet_chasov,ekzamen_chasov,"
+    "kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,asp_dokt_chasov) "
+    "VALUES (%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18)")
+            .arg(classID)
+            .arg(teacherID)
+            .arg(value1)
+            .arg(value2)
+            .arg(value3)
+            .arg(value4)
+            .arg(value5)
+            .arg(value6)
+            .arg(value7)
+            .arg(value8)
+            .arg(value9)
+            .arg(value10)
+            .arg(value11)
+            .arg(value12)
+            .arg(value13)
+            .arg(value14)
+            .arg(value15)
+            .arg(value16);
+    runner->tryQuery(query);
+
+    runner->tryQuery(QString("UPDATE zanyatost SET lekcii_chasov = lekcii_chasov - %1 WHERE id_zapisi = %2").arg(value1).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET seminary_chasov = seminary_chasov - %1 WHERE id_zapisi = %2").arg(value2).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET lab_chasov = lab_chasov - %1 WHERE id_zapisi = %2" ).arg(value3).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET kontrol_chasov = kontrol_chasov - %1 WHERE id_zapisi = %2").arg(value4).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET konsultacii_chasov = konsultacii_chasov - %1 WHERE id_zapisi = %2").arg(value5).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET zachet_chasov = zachet_chasov - %1 WHERE id_zapisi = %2").arg(value6).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET ekzamen_chasov = ekzamen_chasov - %1 WHERE id_zapisi = %2").arg(value7).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET kursovie_chasov = kursovie_chasov - %1 WHERE id_zapisi = %2").arg(value8).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET ucheb_praktika_chasov = ucheb_praktika_chasov - %1 WHERE id_zapisi = %2").arg(value9).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET proizv_praktika_chasov = proizv_praktika_chasov - %1 WHERE id_zapisi = %2").arg(value10).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET preddipl_praktika_chasov = preddipl_praktika_chasov - %1 WHERE id_zapisi = %2").arg(value11).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET vkl_chasov = vkl_chasov - %1 WHERE id_zapisi = %2").arg(value12).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET obz_lekcii_chasov = obz_lekcii_chasov - %1 WHERE id_zapisi = %2").arg(value13).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET gek_chasov = gek_chasov - %1 WHERE id_zapisi = %2").arg(value14).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET nirs_chasov = nirs_chasov - %1 WHERE id_zapisi = %2").arg(value15).arg(classID));
+    runner->tryQuery(QString("UPDATE zanyatost SET asp_dokt_chasov = asp_dokt_chasov - %1 WHERE id_zapisi = %2").arg(value16).arg(classID));
+    runner->tryQuery("COMMIT;");
+
+}
+
 void MainWindowView::changeCurrentSemester()
 {
     if (currentSemester == 1)
     {
         currentSemester = 2;
-        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',concat(nazvanie_potoka,' | ',nazvanie_discipliny) as 'Название' from zanyatost left join disciplina on "
-                                        "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
-                                        "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi").arg(receivedID).arg(2),1);
+        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
+                                             "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
+                                             "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
+                                             "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
+                                     .arg(receivedID).arg(currentSemester),1);
 
         classesList->resizeColumnsToContents();
         classesList->resizeRowsToContents();
@@ -1188,10 +1277,11 @@ void MainWindowView::changeCurrentSemester()
     else
     {
         currentSemester = 1;
-        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',concat(nazvanie_potoka,' | ',nazvanie_discipliny) as 'Название' from zanyatost left join disciplina on "
-                                        "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
-                                        "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi").arg(receivedID).arg(1),1);
+        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
+                                         "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
+                                         "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
+                                         "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
+                                 .arg(receivedID).arg(currentSemester),1);
         classesList->resizeColumnsToContents();
         classesList->resizeRowsToContents();
     }
@@ -1299,6 +1389,38 @@ void MainWindowView::toggleTeachersChecks()
     }
 }
 
+void MainWindowView::classToTeacherDrag(QModelIndex receivedIndex)
+{
+    if (classesList->hasFocus())
+    {
+        distributeAll(customClass->data(customClass->index(classesList->currentIndex().row(),0,QModelIndex())).toInt(),
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),0,QModelIndex())).toInt(),
+                      customClass->data(customClass->index(classesList->currentIndex().row(),1,QModelIndex())).toString() + " " +
+                      customClass->data(customClass->index(classesList->currentIndex().row(),2,QModelIndex())).toString(),
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),2,QModelIndex())).toString() +
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),3,QModelIndex())).toString() +
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),4,QModelIndex())).toString());
+        clearParameters();
+    }
+}
+
+void MainWindowView::teacherToClassDrag(QModelIndex receivedIndex)
+{
+    if (teachersList->hasFocus())
+    {
+        distributeAll(customClass->data(customClass->index(receivedIndex.row(),0,QModelIndex())).toInt(),
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),0,QModelIndex())).toInt(),
+                      customClass->data(customClass->index(receivedIndex.row(),1,QModelIndex())).toString() +
+                      customClass->data(customClass->index(receivedIndex.row(),2,QModelIndex())).toString(),
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),2,QModelIndex())).toString() + " " +
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),3,QModelIndex())).toString() + " " +
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),4,QModelIndex())).toString());
+        clearParameters();
+    }
+}
+
+
+
 void MainWindowView::newFile()
 {
     if (centralWidget()->objectName()!="loadNewFile")
@@ -1330,8 +1452,8 @@ void MainWindowView::checkFields()
 void MainWindowView::doubleClickClassUpdate(const QModelIndex index)
 {
     savedClassIndex = index;
-    chosenClass->setText(classModelReference->data(index).toString());
-    chosenClassID = classModelReference->data(classModelReference->index(index.row(),0,QModelIndex())).toInt();
+    chosenClass->setText(customClass->data(index).toString());
+    chosenClassID = customClass->data(customClass->index(index.row(),0,QModelIndex())).toInt();
     QString query = QString("Select id_zapisi, lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                             "zachet_chasov,ekzamen_chasov,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
                             "asp_dokt_chasov,semestr from zanyatost where id_zapisi = %1").arg(chosenClassID);
@@ -1380,8 +1502,8 @@ void MainWindowView::doubleClickClassUpdate(const QModelIndex index)
 void MainWindowView::doubleClickTeacherUpdate(const QModelIndex index)
 {
     savedTeacherIndex = index;
-    chosenTeacher->setText(teacherModelReference->data(index).toString());
-    chosenTeacherID = teacherModelReference->data(teacherModelReference->index(index.row(),0,QModelIndex())).toInt();
+    chosenTeacher->setText(customTeacher->data(index).toString());
+    chosenTeacherID = customTeacher->data(customTeacher->index(index.row(),0,QModelIndex())).toInt();
     updateDataForSelectedClass();
 
     MainWindowView::checkFields();

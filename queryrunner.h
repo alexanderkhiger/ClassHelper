@@ -6,6 +6,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlQueryModel>
+#include "customquerymodel.h"
 #include <QSqlTableModel>
 #include <QDebug>
 #include <QSqlRecord>
@@ -30,6 +31,7 @@ signals:
     void queryError(const QSqlError error);
     void querySuccess();
     void querySuccessReturnModel(QSqlQueryModel *model);
+    void querySuccessReturnCustomModel(CustomQueryModel *model);
     void returnTableModel(QSqlTableModel *model);
     void returnValues(QList<double> myList);
     void returnHtml(QString htmlData);
@@ -45,6 +47,7 @@ private:
     QSqlQuery defaultQuery;
     QSqlQueryModel *defaultModel;
     QSqlTableModel *defaultTableModel;
+    CustomQueryModel *defaultCustomModel;
 };
 
 #endif // QUERYRUNNER_H
