@@ -84,6 +84,8 @@ void LoadNewFileModel::setData(QList<double> list)
 
 void LoadNewFileModel::processData(const QString dir)
 {
+    double countedTotal = 0;
+    double expectedTotal = 0;
     QFile file (dir);
     if(file.open(QIODevice::ReadOnly))
     {
@@ -133,13 +135,15 @@ void LoadNewFileModel::processData(const QString dir)
                 singleLine=stream.readLine();
 
             //
-
+            for (int i = 0; i < 4; i++)
+            {
             singleLine=stream.readLine();
-            singleLine=stream.readLine();
-            singleLine=stream.readLine();
-            singleLine=stream.readLine();
-
-            //
+            if (singleLine.contains("ИТОГИ"))
+                {
+                    QStringList totalInfo = singleLine.split("|");
+                    expectedTotal = QString(totalInfo[14]).remove(" ").toDouble();
+                }
+            }
 
             while (!stream.atEnd()&&!singleLine.contains("ИТОГИ")&&singleLine.contains("Факультет"))
             {
@@ -178,69 +182,69 @@ void LoadNewFileModel::processData(const QString dir)
 
 
                     query = QString("SELECT id_fakulteta FROM fakultet WHERE nazvanie_fakulteta = '%1' AND id_universiteta = %2").arg(facultyName).arg(receivedID.toInt());
-                    querySize = runner->tryQuery(query,0,1);
+                querySize = runner->tryQuery(query,0,1);
 
-                    if (querySize == 1)
-                    {
-                        facultyId = int(myList.value(0));
-                    }
+                if (querySize == 1)
+                {
+                    facultyId = int(myList.value(0));
+                }
 
-                    else if (querySize >= 0 && isSkipping == 0)
-                    {
-                        mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID);
-                        mySelector->show();
-                        //                    QTimer timer;
-                        //                    timer.setSingleShot(true);
-                        QEventLoop loop;
-                        connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
-                        //                    connect(&timer,SIGNAL(timeout()),&loop,SLOT(quit()));
-                        //                    timer.start();
-                        loop.exec();
-                        facultyId = mySelector->faculty_id;
-                        mySelector->close();
-                        delete mySelector;
-                    }
+                else if (querySize >= 0 && isSkipping == 0)
+                {
+                    mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID);
+                    mySelector->show();
+                    //                    QTimer timer;
+                    //                    timer.setSingleShot(true);
+                    QEventLoop loop;
+                    connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
+                    //                    connect(&timer,SIGNAL(timeout()),&loop,SLOT(quit()));
+                    //                    timer.start();
+                    loop.exec();
+                    facultyId = mySelector->faculty_id;
+                    mySelector->close();
+                    delete mySelector;
+                }
 
-                    else if (querySize >= 0 && isSkipping == 1)
-                    {
-                        mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID,0,1);
-                        facultyId = mySelector->faculty_id;
-                        mySelector->close();
-                        delete mySelector;
-                    }
-
-
-                    query = QString("SELECT id_spec FROM specialnost WHERE nazvanie_spec = '%1' AND id_fakulteta = %2").arg(specialty).arg(facultyId);
-                    //                delete runner;
-                    //                runner = new QueryRunner;
-                    querySize = runner->tryQuery(query,0,1);
-                    int specialtyID = 0;
-
-                    if (querySize == 1)
-                    {
-                        specialtyID = int(myList.value(0));
-                    }
+                else if (querySize >= 0 && isSkipping == 1)
+                {
+                    mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID,0,1);
+                    facultyId = mySelector->faculty_id;
+                    mySelector->close();
+                    delete mySelector;
+                }
 
 
-                    else if (querySize >= 0 && isSkipping == 0)
-                    {
-                        mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId));
-                        mySelector->show();
-                        QEventLoop loop;
-                        connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
-                        loop.exec();
-                        specialtyID = mySelector->specialty_id;
-                        mySelector->close();
-                        delete mySelector;
-                    }
+                query = QString("SELECT id_spec FROM specialnost WHERE nazvanie_spec = '%1' AND id_fakulteta = %2").arg(specialty).arg(facultyId);
+                //                delete runner;
+                //                runner = new QueryRunner;
+                querySize = runner->tryQuery(query,0,1);
+                int specialtyID = 0;
 
-                    else if (querySize >= 0 && isSkipping == 1)
-                    {
-                        mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId),0,1);
-                        specialtyID = mySelector->specialty_id;
-                        mySelector->close();
-                        delete mySelector;
-                    }
+                if (querySize == 1)
+                {
+                    specialtyID = int(myList.value(0));
+                }
+
+
+                else if (querySize >= 0 && isSkipping == 0)
+                {
+                    mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId));
+                    mySelector->show();
+                    QEventLoop loop;
+                    connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
+                    loop.exec();
+                    specialtyID = mySelector->specialty_id;
+                    mySelector->close();
+                    delete mySelector;
+                }
+
+                else if (querySize >= 0 && isSkipping == 1)
+                {
+                    mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId),0,1);
+                    specialtyID = mySelector->specialty_id;
+                    mySelector->close();
+                    delete mySelector;
+                }
 
 
                 //______________________________________________________________вставка специальности закончена_______________________________________________
@@ -357,14 +361,14 @@ void LoadNewFileModel::processData(const QString dir)
 
 
 
-//                query = QString("INSERT INTO disciplina(nazvanie_discipliny) VALUES ('%1')").arg(disciplineName);
-//                runner->tryQuery(query);
+                //                query = QString("INSERT INTO disciplina(nazvanie_discipliny) VALUES ('%1')").arg(disciplineName);
+                //                runner->tryQuery(query);
 
 
-//                query = QString("SELECT LAST_INSERT_ID() AS id");
-//                returnedQuery = runner->tryQuery(query);
-//                returnedQuery.next();
-//                disciplineID = returnedQuery.value(0).toInt();
+                //                query = QString("SELECT LAST_INSERT_ID() AS id");
+                //                returnedQuery = runner->tryQuery(query);
+                //                returnedQuery.next();
+                //                disciplineID = returnedQuery.value(0).toInt();
                 //______________________________________________________________вставка дисциплины закончена_______________________________________________
 
                 singleLine=stream.readLine();
@@ -405,6 +409,7 @@ void LoadNewFileModel::processData(const QString dir)
                 practiceHours = QString(semesterInfo[18]).remove(" ").toDouble();
                 qualHours = QString(semesterInfo[19]).remove(" ").toDouble();
                 totalHours = QString(semesterInfo[20]).remove(" ").toDouble();
+                countedTotal += totalHours;
                 //                qDebug() << totalHours;
 
                 singleLine=stream.readLine();
@@ -430,7 +435,7 @@ void LoadNewFileModel::processData(const QString dir)
                     reportType = tr("Госэкзамен");
                 }
 
-               // QString streamName = specialty + tr(" (Переименуйте)");
+                // QString streamName = specialty + tr(" (Переименуйте)");
                 query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                 "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
                                 "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24)")
@@ -463,7 +468,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 runner->tryQuery(query);
 
-//                qDebug () << query;
+                //                qDebug () << query;
 
 
                 singleLine[singleLine.indexOf("семестр")+7]='|';
@@ -511,6 +516,7 @@ void LoadNewFileModel::processData(const QString dir)
                 practiceHours = QString(semesterInfo[12]).remove(" ").toDouble();
                 qualHours = QString(semesterInfo[13]).remove(" ").toDouble();
                 totalHours = QString(semesterInfo[14]).remove(" ").toDouble();
+                countedTotal += totalHours;
                 //                qDebug() << totalHours;
                 singleLine=stream.readLine();
                 singleLine=stream.readLine();
@@ -563,13 +569,7 @@ void LoadNewFileModel::processData(const QString dir)
                         .arg(seminarMultiplier)
                         .arg(labMultiplier);
 
-
                 runner->tryQuery(query);
-
-//                qDebug () << query;
-
-
-                //
 
             }
 
@@ -579,5 +579,5 @@ void LoadNewFileModel::processData(const QString dir)
     else
         return;
 
-    emit processingFinished();
+    emit processingFinished(expectedTotal, countedTotal);
 }

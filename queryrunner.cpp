@@ -44,7 +44,7 @@ int QueryRunner::tryQuery(const QString query, bool isModelNeeded, bool isDataNe
     {
         defaultCustomModel->setQuery(query,db);
         defaultModel->setQuery(query,db);
-//        emit querySuccessReturnModel(defaultModel);
+        emit querySuccessReturnModel(defaultModel);
         emit querySuccessReturnCustomModel(defaultCustomModel);
     }
 
@@ -86,7 +86,7 @@ void QueryRunner::tryTableModel(const QString tableName)
 
 void QueryRunner::outputToFile(int teacherID, int uID, QString name)
 {
-
+    double totalHours = 0;
     QFile startFile("start.htm");
     if (!startFile.open(QIODevice::ReadOnly|QIODevice::Text)) return;
     QString text = startFile.readAll();
@@ -151,7 +151,7 @@ void QueryRunner::outputToFile(int teacherID, int uID, QString name)
         defaultQuery.next();
         text += middleFile.readAll();
         middleFile.reset();
-        text.replace(QString("%name%"),name);
+        totalHours += defaultQuery.value(25).toDouble();
         text.replace(QString("%faculty%"),defaultQuery.value(0).toString());
         text.replace(QString("%year%"),defaultQuery.value(1).toString());
         text.replace(QString("%specialty%"),defaultQuery.value(2).toString());
@@ -183,11 +183,12 @@ void QueryRunner::outputToFile(int teacherID, int uID, QString name)
                      defaultQuery.value(29).toString() + '\t' + defaultQuery.value(30).toString());
 
     }
+    text.replace(QString("%chair%"),tr(" "));
+    text.replace(QString("%name%"),tr("%1 / Всего часов: %2").arg(name).arg(totalHours));
 
     QFile endFile("end.htm");
     if (!endFile.open(QIODevice::ReadOnly|QIODevice::Text)) return;
     text += endFile.readAll();
-
     emit returnHtml(text);
 
 }

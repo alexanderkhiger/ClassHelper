@@ -29,6 +29,7 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
                              "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta"
                              " WHERE universitet.id_universiteta = %1").arg(receivedID),1);
 
+
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     myWebView = new QWebView;
 #endif

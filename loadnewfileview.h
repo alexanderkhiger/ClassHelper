@@ -32,7 +32,7 @@ public slots:
     void chooseFile();
     void clear();
     void startProcessing();
-    void finishProcessing();
+    void finishProcessing(double expectedTotal, double countedTotal);
     void getInformation(const QString info);
     void getProgress(const int percentage);
     void getError(QSqlError error);

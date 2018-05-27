@@ -97,8 +97,10 @@ void LoadNewFileView::clear()
     //    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
 }
 
-void LoadNewFileView::finishProcessing()
+void LoadNewFileView::finishProcessing(double expectedTotal, double countedTotal)
 {
+    actionsLog->append(tr("Ожидаемое количество часов: %1").arg(expectedTotal));
+    actionsLog->append(tr("Обработанное количество часов: %1").arg(countedTotal));
     delete processor;
     QMessageBox::StandardButton infoMsg;
     infoMsg = QMessageBox::information(this,tr("Оповещение"),tr("Обработка завершена!"),QMessageBox::Ok);
@@ -110,10 +112,10 @@ void LoadNewFileView::startProcessing()
 {
     processor = new LoadNewFileModel(receivedID,skipAllCheck->isChecked(),this);
 
-    disconnect(processor,SIGNAL(processingFinished()),this,SLOT(finishProcessing()));
+    disconnect(processor,SIGNAL(processingFinished(double,double)),this,SLOT(finishProcessing(double,double)));
     disconnect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     disconnect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
-    connect(processor,SIGNAL(processingFinished()),this,SLOT(finishProcessing()));
+    connect(processor,SIGNAL(processingFinished(double,double)),this,SLOT(finishProcessing(double,double)));
     connect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     connect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
     connect(processor->runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));

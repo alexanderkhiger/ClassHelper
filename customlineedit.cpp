@@ -12,7 +12,6 @@ CustomLineEdit::CustomLineEdit(QWidget *ref)
     clearButton->setCursor(Qt::ArrowCursor);
     this->setReadOnly(1);
 
-
     clearButton->hide();
     connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
     connect(this, SIGNAL(textChanged(QString)), this, SLOT(updateClearButton(const QString)));

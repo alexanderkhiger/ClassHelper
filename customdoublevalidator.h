@@ -9,7 +9,7 @@ class CustomDoubleValidator : public QDoubleValidator
     Q_OBJECT
 public:
     CustomDoubleValidator(double bottom, double top, int decimals, QObject *parent = 0)
-            :QDoubleValidator( bottom, top, decimals, parent) {};
+            :QDoubleValidator(bottom, top, decimals, parent) {}
         QValidator::State validate(QString &input, int &pos) const
         {
             /*

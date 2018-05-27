@@ -49,11 +49,11 @@ public slots:
 private:
     QueryRunner *runner;
     UniversityModel *uModel;
-    QGroupBox *workField;
-    CustomTableView *universityTableView;
-    QPushButton *addButton;
-    QPushButton *deleteButton;
-    QPushButton *confirmButton;
+    QGroupBox *workField; //
+    CustomTableView *universityTableView; //
+    QPushButton *addButton; //
+    QPushButton *deleteButton; //
+    QPushButton *confirmButton; //
     QPushButton *exitButton;
     QDialogButtonBox *buttonBox;
     QHBoxLayout *topHLayout;

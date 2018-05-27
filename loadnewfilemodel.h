@@ -29,7 +29,7 @@ public:
 
 signals:
     void sendProgress(const int percentage);
-    void processingFinished();
+    void processingFinished(double expectedTotal, double countedTotal);
     void sendInformation(const QString info);
 
 public slots:

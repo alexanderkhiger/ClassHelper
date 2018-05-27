@@ -53,7 +53,6 @@ void MainWindowView::createUI()
     tableEditorTool->setToolTip(tr("Редактор таблиц (словарей)"));
     connect(tableEditorTool,SIGNAL(clicked(bool)),this,SLOT(setTableEditorAsCentral()));
 
-
     outputTool->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     outputTool->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
     outputTool->setText(tr("Отчеты"));

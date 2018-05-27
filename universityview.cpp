@@ -69,16 +69,19 @@ void UniversityView::createUI()
     topHLayout->addWidget(nameField);
     topHLayout->addWidget(shortnameField);
     topHLayout->addWidget(confirmAddition);
+    QGroupBox *testGroupBox = new QGroupBox;
+    testGroupBox->setLayout(topHLayout);
 
-    nameField->setVisible(0);
-    shortnameField->setVisible(0);
-    confirmAddition->setVisible(0);
+//    nameField->setVisible(0);
+//    shortnameField->setVisible(0);
+//    confirmAddition->setVisible(0);
+    testGroupBox->setVisible(0);
 
     botHLayout = new QHBoxLayout;
     botHLayout->addWidget(addButton);
     botHLayout->addWidget(deleteButton);
     internalVLayout->addWidget(universityTableView);
-    internalVLayout->addLayout(topHLayout);
+    internalVLayout->addWidget(testGroupBox);
     internalVLayout->addLayout(botHLayout);
     workField->setLayout(internalVLayout);
     externalVLayout->addWidget(workField);
