@@ -1557,7 +1557,7 @@ void MainWindowView::checkFields()
     if ((chosenClass->text() != "") && (chosenTeacher->text() != ""))
     {
         this->setStyleSheet("QGroupBox#workField {background-color: white; border-radius: 3px; border: 2px solid gray}");
-        workField->setEnabled(true);          
+        workField->setEnabled(true);
         classesInfoGroupBox->setVisible(1);
         teachersInfoGroupBox->setVisible(1);
         classesTextEditHeader->setVisible(1);
