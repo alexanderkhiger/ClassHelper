@@ -36,6 +36,7 @@
 #include <QToolButton>
 #include <QToolBar>
 #include <customquerymodel.h>
+#include <QComboBox>
 
 class MainWindowView : public QMainWindow
 {
@@ -71,11 +72,13 @@ public slots:
     void classToTeacherDrag(QModelIndex index);
     void teacherToClassDrag(QModelIndex index);
     void receiveModels();
+    void getChairList();
+    void setChairModel(CustomQueryModel *model);
 
 private:
 
     QString eventSource;
-
+    QComboBox *chairComboBox;
     QToolBar *leftBar;
     QToolBar *topBar;
     QToolButton *clearTool;
@@ -104,6 +107,7 @@ private:
     QueryRunner *teachersRunner;
     QueryRunner *classesRunner;
     QueryRunner *runner;
+    QueryRunner *chairRunner;
     MainWindowModel *mwModel;
     QModelIndex savedTeacherIndex;
     QModelIndex savedClassIndex;
@@ -115,6 +119,7 @@ private:
 
     CustomQueryModel *customClass;
     CustomQueryModel *customTeacher;
+    CustomQueryModel *customChair;
 
     QString query;
     QString receivedID;

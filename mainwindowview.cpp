@@ -20,13 +20,23 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
 
     customClass = new CustomQueryModel;
     customTeacher = new CustomQueryModel;
+    customChair = new CustomQueryModel;
 
     runner = new QueryRunner;
+    chairRunner = new QueryRunner;
+
+    connect(chairRunner, SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setChairModel(CustomQueryModel*)));
+
     connect(runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
     createUI();
 
     connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
 
+}
+
+void MainWindowView::setChairModel(CustomQueryModel *model) {
+    customChair = model;
+    chairComboBox->setModel(customChair);
 }
 
 void MainWindowView::createUI()
@@ -624,6 +634,9 @@ void MainWindowView::createWorkfieldWidget()
 
     workField->setLayout(distrGrid);
 
+    chairComboBox = new QComboBox;
+    getChairList();
+
     externalVLayout = new QVBoxLayout;
     internalMiddleVLayout = new QVBoxLayout;
     internalLeftVLayout = new QVBoxLayout;
@@ -719,6 +732,7 @@ void MainWindowView::createWorkfieldWidget()
     internalHLayout->addWidget(chosenClass);
     internalHLayout->addWidget(chosenTeacher);
 
+    internalMiddleVLayout->addWidget(chairComboBox);
     internalMiddleVLayout->addLayout(internalHLayout);
     internalMiddleVLayout->addWidget(workField);
 
@@ -742,6 +756,12 @@ void MainWindowView::createWorkfieldWidget()
 
     connect(classesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickClassUpdate(QModelIndex)));
     connect(teachersList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickTeacherUpdate(QModelIndex)));
+
+}
+
+void MainWindowView::getChairList() {
+    chairRunner->tryQuery(QString("Select nazvanie_kafedry, id_kafedry from kafedra left join fakultet on kafedra.id_fakulteta = fakultet.id_fakulteta left join "
+                                  "universitet on fakultet.id_universiteta = universitet.id_universiteta where universitet.id_universiteta = %1").arg(receivedID),1);
 }
 
 void MainWindowView::receiveModels() {
