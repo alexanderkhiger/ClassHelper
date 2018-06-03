@@ -74,6 +74,7 @@ public slots:
     void receiveModels();
     void getChairList();
     void setChairModel(CustomQueryModel *model);
+    void filterTeachers();
 
 private:
 
@@ -163,6 +164,11 @@ private:
     QCheckBox *teachersDegreeCheck;
     QCheckBox *teachersTitleCheck;
     QCheckBox *teachersPostCheck;
+    QCheckBox *teachersHoursCheck;
+
+    QComboBox *teachersFilterComboBox;
+    QLineEdit *teachersHoursEdit;
+    QHBoxLayout *teachersFilterLayout;
 
     QCheckBox *classesIDCheck;
     QCheckBox *classesUndistributedCheck;
@@ -307,6 +313,7 @@ private:
     int currentSemester;
 
     bool showOnlyUndistributedClasses;
+    bool filterTeachersHours;
 
     TableEditorView *tableEditor;
     LoadNewFileView *loadNewFile;

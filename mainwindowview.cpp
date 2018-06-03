@@ -13,6 +13,7 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     receivedName = uName;
     receivedShortname = uShortname;
     showOnlyUndistributedClasses = false;
+    filterTeachersHours = false;
 
 //    teacherModelReference = new QSqlQueryModel;
 //    classModelReference = new QSqlQueryModel;
@@ -165,33 +166,14 @@ void MainWindowView::createWorkfieldWidget()
     teachersList->setDropIndicatorShown(true);
     classesList->setDropIndicatorShown(true);
 
+    chairComboBox = new QComboBox;
+    getChairList();
+    connect(chairComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(receiveModels()));
+
     teachersRunner = new QueryRunner;
     classesRunner = new QueryRunner;
     connect(teachersRunner,SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setTeachersModel(CustomQueryModel*)));
     connect(classesRunner,SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setClassesModel(CustomQueryModel*)));
-
-    receiveModels();
-
-    teachersList->setColumnHidden(1,true);
-    teachersList->setColumnHidden(2,true);
-    teachersList->setColumnHidden(6,true);
-    teachersList->setColumnHidden(7,true);
-    teachersList->setColumnHidden(8,true);
-
-    teachersList->resizeColumnsToContents();
-    teachersList->resizeRowsToContents();
-
-    classesList->setColumnHidden(0,true);
-
-    classesList->resizeColumnsToContents();
-    classesList->resizeRowsToContents();
-
-
-    teachersList->setFixedWidth(300);
-    classesList->setFixedWidth(300);
-
-    teachersList->setObjectName("teachersList");
-    classesList->setObjectName("classesList");
 
     chosenClass = new QLineEdit;
     chosenTeacher = new QLineEdit;
@@ -634,9 +616,6 @@ void MainWindowView::createWorkfieldWidget()
 
     workField->setLayout(distrGrid);
 
-    chairComboBox = new QComboBox;
-    getChairList();
-
     externalVLayout = new QVBoxLayout;
     internalMiddleVLayout = new QVBoxLayout;
     internalLeftVLayout = new QVBoxLayout;
@@ -678,18 +657,29 @@ void MainWindowView::createWorkfieldWidget()
     connect(teachersShowChecks,SIGNAL(clicked(bool)),this,SLOT(toggleTeachersChecks()));
 
     teachersColumns = new QVBoxLayout;
+    teachersFilterLayout = new QHBoxLayout;
+    teachersHoursEdit = new QLineEdit;
+    teachersHoursEdit->setValidator(new QIntValidator(0, 2000, this));
+    teachersHoursEdit->setText("0");
+    connect(teachersHoursEdit,SIGNAL(textChanged(QString)),this,SLOT(filterTeachers()));
+    teachersFilterComboBox = new QComboBox;
+    teachersFilterComboBox->addItem(">");
+    teachersFilterComboBox->addItem("<");
+    connect(teachersFilterComboBox,SIGNAL(currentTextChanged(QString)),this,SLOT(filterTeachers()));
 
     teachersIDCheck = new QCheckBox(tr("ID преподавателя"));
     teachersChairCheck = new QCheckBox(tr("ID кафедры"));
     teachersDegreeCheck = new QCheckBox(tr("Ученая степень"));
     teachersTitleCheck = new QCheckBox(tr("Ученое звание"));
     teachersPostCheck = new QCheckBox(tr("Должность"));
+    teachersHoursCheck = new QCheckBox(tr("Только те, у кого часов "));
 
     teachersIDCheck->setObjectName("teachersIDCheck");
     teachersChairCheck->setObjectName("teachersChairCheck");
     teachersDegreeCheck->setObjectName("teachersDegreeCheck");
     teachersTitleCheck->setObjectName("teachersTitleCheck");
     teachersPostCheck->setObjectName("teachersPostCheck");
+    teachersHoursCheck->setObjectName("teachersHoursCheck");
 
 
     teachersIDCheck->setVisible(0);
@@ -697,6 +687,9 @@ void MainWindowView::createWorkfieldWidget()
     teachersDegreeCheck->setVisible(0);
     teachersTitleCheck->setVisible(0);
     teachersPostCheck->setVisible(0);
+    teachersHoursCheck->setVisible(0);
+    teachersHoursEdit->setVisible(0);
+    teachersFilterComboBox->setVisible(0);
 
 
     connect(teachersIDCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
@@ -704,6 +697,11 @@ void MainWindowView::createWorkfieldWidget()
     connect(teachersDegreeCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
     connect(teachersTitleCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
     connect(teachersPostCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
+    connect(teachersHoursCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
+
+    teachersFilterLayout->addWidget(teachersHoursCheck);
+    teachersFilterLayout->addWidget(teachersFilterComboBox);
+    teachersFilterLayout->addWidget(teachersHoursEdit);
 
     teachersColumns->addWidget(teachersShowChecks);
     teachersColumns->addWidget(teachersIDCheck);
@@ -711,6 +709,7 @@ void MainWindowView::createWorkfieldWidget()
     teachersColumns->addWidget(teachersPostCheck);
     teachersColumns->addWidget(teachersDegreeCheck);
     teachersColumns->addWidget(teachersTitleCheck);
+    teachersColumns->addLayout(teachersFilterLayout);
 
     classesColumns = new QVBoxLayout;
     classesIDCheck = new QCheckBox(tr("ID записи"));
@@ -757,51 +756,100 @@ void MainWindowView::createWorkfieldWidget()
     connect(classesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickClassUpdate(QModelIndex)));
     connect(teachersList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickTeacherUpdate(QModelIndex)));
 
+    receiveModels();
+
+    teachersList->setColumnHidden(1,true);
+    teachersList->setColumnHidden(2,true);
+    teachersList->setColumnHidden(6,true);
+    teachersList->setColumnHidden(7,true);
+    teachersList->setColumnHidden(8,true);
+
+    classesList->setColumnHidden(0,true);
+
+    teachersList->setFixedWidth(300);
+    classesList->setFixedWidth(300);
+
+    teachersList->setObjectName("teachersList");
+    classesList->setObjectName("classesList");
+}
+
+void MainWindowView::filterTeachers() {
+    if (teachersHoursEdit->text().isEmpty()) {
+        teachersHoursEdit->setText("0");
+    }
+    if (teachersHoursCheck->isChecked()) {
+        receiveModels();
+    }
 }
 
 void MainWindowView::getChairList() {
-    chairRunner->tryQuery(QString("Select nazvanie_kafedry, id_kafedry from kafedra left join fakultet on kafedra.id_fakulteta = fakultet.id_fakulteta left join "
-                                  "universitet on fakultet.id_universiteta = universitet.id_universiteta where universitet.id_universiteta = %1").arg(receivedID),1);
+    chairRunner->tryQuery(QString("Select nazvanie_kafedry, id_kafedry from kafedra left join fakultet on kafedra.id_fakulteta = fakultet.id_fakulteta "
+                                  "where kafedra.id_universiteta = %1").arg(receivedID),1);
 }
 
 void MainWindowView::receiveModels() {
 
+    QString chairId = chairComboBox->model()->data(chairComboBox->model()->index(chairComboBox->currentIndex(),1,QModelIndex())).toString();
+
+    int hours = !teachersHoursEdit->text().isEmpty() ? teachersHoursEdit->text().toInt() : 0;
     if (!showOnlyUndistributedClasses)
     {
         classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
                                         "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
                                         "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
-                                .arg(receivedID).arg(currentSemester),1);
+                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 AND zanyatost.id_kafedry = %3 ORDER BY id_zapisi")
+                                .arg(receivedID).arg(currentSemester).arg(chairId),1);
     }
     else
     {
         classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
                                             "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
                                             "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                            "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 "
+                                            "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 AND zanyatost.id_kafedry = %3 "
                                             "AND (zanyatost.lekcii_chasov + zanyatost.seminary_chasov + zanyatost.lab_chasov + zanyatost.kontrol_chasov "
                                             "+ zanyatost.konsultacii_chasov + zanyatost.zachet_chasov + zanyatost.ekzamen_chasov + zanyatost.kursovie_chasov + "
                                             "zanyatost.ucheb_praktika_chasov + zanyatost.proizv_praktika_chasov + zanyatost.preddipl_praktika_chasov + zanyatost.vkl_chasov + "
                                             "zanyatost.obz_lekcii_chasov + zanyatost.gek_chasov + zanyatost.nirs_chasov + zanyatost.asp_dokt_chasov) > 0 "
                                             "ORDER BY id_zapisi ")
-                                .arg(receivedID).arg(currentSemester),1);
+                                .arg(receivedID).arg(currentSemester).arg(chairId),1);
     }
 
-    teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
-                                     "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
-                                     "ifnull(sum(raspredelenie.ekzamen_chasov),0)+ifnull(sum(raspredelenie.kursovie_chasov),0)+ifnull(sum(raspredelenie.ucheb_praktika_chasov),0)+"
-                                     "ifnull(sum(raspredelenie.proizv_praktika_chasov),0)+ifnull(sum(raspredelenie.preddipl_praktika_chasov),0)+"
-                                     "ifnull(sum(raspredelenie.vkl_chasov),0)+ifnull(sum(raspredelenie.obz_lekcii_chasov),0)+ifnull(sum(raspredelenie.gek_chasov),0)+"
-                                     "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as 'Сумма часов', "
-                                     "prepodavatel.id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',"
-                                     "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
-                                     "from prepodavatel "
-                                     "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
-                                     "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta "
-                                     "LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta "
-                                     "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
-                                     "WHERE universitet.id_universiteta = %1 group by prepodavatel.id_prep").arg(receivedID),1);
+    if (!filterTeachersHours)
+    {
+        teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.ekzamen_chasov),0)+ifnull(sum(raspredelenie.kursovie_chasov),0)+ifnull(sum(raspredelenie.ucheb_praktika_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.proizv_praktika_chasov),0)+ifnull(sum(raspredelenie.preddipl_praktika_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.vkl_chasov),0)+ifnull(sum(raspredelenie.obz_lekcii_chasov),0)+ifnull(sum(raspredelenie.gek_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as 'Сумма часов', "
+                                         "prepodavatel.id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',"
+                                         "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
+                                         "from prepodavatel "
+                                         "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
+                                         "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
+                                         "WHERE kafedra.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep").arg(receivedID).arg(chairId),1);
+    }
+    else {
+        teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.ekzamen_chasov),0)+ifnull(sum(raspredelenie.kursovie_chasov),0)+ifnull(sum(raspredelenie.ucheb_praktika_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.proizv_praktika_chasov),0)+ifnull(sum(raspredelenie.preddipl_praktika_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.vkl_chasov),0)+ifnull(sum(raspredelenie.obz_lekcii_chasov),0)+ifnull(sum(raspredelenie.gek_chasov),0)+"
+                                         "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as sum, "
+                                         "prepodavatel.id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',"
+                                         "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
+                                         "from prepodavatel "
+                                         "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
+                                         "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
+                                         "WHERE kafedra.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep HAVING sum %3 %4")
+                                 .arg(receivedID).arg(chairId).arg(teachersFilterComboBox->currentText()).arg(hours),1);
+    }
+
+    teachersList->resizeColumnsToContents();
+    teachersList->resizeRowsToContents();
+    classesList->resizeColumnsToContents();
+    classesList->resizeRowsToContents();
+
 }
 
 void MainWindowView::back()
@@ -1354,6 +1402,7 @@ void MainWindowView::setWorkFieldAsCentral()
     if (centralWidget()->objectName()!="workfield")
     {
         showOnlyUndistributedClasses = false;
+        filterTeachersHours = false;
         createWorkfieldWidget();
         this->setCentralWidget(myWorkField);
         changeSemesterTool->setEnabled(true);
@@ -1376,6 +1425,11 @@ void MainWindowView::chooseColumns(int state)
         teachersList->setColumnHidden(7,!state);
     else if (sender()->objectName()=="teachersTitleCheck")
         teachersList->setColumnHidden(8,!state);
+    else if (sender()->objectName()=="teachersHoursCheck")
+    {
+        filterTeachersHours = state;
+        receiveModels();
+    }
     else if (sender()->objectName()=="classesIDCheck")
         classesList->setColumnHidden(0,!state);
     else if (sender()->objectName()=="classesUndistributedCheck")
@@ -1433,6 +1487,9 @@ void MainWindowView::toggleTeachersChecks()
         teachersDegreeCheck->setVisible(0);
         teachersTitleCheck->setVisible(0);
         teachersPostCheck->setVisible(0);
+        teachersHoursCheck->setVisible(0);
+        teachersHoursEdit->setVisible(0);
+        teachersFilterComboBox->setVisible(0);
     }
     else
     {
@@ -1442,6 +1499,9 @@ void MainWindowView::toggleTeachersChecks()
         teachersDegreeCheck->setVisible(1);
         teachersTitleCheck->setVisible(1);
         teachersPostCheck->setVisible(1);
+        teachersHoursCheck->setVisible(1);
+        teachersHoursEdit->setVisible(1);
+        teachersFilterComboBox->setVisible(1);
     }
 }
 

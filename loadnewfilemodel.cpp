@@ -115,13 +115,34 @@ void LoadNewFileModel::processData(const QString dir)
         {
             singleLine=stream.readLine();
         }
-
+        int chairID = 0;
         if (!stream.atEnd())
         {
             singleLine[singleLine.indexOf("Кафедра")+7]='|';
             QString chairName = singleLine.split("|")[1];
             chairName.remove(" ");
-            //            qDebug() << chairName;
+
+
+            query = QString("SELECT id_kafedry FROM kafedra WHERE nazvanie_kafedry = '%1' AND id_universiteta = %2").arg(chairName).arg(receivedID);
+            int querySize = runner->tryQuery(query,0,1);
+
+            if (querySize == 1)
+            {
+                chairID = int(myList.value(0));
+            }
+
+
+            else if (querySize >= 0)
+            {
+                mySelector = new DataSelectorView("kafedra","noValue","noValue","noValue",chairName,receivedID);
+                mySelector->show();
+                QEventLoop loop;
+                connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
+                loop.exec();
+                chairID = mySelector->chair_id;
+                mySelector->close();
+                delete mySelector;
+            }
         }
         else
             return;
@@ -191,7 +212,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 else if (querySize >= 0 && isSkipping == 0)
                 {
-                    mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID);
+                    mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue","noValue",receivedID);
                     mySelector->show();
                     //                    QTimer timer;
                     //                    timer.setSingleShot(true);
@@ -207,7 +228,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 else if (querySize >= 0 && isSkipping == 1)
                 {
-                    mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue",receivedID,0,1);
+                    mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue","noValue",receivedID,0,1);
                     facultyId = mySelector->faculty_id;
                     mySelector->close();
                     delete mySelector;
@@ -228,7 +249,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 else if (querySize >= 0 && isSkipping == 0)
                 {
-                    mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId));
+                    mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue","noValue",QString::number(facultyId));
                     mySelector->show();
                     QEventLoop loop;
                     connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
@@ -240,7 +261,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 else if (querySize >= 0 && isSkipping == 1)
                 {
-                    mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue",QString::number(facultyId),0,1);
+                    mySelector = new DataSelectorView("specialnost","noValue",specialty,"noValue","noValue",QString::number(facultyId),0,1);
                     specialtyID = mySelector->specialty_id;
                     mySelector->close();
                     delete mySelector;
@@ -340,7 +361,7 @@ void LoadNewFileModel::processData(const QString dir)
                 else if (querySize >= 0 && isSkipping == 0)
                 {
 
-                    mySelector = new DataSelectorView("disciplina","noValue","noValue",disciplineName,0);
+                    mySelector = new DataSelectorView("disciplina","noValue","noValue",disciplineName,"noValue",0);
                     mySelector->show();
                     QEventLoop loop;
                     connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
@@ -353,7 +374,7 @@ void LoadNewFileModel::processData(const QString dir)
                 else if (querySize >= 0 && isSkipping == 1)
                 {
 
-                    mySelector = new DataSelectorView("disciplina","noValue","noValue",disciplineName,0,0,1);
+                    mySelector = new DataSelectorView("disciplina","noValue","noValue",disciplineName,"noValue",0,0,1);
                     disciplineID = mySelector->discipline_id;
                     mySelector->close();
                     delete mySelector;
@@ -438,7 +459,7 @@ void LoadNewFileModel::processData(const QString dir)
                 // QString streamName = specialty + tr(" (Переименуйте)");
                 query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                 "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
-                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24)")
+                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24,%25)")
                         .arg(streamID)
                         .arg(disciplineID)
                         .arg(reportType)
@@ -462,7 +483,8 @@ void LoadNewFileModel::processData(const QString dir)
                         .arg(0)
                         .arg(lectureMultiplier)
                         .arg(seminarMultiplier)
-                        .arg(labMultiplier);
+                        .arg(labMultiplier)
+                        .arg(chairID);
 
 
 
@@ -543,7 +565,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                 "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
-                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24)")
+                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24, %25)")
                         .arg(streamID)
                         .arg(disciplineID)
                         .arg(reportType)
@@ -567,7 +589,8 @@ void LoadNewFileModel::processData(const QString dir)
                         .arg(0)
                         .arg(lectureMultiplier)
                         .arg(seminarMultiplier)
-                        .arg(labMultiplier);
+                        .arg(labMultiplier)
+                        .arg(chairID);
 
                 runner->tryQuery(query);
 
