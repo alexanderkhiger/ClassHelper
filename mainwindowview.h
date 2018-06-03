@@ -160,6 +160,7 @@ private:
     QCheckBox *teachersPostCheck;
 
     QCheckBox *classesIDCheck;
+    QCheckBox *classesUndistributedCheck;
 
     QGroupBox *classesInfoGroupBox;
     QGroupBox *teachersInfoGroupBox;
@@ -299,6 +300,8 @@ private:
     int chosenTeacherID;
     int chosenSemester;
     int currentSemester;
+
+    bool showOnlyUndistributedClasses;
 
     TableEditorView *tableEditor;
     LoadNewFileView *loadNewFile;

@@ -12,7 +12,8 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     receivedID = uID;
     receivedName = uName;
     receivedShortname = uShortname;
-    mwModel = new MainWindowModel;
+    showOnlyUndistributedClasses = false;
+
 //    teacherModelReference = new QSqlQueryModel;
 //    classModelReference = new QSqlQueryModel;
     diffModelReference = new QSqlQueryModel;
@@ -23,7 +24,7 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     runner = new QueryRunner;
     connect(runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
     createUI();
-    connect(mwModel,SIGNAL(sendData(QString,QString)),this,SLOT(getData(QString,QString)));
+
     connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
 
 }
@@ -128,8 +129,6 @@ void MainWindowView::createUI()
 
 void MainWindowView::createWorkfieldWidget()
 {
-    dropArea = new DropArea;
-    dropArea->setFixedHeight(75);
 
     teachersList = new QTableView;
     classesList = new QTableView;
@@ -638,7 +637,7 @@ void MainWindowView::createWorkfieldWidget()
     teachersInfoGroupBox = new QGroupBox;
 
     classesTextEditHeader = new QLabel(tr("Нераспределенных часов"));
-    teachersTextEditHeader = new QLabel(tr("Свободных часов"));
+    teachersTextEditHeader = new QLabel(tr("Распределенных часов"));
 
     classesTextEditHeader->setAlignment(Qt::AlignHCenter);
     teachersTextEditHeader->setAlignment(Qt::AlignHCenter);
@@ -704,16 +703,22 @@ void MainWindowView::createWorkfieldWidget()
     classesIDCheck = new QCheckBox(tr("ID записи"));
     classesIDCheck->setObjectName("classesIDCheck");
     classesIDCheck->setVisible(0);
+
+    classesUndistributedCheck = new QCheckBox(tr("Только нераспределенные"));
+    classesUndistributedCheck->setObjectName("classesUndistributedCheck");
+    classesUndistributedCheck->setVisible(0);
+
     connect(classesIDCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
+    connect(classesUndistributedCheck,SIGNAL(stateChanged(int)),this,SLOT(chooseColumns(int)));
 
     classesColumns->addWidget(classesShowChecks);
     classesColumns->addWidget(classesIDCheck);
+    classesColumns->addWidget(classesUndistributedCheck);
 
 
     internalHLayout->addWidget(chosenClass);
     internalHLayout->addWidget(chosenTeacher);
 
-    internalMiddleVLayout->addWidget(dropArea);
     internalMiddleVLayout->addLayout(internalHLayout);
     internalMiddleVLayout->addWidget(workField);
 
@@ -734,19 +739,34 @@ void MainWindowView::createWorkfieldWidget()
     myWorkField = new QWidget();
     myWorkField->setObjectName("workfield");
     myWorkField->setLayout(externalVLayout);
-    connect(dropArea, SIGNAL(changed(const QObject*,const QMimeData*)), mwModel, SLOT(updateParameters(const QObject*,const QMimeData*)));
-    connect(dropArea, SIGNAL(clearParameters()), this, SLOT(clearParameters()));
+
     connect(classesList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickClassUpdate(QModelIndex)));
     connect(teachersList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickTeacherUpdate(QModelIndex)));
 }
 
 void MainWindowView::receiveModels() {
 
-    classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
-                                    "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
-                                    "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                    "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
-                            .arg(receivedID).arg(currentSemester),1);
+    if (!showOnlyUndistributedClasses)
+    {
+        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
+                                        "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
+                                        "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
+                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
+                                .arg(receivedID).arg(currentSemester),1);
+    }
+    else
+    {
+        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
+                                            "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
+                                            "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
+                                            "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 "
+                                            "AND (zanyatost.lekcii_chasov + zanyatost.seminary_chasov + zanyatost.lab_chasov + zanyatost.kontrol_chasov "
+                                            "+ zanyatost.konsultacii_chasov + zanyatost.zachet_chasov + zanyatost.ekzamen_chasov + zanyatost.kursovie_chasov + "
+                                            "zanyatost.ucheb_praktika_chasov + zanyatost.proizv_praktika_chasov + zanyatost.preddipl_praktika_chasov + zanyatost.vkl_chasov + "
+                                            "zanyatost.obz_lekcii_chasov + zanyatost.gek_chasov + zanyatost.nirs_chasov + zanyatost.asp_dokt_chasov) > 0 "
+                                            "ORDER BY id_zapisi ")
+                                .arg(receivedID).arg(currentSemester),1);
+    }
 
     teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
                                      "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
@@ -872,9 +892,10 @@ void MainWindowView::distributeHours()
     gekLE->clear();
     nirsLE->clear();
     aspLE->clear();
-
+    receiveModels();
     doubleClickClassUpdate(savedClassIndex);
     doubleClickTeacherUpdate(savedTeacherIndex);
+
 }
 
 void MainWindowView::setData(QList<double> list)
@@ -1194,8 +1215,10 @@ void MainWindowView::distributeDiscipline()
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET asp_dokt_chasov = asp_dokt_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
+    receiveModels();
     doubleClickClassUpdate(savedClassIndex);
     doubleClickTeacherUpdate(savedTeacherIndex);
+
 }
 
 void MainWindowView::distributeAll(int classID, int teacherID, QString className, QString teacherName)
@@ -1282,26 +1305,14 @@ void MainWindowView::changeCurrentSemester()
     if (currentSemester == 1)
     {
         currentSemester = 2;
-        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
-                                             "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
-                                             "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                             "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
-                                     .arg(receivedID).arg(currentSemester),1);
-
-        classesList->resizeColumnsToContents();
-        classesList->resizeRowsToContents();
     }
     else
     {
         currentSemester = 1;
-        classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
-                                         "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
-                                         "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                         "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
-                                 .arg(receivedID).arg(currentSemester),1);
-        classesList->resizeColumnsToContents();
-        classesList->resizeRowsToContents();
     }
+    receiveModels();
+    classesList->resizeColumnsToContents();
+    classesList->resizeRowsToContents();
     setWindowTitle(QString(tr("Time Tracker | Название университета: %1 | Аббревиатура: %2 | Выбранный семестр: %3 ")).arg(receivedName).arg(receivedShortname).arg(currentSemester));
     clearParameters();
 }
@@ -1322,6 +1333,7 @@ void MainWindowView::setWorkFieldAsCentral()
 {
     if (centralWidget()->objectName()!="workfield")
     {
+        showOnlyUndistributedClasses = false;
         createWorkfieldWidget();
         this->setCentralWidget(myWorkField);
         changeSemesterTool->setEnabled(true);
@@ -1346,6 +1358,11 @@ void MainWindowView::chooseColumns(int state)
         teachersList->setColumnHidden(8,!state);
     else if (sender()->objectName()=="classesIDCheck")
         classesList->setColumnHidden(0,!state);
+    else if (sender()->objectName()=="classesUndistributedCheck")
+    {
+        showOnlyUndistributedClasses = state;
+        receiveModels();
+    }
 
     teachersList->resizeColumnsToContents();
     teachersList->resizeRowsToContents();
@@ -1376,10 +1393,12 @@ void MainWindowView::toggleClassesChecks()
     {
         classesShowChecks->setText(tr("Открыть список полей"));
         classesIDCheck->setVisible(0);
+        classesUndistributedCheck->setVisible(0);
     }
     else
     {
         classesShowChecks->setText(tr("Скрыть список полей"));
+        classesUndistributedCheck->setVisible(1);
         classesIDCheck->setVisible(1);
     }
 }
@@ -1469,7 +1488,7 @@ void MainWindowView::checkFields()
 void MainWindowView::doubleClickClassUpdate(const QModelIndex index)
 {
     savedClassIndex = index;
-    chosenClass->setText(customClass->data(index).toString());
+    chosenClass->setText(customClass->data(customClass->index(index.row(),2,QModelIndex())).toString());
     chosenClassID = customClass->data(customClass->index(index.row(),0,QModelIndex())).toInt();
     QString query = QString("Select id_zapisi, lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                             "zachet_chasov,ekzamen_chasov,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
@@ -1519,7 +1538,11 @@ void MainWindowView::doubleClickClassUpdate(const QModelIndex index)
 void MainWindowView::doubleClickTeacherUpdate(const QModelIndex index)
 {
     savedTeacherIndex = index;
-    chosenTeacher->setText(customTeacher->data(index).toString());
+    chosenTeacher->setText(customTeacher->data(customTeacher->index(index.row(),3)).toString()
+                           + " " +
+                           customTeacher->data(customTeacher->index(index.row(),4)).toString()
+                           + " " +
+                           customTeacher->data(customTeacher->index(index.row(),5)).toString());
     chosenTeacherID = customTeacher->data(customTeacher->index(index.row(),1,QModelIndex())).toInt();
     updateDataForSelectedClass();
 
