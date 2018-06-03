@@ -31,13 +31,13 @@ public:
         return defaultFlags;
     }
 
-    virtual bool CustomQueryModel::canDropMimeData() const
+    virtual bool CustomQueryModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
     {
         return true;
     }
 
 
-    virtual bool CustomQueryModel::dropMimeData(const QModelIndex &parent)
+    virtual bool CustomQueryModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
     {
         emit targetIndex(parent);
         return true;

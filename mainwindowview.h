@@ -70,6 +70,7 @@ public slots:
     void toggleTeachersChecks();
     void classToTeacherDrag(QModelIndex index);
     void teacherToClassDrag(QModelIndex index);
+    void receiveModels();
 
 private:
 

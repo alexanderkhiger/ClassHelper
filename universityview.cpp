@@ -7,8 +7,8 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     createUI();
     getModel();
     resizeTable();
-    universityTableView->viewport()->installEventFilter(this);
-
+//    universityTableView->viewport()->installEventFilter(this);
+    connect(universityTableView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(turnOffButtons()));
     connect(exitButton, SIGNAL(clicked(bool)), this, SLOT(close()));
     connect(confirmButton, SIGNAL(clicked(bool)), this, SLOT(choiceConfirmed()));
     connect(universityTableView,SIGNAL(clicked(QModelIndex)),this,SLOT(enableButtons()));
@@ -22,18 +22,18 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     connect(universityTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedTo(QModelIndex)));
 }
 
-bool UniversityView::eventFilter(QObject *obj, QEvent *event)
-{
+//bool UniversityView::eventFilter(QObject *obj, QEvent *event)
+//{
 
-    if (event->type() == QEvent::MouseButtonDblClick) {
-        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
+//    if (event->type() == QEvent::MouseButtonDblClick) {
+//        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
 
-        if (mouseEvent -> button() == Qt::LeftButton) {
-            turnOffButtons();
-        }
-    }
-    return QWidget::eventFilter(obj, event);
-}
+//        if (mouseEvent -> button() == Qt::LeftButton) {
+//            turnOffButtons();
+//        }
+//    }
+//    return QWidget::eventFilter(obj, event);
+//}
 
 void UniversityView::createUI()
 {
@@ -69,19 +69,16 @@ void UniversityView::createUI()
     topHLayout->addWidget(nameField);
     topHLayout->addWidget(shortnameField);
     topHLayout->addWidget(confirmAddition);
-    QGroupBox *testGroupBox = new QGroupBox;
-    testGroupBox->setLayout(topHLayout);
 
-//    nameField->setVisible(0);
-//    shortnameField->setVisible(0);
-//    confirmAddition->setVisible(0);
-    testGroupBox->setVisible(0);
+    nameField->setVisible(0);
+    shortnameField->setVisible(0);
+    confirmAddition->setVisible(0);
 
     botHLayout = new QHBoxLayout;
     botHLayout->addWidget(addButton);
     botHLayout->addWidget(deleteButton);
     internalVLayout->addWidget(universityTableView);
-    internalVLayout->addWidget(testGroupBox);
+    internalVLayout->addLayout(topHLayout);
     internalVLayout->addLayout(botHLayout);
     workField->setLayout(internalVLayout);
     externalVLayout->addWidget(workField);

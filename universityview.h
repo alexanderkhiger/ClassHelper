@@ -26,7 +26,7 @@ class UniversityView : public QWidget
     Q_OBJECT
 public:
     explicit UniversityView(QWidget *parent = 0);
-    virtual bool UniversityView::eventFilter(QObject *obj, QEvent *event);
+//    virtual bool UniversityView::eventFilter(QObject *obj, QEvent *event);
 
 signals:
     void updateError(QSqlError error);

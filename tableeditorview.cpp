@@ -70,48 +70,55 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     createSpecialtyWidgetUI();
     createStreamWidgetUI();
 
-    facultyTable->viewport()->installEventFilter(this);
-    chairTable->viewport()->installEventFilter(this);
-    teacherTable->viewport()->installEventFilter(this);
-    disciplineTable->viewport()->installEventFilter(this);
-    specialtyTable->viewport()->installEventFilter(this);
-    streamTable->viewport()->installEventFilter(this);
+//    facultyTable->viewport()->installEventFilter(this);
+//    chairTable->viewport()->installEventFilter(this);
+//    teacherTable->viewport()->installEventFilter(this);
+//    disciplineTable->viewport()->installEventFilter(this);
+//    specialtyTable->viewport()->installEventFilter(this);
+//    streamTable->viewport()->installEventFilter(this);
+
+    connect(facultyTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableFacultyWidgets()));
+    connect(chairTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableChairWidgets()));
+    connect(teacherTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableTeacherWidgets()));
+    connect(disciplineTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableDisciplineWidgets()));
+    connect(specialtyTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableSpecialtyWidgets()));
+    connect(streamTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableStreamWidgets()));
     resizeTable(facultyTable);
 }
 
-bool TableEditorView::eventFilter(QObject *obj, QEvent *event) {
+//bool TableEditorView::eventFilter(QObject *obj, QEvent *event) {
 
-    if (event->type() == QEvent::MouseButtonDblClick) {
-        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
-        if (mouseEvent -> button() == Qt::LeftButton) {
-            if (obj == facultyTable->viewport())
-            {
-                disableFacultyWidgets();
-            }
-            else if (obj == chairTable->viewport())
-            {
-                disableChairWidgets();
-            }
-            else if (obj == teacherTable->viewport())
-            {
-                disableTeacherWidgets();
-            }
-            else if (obj == disciplineTable->viewport())
-            {
-                disableDisciplineWidgets();
-            }
-            else if (obj == specialtyTable->viewport())
-            {
-                disableSpecialtyWidgets();
-            }
-            else if (obj == streamTable->viewport())
-            {
-                disableStreamWidgets();
-            }
-        }
-    }
-    return QWidget::eventFilter(obj, event);
-}
+//    if (event->type() == QEvent::MouseButtonDblClick) {
+//        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
+//        if (mouseEvent -> button() == Qt::LeftButton) {
+//            if (obj == facultyTable->viewport())
+//            {
+//                disableFacultyWidgets();
+//            }
+//            else if (obj == chairTable->viewport())
+//            {
+//                disableChairWidgets();
+//            }
+//            else if (obj == teacherTable->viewport())
+//            {
+//                disableTeacherWidgets();
+//            }
+//            else if (obj == disciplineTable->viewport())
+//            {
+//                disableDisciplineWidgets();
+//            }
+//            else if (obj == specialtyTable->viewport())
+//            {
+//                disableSpecialtyWidgets();
+//            }
+//            else if (obj == streamTable->viewport())
+//            {
+//                disableStreamWidgets();
+//            }
+//        }
+//    }
+//    return QWidget::eventFilter(obj, event);
+//}
 
 void TableEditorView::resizeTable(QTableView *table)
 {

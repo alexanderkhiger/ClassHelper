@@ -161,23 +161,13 @@ void MainWindowView::createWorkfieldWidget()
     connect(teachersRunner,SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setTeachersModel(CustomQueryModel*)));
     connect(classesRunner,SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setClassesModel(CustomQueryModel*)));
 
-    classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
-                                    "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
-                                    "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                    "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
-                            .arg(receivedID).arg(currentSemester),1);
+    receiveModels();
 
-    teachersRunner->tryQuery(QString("Select id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',dolzhnost as 'Должность',"
-                                     "uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' from prepodavatel LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
-                             "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta"
-                             " WHERE universitet.id_universiteta = %1").arg(receivedID),1);
-
-
-    teachersList->setColumnHidden(0,true);
     teachersList->setColumnHidden(1,true);
-    teachersList->setColumnHidden(5,true);
+    teachersList->setColumnHidden(2,true);
     teachersList->setColumnHidden(6,true);
     teachersList->setColumnHidden(7,true);
+    teachersList->setColumnHidden(8,true);
 
     teachersList->resizeColumnsToContents();
     teachersList->resizeRowsToContents();
@@ -750,6 +740,30 @@ void MainWindowView::createWorkfieldWidget()
     connect(teachersList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClickTeacherUpdate(QModelIndex)));
 }
 
+void MainWindowView::receiveModels() {
+
+    classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
+                                    "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
+                                    "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
+                                    "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 ORDER BY id_zapisi")
+                            .arg(receivedID).arg(currentSemester),1);
+
+    teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
+                                     "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
+                                     "ifnull(sum(raspredelenie.ekzamen_chasov),0)+ifnull(sum(raspredelenie.kursovie_chasov),0)+ifnull(sum(raspredelenie.ucheb_praktika_chasov),0)+"
+                                     "ifnull(sum(raspredelenie.proizv_praktika_chasov),0)+ifnull(sum(raspredelenie.preddipl_praktika_chasov),0)+"
+                                     "ifnull(sum(raspredelenie.vkl_chasov),0)+ifnull(sum(raspredelenie.obz_lekcii_chasov),0)+ifnull(sum(raspredelenie.gek_chasov),0)+"
+                                     "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as 'Сумма часов', "
+                                     "prepodavatel.id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',"
+                                     "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
+                                     "from prepodavatel "
+                                     "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
+                                     "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta "
+                                     "LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta "
+                                     "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
+                                     "WHERE universitet.id_universiteta = %1 group by prepodavatel.id_prep").arg(receivedID),1);
+}
+
 void MainWindowView::back()
 {
     parentReference->show();
@@ -772,6 +786,7 @@ void MainWindowView::getData(QString objName, QString containedData)
 
 void MainWindowView::setClassesModel(CustomQueryModel *model)
 {
+    disconnect(customClass,SIGNAL(targetIndex(QModelIndex)),this,SLOT(teacherToClassDrag(QModelIndex)));
     customClass = model;
     classesList->setModel(customClass);
     connect(customClass,SIGNAL(targetIndex(QModelIndex)),this,SLOT(teacherToClassDrag(QModelIndex)));
@@ -779,6 +794,7 @@ void MainWindowView::setClassesModel(CustomQueryModel *model)
 
 void MainWindowView::setTeachersModel(CustomQueryModel *model)
 {
+    disconnect(customTeacher,SIGNAL(targetIndex(QModelIndex)),this,SLOT(classToTeacherDrag(QModelIndex)));
     customTeacher = model;
     teachersList->setModel(customTeacher);
     connect(customTeacher,SIGNAL(targetIndex(QModelIndex)),this,SLOT(classToTeacherDrag(QModelIndex)));
@@ -1257,6 +1273,8 @@ void MainWindowView::distributeAll(int classID, int teacherID, QString className
     runner->tryQuery(QString("UPDATE zanyatost SET asp_dokt_chasov = asp_dokt_chasov - %1 WHERE id_zapisi = %2").arg(value16).arg(classID));
     runner->tryQuery("COMMIT;");
 
+    receiveModels();
+
 }
 
 void MainWindowView::changeCurrentSemester()
@@ -1317,15 +1335,15 @@ void MainWindowView::setWorkFieldAsCentral()
 void MainWindowView::chooseColumns(int state)
 {
     if (sender()->objectName()=="teachersIDCheck")
-        teachersList->setColumnHidden(0,!state);
-    else if (sender()->objectName()=="teachersChairCheck")
         teachersList->setColumnHidden(1,!state);
+    else if (sender()->objectName()=="teachersChairCheck")
+        teachersList->setColumnHidden(2,!state);
     else if (sender()->objectName()=="teachersPostCheck")
-        teachersList->setColumnHidden(5,!state);
-    else if (sender()->objectName()=="teachersDegreeCheck")
         teachersList->setColumnHidden(6,!state);
-    else if (sender()->objectName()=="teachersTitleCheck")
+    else if (sender()->objectName()=="teachersDegreeCheck")
         teachersList->setColumnHidden(7,!state);
+    else if (sender()->objectName()=="teachersTitleCheck")
+        teachersList->setColumnHidden(8,!state);
     else if (sender()->objectName()=="classesIDCheck")
         classesList->setColumnHidden(0,!state);
 
@@ -1393,12 +1411,12 @@ void MainWindowView::classToTeacherDrag(QModelIndex receivedIndex)
     if (classesList->hasFocus())
     {
         distributeAll(customClass->data(customClass->index(classesList->currentIndex().row(),0,QModelIndex())).toInt(),
-                      customTeacher->data(customTeacher->index(receivedIndex.row(),0,QModelIndex())).toInt(),
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),1,QModelIndex())).toInt(),
                       customClass->data(customClass->index(classesList->currentIndex().row(),1,QModelIndex())).toString() + " " +
                       customClass->data(customClass->index(classesList->currentIndex().row(),2,QModelIndex())).toString(),
-                      customTeacher->data(customTeacher->index(receivedIndex.row(),2,QModelIndex())).toString() +
                       customTeacher->data(customTeacher->index(receivedIndex.row(),3,QModelIndex())).toString() +
-                      customTeacher->data(customTeacher->index(receivedIndex.row(),4,QModelIndex())).toString());
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),4,QModelIndex())).toString() +
+                      customTeacher->data(customTeacher->index(receivedIndex.row(),5,QModelIndex())).toString());
         clearParameters();
     }
 }
@@ -1408,12 +1426,12 @@ void MainWindowView::teacherToClassDrag(QModelIndex receivedIndex)
     if (teachersList->hasFocus())
     {
         distributeAll(customClass->data(customClass->index(receivedIndex.row(),0,QModelIndex())).toInt(),
-                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),0,QModelIndex())).toInt(),
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),1,QModelIndex())).toInt(),
                       customClass->data(customClass->index(receivedIndex.row(),1,QModelIndex())).toString() +
                       customClass->data(customClass->index(receivedIndex.row(),2,QModelIndex())).toString(),
-                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),2,QModelIndex())).toString() + " " +
                       customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),3,QModelIndex())).toString() + " " +
-                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),4,QModelIndex())).toString());
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),4,QModelIndex())).toString() + " " +
+                      customTeacher->data(customTeacher->index(teachersList->currentIndex().row(),5,QModelIndex())).toString());
         clearParameters();
     }
 }
@@ -1502,7 +1520,7 @@ void MainWindowView::doubleClickTeacherUpdate(const QModelIndex index)
 {
     savedTeacherIndex = index;
     chosenTeacher->setText(customTeacher->data(index).toString());
-    chosenTeacherID = customTeacher->data(customTeacher->index(index.row(),0,QModelIndex())).toInt();
+    chosenTeacherID = customTeacher->data(customTeacher->index(index.row(),1,QModelIndex())).toInt();
     updateDataForSelectedClass();
 
     MainWindowView::checkFields();
