@@ -9,12 +9,17 @@ LoadNewFileView::LoadNewFileView(QString uID, QWidget *parent) : QWidget(parent)
     createUI();
     connect(chooseFileButton, SIGNAL(pressed()), this, SLOT(chooseFile()));
     connect(startButton, SIGNAL(pressed()), this, SLOT(startProcessing()));
+    connect(commitChanges, SIGNAL(pressed()),this, SLOT(commit()));
 }
 
 void LoadNewFileView::createUI()
 {
     this->setMinimumHeight(250);
     this->resize(300,250);
+
+    commitChanges = new QPushButton(tr("Подтвердить изменения"));
+    commitChanges->setMinimumWidth(150);
+    commitChanges->setMaximumWidth(150);
 
     skipAllCheck = new QCheckBox;
     skipAllCheck->setText(tr("Добавить все, как есть"));
@@ -23,6 +28,7 @@ void LoadNewFileView::createUI()
     startButton = new QPushButton(tr("Начать обработку"));
 
     startButton->setEnabled(false);
+    commitChanges->setEnabled(false);
 
     chooseFileButton->setMinimumWidth(150);
     startButton->setMinimumWidth(150);
@@ -55,11 +61,11 @@ void LoadNewFileView::createUI()
 
     topHLayout->addWidget(chooseFileButton);
     topHLayout->addWidget(chosenFile);
+
     middleHLayout->addWidget(startButton);
-
     middleHLayout->addWidget(skipAllCheck);
-
     middleHLayout->addWidget(processingProgress);
+    middleHLayout->addWidget(commitChanges);
     bottomHLayout->addWidget(errorCounterLabel);
     bottomHLayout->addWidget(errorCounterLE);
     vLayout->addLayout(topHLayout);
@@ -101,14 +107,13 @@ void LoadNewFileView::finishProcessing(double expectedTotal, double countedTotal
 {
     actionsLog->append(tr("Ожидаемое количество часов: %1").arg(expectedTotal));
     actionsLog->append(tr("Обработанное количество часов: %1").arg(countedTotal));
+    actionsLog->append(tr("Для внесения изменений в БД, подтвердите их"));
     actionsLog->append(tr("Если вы создали новую кафедру, пожалуйста, привяжите ее к факультету в разделе Редактор таблиц"));
     actionsLog->append(tr("Пока вы не привяжете кафедру к факультету, дальнейшая работа будет невозможна"));
-    delete processor;
     QMessageBox::StandardButton infoMsg;
     infoMsg = QMessageBox::information(this,tr("Оповещение"),tr("Обработка завершена!"),QMessageBox::Ok);
-    chooseFileButton->setEnabled(1);
-    startButton->setEnabled(1);
-    skipAllCheck->setEnabled(1);
+    commitChanges->setEnabled(1);
+
 }
 void LoadNewFileView::startProcessing()
 {
@@ -117,10 +122,13 @@ void LoadNewFileView::startProcessing()
     disconnect(processor,SIGNAL(processingFinished(double,double)),this,SLOT(finishProcessing(double,double)));
     disconnect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     disconnect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
+    disconnect(processor->runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
+    disconnect(processor,SIGNAL(committed()),this,SLOT(finishWorking()));
     connect(processor,SIGNAL(processingFinished(double,double)),this,SLOT(finishProcessing(double,double)));
     connect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     connect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
     connect(processor->runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
+    connect(processor,SIGNAL(committed()),this,SLOT(finishWorking()));
 
     errorCount=0;
     actionsLog->clear();
@@ -152,5 +160,24 @@ void LoadNewFileView::getError(QSqlError error)
     errorCounterLE->setText(QString::number(errorCount));
 
 //    QMessageBox::StandardButton errorMsg;
-//    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+    //    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
+}
+
+void LoadNewFileView::commit()
+{
+    chooseFileButton->setEnabled(0);
+    startButton->setEnabled(0);
+    skipAllCheck->setEnabled(0);
+    commitChanges->setEnabled(0);
+    processor->commit();
+}
+
+void LoadNewFileView::finishWorking()
+{
+    chooseFileButton->setEnabled(1);
+    startButton->setEnabled(0);
+    skipAllCheck->setEnabled(1);
+    commitChanges->setEnabled(0);
+    chosenFile->clear();
+    delete processor;
 }

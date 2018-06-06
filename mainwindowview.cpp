@@ -24,6 +24,7 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     customChair = new CustomQueryModel;
 
     runner = new QueryRunner;
+    runner->tryQuery("ROLLBACK;");
     chairRunner = new QueryRunner;
 
     connect(chairRunner, SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setChairModel(CustomQueryModel*)));

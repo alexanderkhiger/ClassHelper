@@ -81,6 +81,12 @@ void LoadNewFileModel::setData(QList<double> list)
     myList = list;
 }
 
+void LoadNewFileModel::commit()
+{
+    runner->tryQuery("COMMIT;");
+    emit committed();
+}
+
 void LoadNewFileModel::processData(const QString dir)
 {
     double countedTotal = 0;
@@ -108,7 +114,7 @@ void LoadNewFileModel::processData(const QString dir)
             return;
 
         //
-
+        runner->tryQuery("ROLLBACK;");
         runner->tryQuery("START TRANSACTION;");
 
         while (!stream.atEnd()&&!singleLine.contains("ИТОГИ")&&!singleLine.contains("Кафедра"))

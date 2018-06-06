@@ -36,6 +36,8 @@ public slots:
     void getInformation(const QString info);
     void getProgress(const int percentage);
     void getError(QSqlError error);
+    void commit();
+    void finishWorking();
 
 private:
 
@@ -65,6 +67,8 @@ private:
     QMessageBox *msg;
 
     LoadNewFileModel *processor;
+
+    QPushButton *commitChanges;
 
 private slots:
     void createUI();

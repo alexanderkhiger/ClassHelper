@@ -32,11 +32,13 @@ signals:
     void sendProgress(const int percentage);
     void processingFinished(double expectedTotal, double countedTotal);
     void sendInformation(const QString info);
+    void committed();
 
 public slots:
     void processData(const QString dir);
     void convertRtf(const QString dir);
     void setData(QList<double> list);
+    void commit();
 
 private:
     int isSkipping;
