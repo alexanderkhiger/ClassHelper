@@ -113,7 +113,7 @@ void DataSelectorView::setDisciplineModel(QSqlTableModel *model)
 void DataSelectorView::setChairModel(QSqlTableModel *model)
 {
     chairModelReference = model;
-    chairModelReference->setFilter(QString("id_universiteta = %1").arg(receivedID.toInt()));
+//    chairModelReference->setFilter(QString("id_universiteta = %1").arg(receivedID.toInt()));
     chairModelReference->setHeaderData(0,Qt::Horizontal,tr("ID кафедры"));
     chairModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     chairModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));

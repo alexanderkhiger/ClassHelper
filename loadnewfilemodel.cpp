@@ -81,7 +81,6 @@ void LoadNewFileModel::setData(QList<double> list)
     myList = list;
 }
 
-
 void LoadNewFileModel::processData(const QString dir)
 {
     double countedTotal = 0;
@@ -110,6 +109,7 @@ void LoadNewFileModel::processData(const QString dir)
 
         //
 
+        runner->tryQuery("START TRANSACTION;");
 
         while (!stream.atEnd()&&!singleLine.contains("ИТОГИ")&&!singleLine.contains("Кафедра"))
         {
@@ -123,7 +123,11 @@ void LoadNewFileModel::processData(const QString dir)
             chairName.remove(" ");
 
 
-            query = QString("SELECT id_kafedry FROM kafedra WHERE nazvanie_kafedry = '%1' AND id_universiteta = %2").arg(chairName).arg(receivedID);
+            query = QString("SELECT id_kafedry FROM kafedra left join fakultet on kafedra.id_fakulteta = fakultet.id_fakulteta "
+                            "left join universitet on fakultet.id_universiteta = universitet.id_universiteta "
+                            "WHERE nazvanie_kafedry = '%1' AND universitet.id_universiteta = %2")
+                    .arg(chairName)
+                    .arg(receivedID);
             int querySize = runner->tryQuery(query,0,1);
 
             if (querySize == 1)
@@ -131,8 +135,7 @@ void LoadNewFileModel::processData(const QString dir)
                 chairID = int(myList.value(0));
             }
 
-
-            else if (querySize >= 0)
+            else if (querySize == 0 || querySize > 1)
             {
                 mySelector = new DataSelectorView("kafedra","noValue","noValue","noValue",chairName,receivedID);
                 mySelector->show();
@@ -312,7 +315,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 else if (querySize == 0)
                 {
-                    QString streamName = specialty + tr(" (Переименуйте)");
+                    QString streamName = specialty;
                     query = QString("INSERT INTO potok(nazvanie_potoka,kolvo_studentov,kurs,id_spec,kolvo_podgrupp,abbr_potoka,kolvo_grupp) VALUES ('%1',%2,%3,%4,%5,'%6',%7)")
                             .arg(streamName).arg(studentsCount).arg(year).arg(specialtyID).arg(subgroupsCount).arg(streamName).arg(groupsCount);
                     runner->tryQuery(query);

@@ -784,7 +784,7 @@ void MainWindowView::filterTeachers() {
 
 void MainWindowView::getChairList() {
     chairRunner->tryQuery(QString("Select nazvanie_kafedry, id_kafedry from kafedra left join fakultet on kafedra.id_fakulteta = fakultet.id_fakulteta "
-                                  "where kafedra.id_universiteta = %1").arg(receivedID),1);
+                                  "left join universitet on fakultet.id_universiteta = universitet.id_universiteta where universitet.id_universiteta = %1").arg(receivedID),1);
 }
 
 void MainWindowView::receiveModels() {
@@ -826,8 +826,10 @@ void MainWindowView::receiveModels() {
                                          "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
                                          "from prepodavatel "
                                          "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
+                                         "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta "
+                                         "LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta "
                                          "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
-                                         "WHERE kafedra.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep").arg(receivedID).arg(chairId),1);
+                                         "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep").arg(receivedID).arg(chairId),1);
     }
     else {
         teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
@@ -841,7 +843,9 @@ void MainWindowView::receiveModels() {
                                          "from prepodavatel "
                                          "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
                                          "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
-                                         "WHERE kafedra.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep HAVING sum %3 %4")
+                                         "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta "
+                                         "LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta "
+                                         "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep HAVING sum %3 %4")
                                  .arg(receivedID).arg(chairId).arg(teachersFilterComboBox->currentText()).arg(hours),1);
     }
 

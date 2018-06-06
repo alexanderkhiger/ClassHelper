@@ -17,6 +17,7 @@
 #include <QList>
 #include <QSqlError>
 #include <QMessageBox>
+#include <QThread>
 
 
 class LoadNewFileModel : public QObject

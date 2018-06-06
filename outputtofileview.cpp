@@ -27,7 +27,7 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
 
     runner->tryQuery(QString("Select id_prep as 'ID',concat(familiya, ' ' ,imya,' ' , otchestvo) as 'Имя' from prepodavatel LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
                              "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta"
-                             " WHERE kafedra.id_universiteta = %1").arg(receivedID),1);
+                             " WHERE universitet.id_universiteta = %1").arg(receivedID),1);
 
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))

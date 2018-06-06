@@ -101,6 +101,8 @@ void LoadNewFileView::finishProcessing(double expectedTotal, double countedTotal
 {
     actionsLog->append(tr("Ожидаемое количество часов: %1").arg(expectedTotal));
     actionsLog->append(tr("Обработанное количество часов: %1").arg(countedTotal));
+    actionsLog->append(tr("Если вы создали новую кафедру, пожалуйста, привяжите ее к факультету в разделе Редактор таблиц"));
+    actionsLog->append(tr("Пока вы не привяжете кафедру к факультету, дальнейшая работа будет невозможна"));
     delete processor;
     QMessageBox::StandardButton infoMsg;
     infoMsg = QMessageBox::information(this,tr("Оповещение"),tr("Обработка завершена!"),QMessageBox::Ok);
