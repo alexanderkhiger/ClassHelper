@@ -24,7 +24,7 @@ class LoadNewFileModel : public QObject
 {
     Q_OBJECT
 public:
-    explicit LoadNewFileModel(QString uID, int skipAll = 0, QObject *parent = 0);
+    explicit LoadNewFileModel(QString uID, int skipAll = 0, QObject *parent = 0, int year = 0);
     QString rtfToPlainText(const QString rtf);
     QueryRunner *runner;
 
@@ -86,6 +86,8 @@ private:
     double practiceHours;
     double qualHours;
     double totalHours;
+
+    int god;
 
 
 

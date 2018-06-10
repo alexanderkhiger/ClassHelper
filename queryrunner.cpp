@@ -84,7 +84,7 @@ void QueryRunner::tryTableModel(const QString tableName)
     emit returnTableModel(defaultTableModel);
 }
 
-void QueryRunner::outputToFile(int teacherID, int uID, QString name)
+void QueryRunner::outputToFile(int teacherID, int uID, QString name, int year)
 {
     double totalHours = 0;
     QFile startFile("start.htm");
@@ -142,8 +142,8 @@ void QueryRunner::outputToFile(int teacherID, int uID, QString name)
                                "LEFT JOIN universitet on fakultet.id_universiteta = universitet.id_universiteta "
                                "LEFT JOIN prepodavatel on raspredelenie.id_prep = prepodavatel.id_prep "
                                "LEFT JOIN kafedra on prepodavatel.id_kafedry = kafedra.id_kafedry "
-                               "where raspredelenie.id_prep = %1 and universitet.id_universiteta = %2 "
-                               "group by id_zanyatosti having total > 0 order by zanyatost.semestr").arg(teacherID).arg(uID);
+                               "where raspredelenie.id_prep = %1 and universitet.id_universiteta = %2 and zanyatost.recordyear = %3 "
+                               "group by id_zanyatosti having total > 0 order by zanyatost.semestr").arg(teacherID).arg(uID).arg(year);
 
     defaultQuery.exec(queryStr);
     for (int i = 0; i < defaultQuery.size(); i++)

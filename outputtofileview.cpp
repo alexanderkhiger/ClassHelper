@@ -77,8 +77,20 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     t1VBoxLayout = new QVBoxLayout;
     t2VBoxLayout = new QVBoxLayout;
 
+    chosenYear = new QDateEdit;
+    chosenYear->setDisplayFormat("yyyy");
+    chosenYear->setDate(QDate(2018,1,1));
+    chosenYear->setMaximumDate(QDate(2030,1,1));
+    chosenYear->setMinimumDate(QDate(2010,1,1));
+    connect(chosenYear,SIGNAL(dateChanged(QDate)),this,SLOT(process()));
+
+    chosenYearLabel = new QLabel(tr("Выбранный год"));
+
     t1VBoxLayout->addWidget(chosenTeacherLabel);
     t2VBoxLayout->addWidget(chosenTeacher);
+
+    t1VBoxLayout->addWidget(chosenYearLabel);
+    t2VBoxLayout->addWidget(chosenYear);
 
     t1VBoxLayout->addWidget(outputFormatLabel);
     t2VBoxLayout->addWidget(outputFormat);
@@ -125,7 +137,7 @@ void OutputToFileView::setChosenTeacher(QModelIndex index)
 void OutputToFileView::process()
 {
 
-    runner->outputToFile(teachersList->model()->data(teachersList->model()->index(savedIndex.row(),0)).toInt(),receivedID.toInt(),chosenTeacher->text());
+    runner->outputToFile(teachersList->model()->data(teachersList->model()->index(savedIndex.row(),0)).toInt(),receivedID.toInt(),chosenTeacher->text(),chosenYear->text().toInt());
 
 }
 

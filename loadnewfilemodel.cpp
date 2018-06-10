@@ -1,11 +1,12 @@
 #include "loadnewfilemodel.h"
 
-LoadNewFileModel::LoadNewFileModel(QString uID, int skipAll, QObject *parent) : QObject(parent)
+LoadNewFileModel::LoadNewFileModel(QString uID, int skipAll, QObject *parent, int year) : QObject(parent)
 {
     receivedID = uID;
     isSkipping = skipAll;
     runner = new QueryRunner;
     connect(runner,SIGNAL(returnValues(QList<double>)),this,SLOT(setData(QList<double>)));
+    god = year;
 }
 
 QString LoadNewFileModel::rtfToPlainText(const QString rtf)
@@ -310,7 +311,7 @@ void LoadNewFileModel::processData(const QString dir)
                 //______________________________________________________________вставка потока начата_______________________________________________
 
 
-                query = QString("SELECT id_potoka FROM potok WHERE kurs = %1 AND id_spec = %2").arg(year).arg(specialtyID);
+                query = QString("SELECT id_potoka FROM potok WHERE kurs = %1 AND id_spec = %2 AND recordYear = %3").arg(year).arg(specialtyID).arg(god);
                 querySize = runner->tryQuery(query,0,1);
                 int streamID = 0;
 
@@ -322,8 +323,8 @@ void LoadNewFileModel::processData(const QString dir)
                 else if (querySize == 0)
                 {
                     QString streamName = specialty;
-                    query = QString("INSERT INTO potok(nazvanie_potoka,kolvo_studentov,kurs,id_spec,kolvo_podgrupp,abbr_potoka,kolvo_grupp) VALUES ('%1',%2,%3,%4,%5,'%6',%7)")
-                            .arg(streamName).arg(studentsCount).arg(year).arg(specialtyID).arg(subgroupsCount).arg(streamName).arg(groupsCount);
+                    query = QString("INSERT INTO potok(nazvanie_potoka,kolvo_studentov,kurs,id_spec,kolvo_podgrupp,abbr_potoka,kolvo_grupp, recordyear) VALUES ('%1',%2,%3,%4,%5,'%6',%7,%8)")
+                            .arg(streamName).arg(studentsCount).arg(year).arg(specialtyID).arg(subgroupsCount).arg(streamName).arg(groupsCount).arg(god);
                     runner->tryQuery(query);
 
                     query = QString("SELECT LAST_INSERT_ID() AS id");
@@ -468,7 +469,7 @@ void LoadNewFileModel::processData(const QString dir)
                 // QString streamName = specialty + tr(" (Переименуйте)");
                 query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                 "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
-                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24,%25)")
+                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry, recordyear) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24,%25,%26)")
                         .arg(streamID)
                         .arg(disciplineID)
                         .arg(reportType)
@@ -493,7 +494,8 @@ void LoadNewFileModel::processData(const QString dir)
                         .arg(lectureMultiplier)
                         .arg(seminarMultiplier)
                         .arg(labMultiplier)
-                        .arg(chairID);
+                        .arg(chairID)
+                        .arg(god);
 
 
 
@@ -574,7 +576,7 @@ void LoadNewFileModel::processData(const QString dir)
 
                 query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                 "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
-                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24, %25)")
+                                "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry, recordyear) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24, %25, %26)")
                         .arg(streamID)
                         .arg(disciplineID)
                         .arg(reportType)
@@ -599,7 +601,8 @@ void LoadNewFileModel::processData(const QString dir)
                         .arg(lectureMultiplier)
                         .arg(seminarMultiplier)
                         .arg(labMultiplier)
-                        .arg(chairID);
+                        .arg(chairID)
+                        .arg(god);
 
                 runner->tryQuery(query);
 

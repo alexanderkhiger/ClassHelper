@@ -73,13 +73,16 @@ public slots:
     void teacherToClassDrag(QModelIndex index);
     void receiveModels();
     void getChairList();
+    void getYearList();
     void setChairModel(CustomQueryModel *model);
     void filterTeachers();
+    void setYearModel(CustomQueryModel *model);
 
 private:
 
     QString eventSource;
     QComboBox *chairComboBox;
+    QComboBox *yearComboBox;
     QToolBar *leftBar;
     QToolBar *topBar;
     QToolButton *clearTool;
@@ -109,6 +112,7 @@ private:
     QueryRunner *classesRunner;
     QueryRunner *runner;
     QueryRunner *chairRunner;
+    QueryRunner *yearRunner;
     MainWindowModel *mwModel;
     QModelIndex savedTeacherIndex;
     QModelIndex savedClassIndex;
@@ -121,6 +125,7 @@ private:
     CustomQueryModel *customClass;
     CustomQueryModel *customTeacher;
     CustomQueryModel *customChair;
+    CustomQueryModel *customYear;
 
     QString query;
     QString receivedID;
@@ -311,6 +316,7 @@ private:
     int chosenTeacherID;
     int chosenSemester;
     int currentSemester;
+    int chosenYear;
 
     bool showOnlyUndistributedClasses;
     bool filterTeachersHours;

@@ -18,7 +18,7 @@
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QCheckBox>
-
+#include <QDateEdit>
 
 class LoadNewFileView : public QWidget
 {
@@ -50,6 +50,7 @@ private:
 
     QLineEdit *chosenFile;
     QLineEdit *errorCounterLE;
+    QDateEdit *chosenYear;
 
     QCheckBox *skipAllCheck;
 

@@ -21,6 +21,12 @@ void LoadNewFileView::createUI()
     commitChanges->setMinimumWidth(150);
     commitChanges->setMaximumWidth(150);
 
+    chosenYear = new QDateEdit;
+    chosenYear->setDisplayFormat("yyyy");
+    chosenYear->setDate(QDate(2018,1,1));
+    chosenYear->setMaximumDate(QDate(2030,1,1));
+    chosenYear->setMinimumDate(QDate(2010,1,1));
+
     skipAllCheck = new QCheckBox;
     skipAllCheck->setText(tr("Добавить все, как есть"));
 
@@ -61,6 +67,7 @@ void LoadNewFileView::createUI()
 
     topHLayout->addWidget(chooseFileButton);
     topHLayout->addWidget(chosenFile);
+    topHLayout->addWidget(chosenYear);
 
     middleHLayout->addWidget(startButton);
     middleHLayout->addWidget(skipAllCheck);
@@ -117,7 +124,8 @@ void LoadNewFileView::finishProcessing(double expectedTotal, double countedTotal
 }
 void LoadNewFileView::startProcessing()
 {
-    processor = new LoadNewFileModel(receivedID,skipAllCheck->isChecked(),this);
+    int year = chosenYear->text().toInt();
+    processor = new LoadNewFileModel(receivedID,skipAllCheck->isChecked(),this, year);
 
     disconnect(processor,SIGNAL(processingFinished(double,double)),this,SLOT(finishProcessing(double,double)));
     disconnect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));

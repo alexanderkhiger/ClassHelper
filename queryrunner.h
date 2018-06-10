@@ -40,7 +40,7 @@ public slots:
     int tryQuery(const QString query, bool isModelNeeded = 0, bool isDataNeeded = 0);
     void tryAuth(const QString login, const QString password, const QString database, const QString hostname);
     void tryTableModel(const QString tableName);
-    void outputToFile(int teacherID, int uID, QString name);
+    void outputToFile(int teacherID, int uID, QString name, int year);
 
 private:
     int check;

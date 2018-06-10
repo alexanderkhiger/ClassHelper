@@ -22,6 +22,7 @@
 #include <QLabel>
 #include <QtGlobal>
 #include <QTextStream>
+#include <QDateEdit>
 
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -53,6 +54,7 @@ private:
     QModelIndex savedIndex;
     QTableView *teachersList;
     QLineEdit *chosenTeacher;
+    QDateEdit *chosenYear;
     QPushButton *confirmOutput;
     QComboBox *outputFormat;
     QString receivedHtmlData;
@@ -81,6 +83,7 @@ private:
     QLabel *teachersLabel;
     QLabel *outputFormatLabel;
     QLabel *previewLabel;
+    QLabel *chosenYearLabel;
 
 };
 

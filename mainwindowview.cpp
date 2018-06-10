@@ -14,6 +14,7 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     receivedShortname = uShortname;
     showOnlyUndistributedClasses = false;
     filterTeachersHours = false;
+    chosenYear = 2010;
 
 //    teacherModelReference = new QSqlQueryModel;
 //    classModelReference = new QSqlQueryModel;
@@ -22,12 +23,15 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
     customClass = new CustomQueryModel;
     customTeacher = new CustomQueryModel;
     customChair = new CustomQueryModel;
+    customYear = new CustomQueryModel;
 
     runner = new QueryRunner;
     runner->tryQuery("ROLLBACK;");
     chairRunner = new QueryRunner;
+    yearRunner = new QueryRunner;
 
     connect(chairRunner, SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setChairModel(CustomQueryModel*)));
+    connect(yearRunner, SIGNAL(querySuccessReturnCustomModel(CustomQueryModel*)),this,SLOT(setYearModel(CustomQueryModel*)));
 
     connect(runner,SIGNAL(queryError(QSqlError)),this,SLOT(getError(QSqlError)));
     createUI();
@@ -39,6 +43,11 @@ MainWindowView::MainWindowView(QString uID, QString uName, QString uShortname, Q
 void MainWindowView::setChairModel(CustomQueryModel *model) {
     customChair = model;
     chairComboBox->setModel(customChair);
+}
+
+void MainWindowView::setYearModel(CustomQueryModel *model) {
+    customYear = model;
+    yearComboBox->setModel(customYear);
 }
 
 void MainWindowView::createUI()
@@ -170,6 +179,11 @@ void MainWindowView::createWorkfieldWidget()
     chairComboBox = new QComboBox;
     getChairList();
     connect(chairComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(receiveModels()));
+
+    yearComboBox = new QComboBox;
+    getYearList();
+    connect(yearComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(receiveModels()));
+
 
     teachersRunner = new QueryRunner;
     classesRunner = new QueryRunner;
@@ -728,11 +742,11 @@ void MainWindowView::createWorkfieldWidget()
     classesColumns->addWidget(classesIDCheck);
     classesColumns->addWidget(classesUndistributedCheck);
 
-
     internalHLayout->addWidget(chosenClass);
     internalHLayout->addWidget(chosenTeacher);
 
     internalMiddleVLayout->addWidget(chairComboBox);
+    internalMiddleVLayout->addWidget(yearComboBox);
     internalMiddleVLayout->addLayout(internalHLayout);
     internalMiddleVLayout->addWidget(workField);
 
@@ -788,9 +802,18 @@ void MainWindowView::getChairList() {
                                   "left join universitet on fakultet.id_universiteta = universitet.id_universiteta where universitet.id_universiteta = %1").arg(receivedID),1);
 }
 
+void MainWindowView::getYearList() {
+    yearRunner->tryQuery(QString("Select zanyatost.recordyear from zanyatost left join kafedra on zanyatost.id_kafedry = kafedra.id_kafedry "
+                                  "left join fakultet on kafedra.id_fakulteta = fakultet.id_fakulteta "
+                                  "left join universitet on fakultet.id_universiteta = universitet.id_universiteta where universitet.id_universiteta = %1 "
+                                 "group by zanyatost.recordyear").arg(receivedID),1);
+}
+
 void MainWindowView::receiveModels() {
 
     QString chairId = chairComboBox->model()->data(chairComboBox->model()->index(chairComboBox->currentIndex(),1,QModelIndex())).toString();
+
+    chosenYear = yearComboBox->model()->data(yearComboBox->model()->index(yearComboBox->currentIndex(),0,QModelIndex())).toInt();
 
     int hours = !teachersHoursEdit->text().isEmpty() ? teachersHoursEdit->text().toInt() : 0;
     if (!showOnlyUndistributedClasses)
@@ -798,8 +821,8 @@ void MainWindowView::receiveModels() {
         classesRunner->tryQuery(QString("Select id_zapisi as 'ID',nazvanie_potoka as 'Название потока',nazvanie_discipliny as 'Название дисциплины' from zanyatost left join disciplina on "
                                         "zanyatost.id_discipliny = disciplina.id_discipliny left join potok on zanyatost.id_potoka = potok.id_potoka LEFT JOIN "
                                         "specialnost on potok.id_spec = specialnost.id_spec LEFT JOIN fakultet on specialnost.id_fakulteta = fakultet.id_fakulteta LEFT JOIN universitet on "
-                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 AND zanyatost.id_kafedry = %3 ORDER BY id_zapisi")
-                                .arg(receivedID).arg(currentSemester).arg(chairId),1);
+                                        "fakultet.id_universiteta = universitet.id_universiteta WHERE universitet.id_universiteta = %1 AND zanyatost.semestr = %2 AND zanyatost.id_kafedry = %3 AND zanyatost.recordYear = %4 ORDER BY id_zapisi")
+                                .arg(receivedID).arg(currentSemester).arg(chairId).arg(chosenYear),1);
     }
     else
     {
@@ -811,34 +834,47 @@ void MainWindowView::receiveModels() {
                                             "+ zanyatost.konsultacii_chasov + zanyatost.zachet_chasov + zanyatost.ekzamen_chasov + zanyatost.kursovie_chasov + "
                                             "zanyatost.ucheb_praktika_chasov + zanyatost.proizv_praktika_chasov + zanyatost.preddipl_praktika_chasov + zanyatost.vkl_chasov + "
                                             "zanyatost.obz_lekcii_chasov + zanyatost.gek_chasov + zanyatost.nirs_chasov + zanyatost.asp_dokt_chasov) > 0 "
-                                            "ORDER BY id_zapisi ")
-                                .arg(receivedID).arg(currentSemester).arg(chairId),1);
+                                            "AND zanyatost.recordYear = %4 ORDER BY id_zapisi ")
+                                .arg(receivedID).arg(currentSemester).arg(chairId).arg(chosenYear),1);
     }
 
     if (!filterTeachersHours)
     {
-        teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
+        teachersRunner->tryQuery(QString("Select "
+                                         "(SELECT ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
                                          "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
                                          "ifnull(sum(raspredelenie.ekzamen_chasov),0)+ifnull(sum(raspredelenie.kursovie_chasov),0)+ifnull(sum(raspredelenie.ucheb_praktika_chasov),0)+"
                                          "ifnull(sum(raspredelenie.proizv_praktika_chasov),0)+ifnull(sum(raspredelenie.preddipl_praktika_chasov),0)+"
                                          "ifnull(sum(raspredelenie.vkl_chasov),0)+ifnull(sum(raspredelenie.obz_lekcii_chasov),0)+ifnull(sum(raspredelenie.gek_chasov),0)+"
-                                         "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as 'Сумма часов', "
+                                         "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as sum from prepodavatel "
+                                         "LEFT JOIN kafedra ON prepodavatel.id_kafedry = kafedra.id_kafedry "
+                                         "LEFT JOIN fakultet ON kafedra.id_fakulteta = fakultet.id_fakulteta "
+                                         "LEFT JOIN universitet ON fakultet.id_universiteta = universitet.id_universiteta "
+                                         "LEFT JOIN raspredelenie on raspredelenie.id_prep = prepodavatel.id_prep "
+                                         "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 AND raspredelenie.recordyear = %3) as 'Сумма часов', "
                                          "prepodavatel.id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',"
-                                         "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
+                                         "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание'"
                                          "from prepodavatel "
                                          "LEFT JOIN kafedra on prepodavatel.id_kafedry=kafedra.id_kafedry "
                                          "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta "
                                          "LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta "
                                          "LEFT JOIN raspredelenie on prepodavatel.id_prep = raspredelenie.id_prep "
-                                         "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep").arg(receivedID).arg(chairId),1);
+                                         "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep")
+                                 .arg(receivedID).arg(chairId).arg(chosenYear),1);
     }
     else {
-        teachersRunner->tryQuery(QString("Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
+        teachersRunner->tryQuery(QString("SELECT "
+                                         "(Select ifnull(sum(raspredelenie.lekcii_chasov),0)+ifnull(sum(raspredelenie.seminary_chasov),0)+ifnull(sum(raspredelenie.lab_chasov),0)+"
                                          "ifnull(sum(raspredelenie.kontrol_chasov),0)+ifnull(sum(raspredelenie.konsultacii_chasov),0)+ifnull(sum(raspredelenie.zachet_chasov),0)+"
                                          "ifnull(sum(raspredelenie.ekzamen_chasov),0)+ifnull(sum(raspredelenie.kursovie_chasov),0)+ifnull(sum(raspredelenie.ucheb_praktika_chasov),0)+"
                                          "ifnull(sum(raspredelenie.proizv_praktika_chasov),0)+ifnull(sum(raspredelenie.preddipl_praktika_chasov),0)+"
                                          "ifnull(sum(raspredelenie.vkl_chasov),0)+ifnull(sum(raspredelenie.obz_lekcii_chasov),0)+ifnull(sum(raspredelenie.gek_chasov),0)+"
-                                         "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as sum, "
+                                         "ifnull(sum(raspredelenie.nirs_chasov),0)+ifnull(sum(raspredelenie.asp_dokt_chasov),0) as sum from prepodavatel "
+                                         "LEFT JOIN kafedra ON prepodavatel.id_kafedry = kafedra.id_kafedry "
+                                         "LEFT JOIN fakultet ON kafedra.id_fakulteta = fakultet.id_fakulteta "
+                                         "LEFT JOIN universitet ON fakultet.id_universiteta = universitet.id_universiteta "
+                                         "LEFT JOIN raspredelenie on raspredelenie.id_prep = prepodavatel.id_prep "
+                                         "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 AND raspredelenie.recordyear = %5) as sum, "
                                          "prepodavatel.id_prep as 'ID',prepodavatel.id_kafedry as 'ID кафедры',familiya as 'Фамилия',imya as 'Имя',otchestvo as 'Отчество',"
                                          "dolzhnost as 'Должность', uchenaya_stepen as 'Ученая степень',uchenoe_zvanie as 'Ученое звание' "
                                          "from prepodavatel "
@@ -847,7 +883,7 @@ void MainWindowView::receiveModels() {
                                          "LEFT JOIN fakultet on kafedra.id_fakulteta=fakultet.id_fakulteta "
                                          "LEFT JOIN universitet on fakultet.id_universiteta=universitet.id_universiteta "
                                          "WHERE universitet.id_universiteta = %1 AND prepodavatel.id_kafedry = %2 group by prepodavatel.id_prep HAVING sum %3 %4")
-                                 .arg(receivedID).arg(chairId).arg(teachersFilterComboBox->currentText()).arg(hours),1);
+                                 .arg(receivedID).arg(chairId).arg(teachersFilterComboBox->currentText()).arg(hours).arg(chosenYear),1);
     }
 
     teachersList->resizeColumnsToContents();
@@ -909,8 +945,8 @@ void MainWindowView::distributeHours()
     runner->tryQuery("START TRANSACTION;");
 
     QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,zachet_chasov,ekzamen_chasov,"
-    "kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,asp_dokt_chasov) "
-    "VALUES (%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18)")
+    "kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,asp_dokt_chasov, recordyear) "
+    "VALUES (%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19)")
             .arg(chosenClassID)
             .arg(chosenTeacherID)
             .arg(lecLE->text().toDouble())
@@ -928,7 +964,8 @@ void MainWindowView::distributeHours()
             .arg(obzLE->text().toDouble())
             .arg(gekLE->text().toDouble())
             .arg(nirsLE->text().toDouble())
-            .arg(aspLE->text().toDouble());
+            .arg(aspLE->text().toDouble())
+            .arg(chosenYear);
     runner->tryQuery(query);
 
     runner->tryQuery(QString("UPDATE zanyatost SET lekcii_chasov = lekcii_chasov - %1 WHERE id_zapisi = %2").arg(lecLE->text().toDouble()).arg(chosenClassID));
@@ -982,73 +1019,81 @@ void MainWindowView::distributeDiscipline()
     doubleClickClassUpdate(savedClassIndex);
     if (sender()->objectName() == "lecButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov, recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(1));
+                .arg(totalHoursLeftList.value(1))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET lekcii_chasov = lekcii_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(1)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "semButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,seminary_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,seminary_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(2));
+                .arg(totalHoursLeftList.value(2))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET seminary_chasov = seminary_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(2)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "labButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lab_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lab_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(3));
+                .arg(totalHoursLeftList.value(3))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET lab_chasov = lab_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(3)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "contButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kontrol_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kontrol_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(4));
+                .arg(totalHoursLeftList.value(4))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET kontrol_chasov = kontrol_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(4)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "consButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,konsultacii_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,konsultacii_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(5));
+                .arg(totalHoursLeftList.value(5))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET konsultacii_chasov = konsultacii_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(5)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "zachButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,zachet_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,zachet_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(6));
+                .arg(totalHoursLeftList.value(6))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET zachet_chasov = zachet_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(6)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "examButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ekzamen_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ekzamen_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(7));
+                .arg(totalHoursLeftList.value(7))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET ekzamen_chasov = ekzamen_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(7)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "kursButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kursovie_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kursovie_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(8));
+                .arg(totalHoursLeftList.value(8))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET kursovie_chasov = kursovie_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(8)).arg(chosenClassID));
     }
@@ -1056,164 +1101,181 @@ void MainWindowView::distributeDiscipline()
     {
 
 
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ucheb_praktika_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ucheb_praktika_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(9));
+                .arg(totalHoursLeftList.value(9))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET ucheb_praktika_chasov = ucheb_praktika_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(9)).arg(chosenClassID));
 
     }
     else if (sender()->objectName() == "proizvPrButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,proizv_praktika_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,proizv_praktika_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(10));
+                .arg(totalHoursLeftList.value(10))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET proizv_praktika_chasov = proizv_praktika_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(10)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "predPrButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,preddipl_praktika_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,preddipl_praktika_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(11));
+                .arg(totalHoursLeftList.value(11))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET preddipl_praktika_chasov = preddipl_praktika_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(11)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "vklButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,vkl_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,vkl_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(12));
+                .arg(totalHoursLeftList.value(12))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET vkl_chasov = vkl_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(12)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "obzButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,obz_lekcii_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,obz_lekcii_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(13));
+                .arg(totalHoursLeftList.value(13))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET obz_lekcii_chasov = obz_lekcii_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(13)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "gekButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,gek_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,gek_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(14));
+                .arg(totalHoursLeftList.value(14))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET gek_chasov = gek_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(14)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "nirsButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,nirs_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,nirs_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(15));
+                .arg(totalHoursLeftList.value(15))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET nirs_chasov = nirs_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(15)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "aspButtonAdd")
     {
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,asp_dokt_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,asp_dokt_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(totalHoursLeftList.value(16));
+                .arg(totalHoursLeftList.value(16))
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET asp_dokt_chasov = asp_dokt_chasov - %1 WHERE id_zapisi = %2").arg(totalHoursLeftList.value(16)).arg(chosenClassID));
     }
     else if (sender()->objectName() == "lecButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(1);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET lekcii_chasov = lekcii_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "semButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(2);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,seminary_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,seminary_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET seminary_chasov = seminary_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "labButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(3);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lab_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lab_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET lab_chasov = lab_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "contButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(4);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kontrol_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kontrol_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET kontrol_chasov = kontrol_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "consButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(5);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,konsultacii_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,konsultacii_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET konsultacii_chasov = konsultacii_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "zachButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(6);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,zachet_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,zachet_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET zachet_chasov = zachet_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "examButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(7);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ekzamen_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ekzamen_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET ekzamen_chasov = ekzamen_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "kursButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(8);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kursovie_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,kursovie_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET kursovie_chasov = kursovie_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "uchPrButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(9);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ucheb_praktika_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,ucheb_praktika_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET ucheb_praktika_chasov = ucheb_praktika_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
 
@@ -1221,70 +1283,77 @@ void MainWindowView::distributeDiscipline()
     else if (sender()->objectName() == "proizvPrButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(10);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,proizv_praktika_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,proizv_praktika_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET proizv_praktika_chasov = proizv_praktika_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "predPrButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(11);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,preddipl_praktika_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,preddipl_praktika_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET preddipl_praktika_chasov = preddipl_praktika_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "vklButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(12);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,vkl_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,vkl_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET vkl_chasov = vkl_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "obzButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(13);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,obz_lekcii_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,obz_lekcii_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET obz_lekcii_chasov = obz_lekcii_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "gekButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(14);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,gek_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,gek_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET gek_chasov = gek_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "nirsButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(15);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,nirs_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,nirs_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET nirs_chasov = nirs_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
     else if (sender()->objectName() == "aspButtonRemove")
     {
         double val = -1 * hoursDistributedForSelectedList.value(16);
-        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,asp_dokt_chasov) VALUES (%1,%2,%3)")
+        QString query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,asp_dokt_chasov,recordyear) VALUES (%1,%2,%3,%4)")
                 .arg(chosenClassID)
                 .arg(chosenTeacherID)
-                .arg(val);
+                .arg(val)
+                .arg(chosenYear);
         runner->tryQuery(query);
         runner->tryQuery(QString("UPDATE zanyatost SET asp_dokt_chasov = asp_dokt_chasov - %1 WHERE id_zapisi = %2").arg(val).arg(chosenClassID));
     }
@@ -1299,7 +1368,7 @@ void MainWindowView::distributeAll(int classID, int teacherID, QString className
 
     QString query = QString("Select id_zapisi, lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                             "zachet_chasov,ekzamen_chasov,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
-                            "asp_dokt_chasov,semestr from zanyatost where id_zapisi = %1").arg(classID);
+                            "asp_dokt_chasov,semestr,recordyear from zanyatost where id_zapisi = %1").arg(classID);
     runner->tryQuery(query,0,1);
     totalHoursLeftList = myList;
 
@@ -1319,7 +1388,7 @@ void MainWindowView::distributeAll(int classID, int teacherID, QString className
     double value14 = totalHoursLeftList.value(14);
     double value15 = totalHoursLeftList.value(15);
     double value16 = totalHoursLeftList.value(16);
-
+    double value18 = totalHoursLeftList.value(18);
 
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, tr("Подтверджение"), QString(tr("Распределить все часы дисциплины %1 преподавателю %2?").arg(className).arg(teacherName)), QMessageBox::Yes|QMessageBox::No);
@@ -1329,8 +1398,8 @@ void MainWindowView::distributeAll(int classID, int teacherID, QString className
     runner->tryQuery("START TRANSACTION;");
 
     query = QString("INSERT INTO raspredelenie(id_zanyatosti,id_prep,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,zachet_chasov,ekzamen_chasov,"
-    "kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,asp_dokt_chasov) "
-    "VALUES (%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18)")
+    "kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,asp_dokt_chasov,recordyear) "
+    "VALUES (%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19)")
             .arg(classID)
             .arg(teacherID)
             .arg(value1)
@@ -1348,7 +1417,8 @@ void MainWindowView::distributeAll(int classID, int teacherID, QString className
             .arg(value13)
             .arg(value14)
             .arg(value15)
-            .arg(value16);
+            .arg(value16)
+            .arg(value18);
     runner->tryQuery(query);
 
     runner->tryQuery(QString("UPDATE zanyatost SET lekcii_chasov = lekcii_chasov - %1 WHERE id_zapisi = %2").arg(value1).arg(classID));
@@ -1656,7 +1726,7 @@ void MainWindowView::updateDataForSelectedClass()
                             "sum(raspredelenie.asp_dokt_chasov) as P "
                             "FROM raspredelenie "
                             "left join zanyatost on raspredelenie.id_zanyatosti = zanyatost.id_zapisi "
-                            "WHERE id_prep = %1 and zanyatost.semestr = %2 group by id_prep;").arg(chosenTeacherID).arg(chosenSemester);
+                            "WHERE id_prep = %1 and zanyatost.semestr = %2 and raspredelenie.recordyear = %3 group by id_prep;").arg(chosenTeacherID).arg(chosenSemester).arg(chosenYear);
     runner->tryQuery(query,0,1);
     totalHoursDistributedList = myList;
 
@@ -1680,7 +1750,7 @@ void MainWindowView::updateDataForSelectedClass()
                             "sum(raspredelenie.asp_dokt_chasov) as P "
                             "FROM raspredelenie "
                             "left join zanyatost on raspredelenie.id_zanyatosti = zanyatost.id_zapisi "
-                            "WHERE id_prep = %1 AND raspredelenie.id_zanyatosti = %2 group by id_prep;").arg(chosenTeacherID).arg(chosenClassID);
+                            "WHERE id_prep = %1 AND raspredelenie.id_zanyatosti = %2 and raspredelenie.recordyear = %3 group by id_prep;").arg(chosenTeacherID).arg(chosenClassID).arg(chosenYear);
     runner->tryQuery(query,0,1);
     hoursDistributedForSelectedList = myList;
 
