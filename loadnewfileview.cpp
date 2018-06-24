@@ -104,10 +104,6 @@ void LoadNewFileView::clear()
     startButton->setEnabled(false);
     actionsLog->clear();
     errorCounterLE->clear();
-    //    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
-    //    QSqlDatabase::database("MyConnection",false).close();
-    //    QSqlDatabase::removeDatabase("MyConnection");
-    //    qDebug() << QSqlDatabase::database("MyConnection").isOpen();
 }
 
 void LoadNewFileView::finishProcessing(double expectedTotal, double countedTotal)
@@ -146,9 +142,6 @@ void LoadNewFileView::startProcessing()
     errorCounterLE->setText(QString::number(errorCount));
 
     processor->processData(directory);
-
-
-//    processor->convertRtf(directory);
 }
 
 void LoadNewFileView::getInformation(const QString info)
@@ -166,9 +159,6 @@ void LoadNewFileView::getError(QSqlError error)
     actionsLog->append(error.text());
     errorCount++;
     errorCounterLE->setText(QString::number(errorCount));
-
-//    QMessageBox::StandardButton errorMsg;
-    //    errorMsg = QMessageBox::critical(this,tr("Ошибка"),error.text(),QMessageBox::Ok);
 }
 
 void LoadNewFileView::commit()

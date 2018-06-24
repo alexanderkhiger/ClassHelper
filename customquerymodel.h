@@ -14,7 +14,7 @@ class CustomQueryModel : public QSqlQueryModel
     Q_OBJECT
 
 public:
-    CustomQueryModel();
+    CustomQueryModel() {};
 
     Qt::DropActions CustomQueryModel::supportedDropActions() const
     {

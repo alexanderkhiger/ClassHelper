@@ -28,9 +28,6 @@ class TableEditorView : public QWidget
     Q_OBJECT
 public:
     explicit TableEditorView(QString uID = 0, QString uName = 0, QString uShortname = 0,QWidget *parent = 0);
-//    virtual bool TableEditorView::eventFilter(QObject *obj, QEvent *event);
-
-
 
 signals:
     void updateError(QSqlError error);

@@ -113,7 +113,6 @@ void DataSelectorView::setDisciplineModel(QSqlTableModel *model)
 void DataSelectorView::setChairModel(QSqlTableModel *model)
 {
     chairModelReference = model;
-//    chairModelReference->setFilter(QString("id_universiteta = %1").arg(receivedID.toInt()));
     chairModelReference->setHeaderData(0,Qt::Horizontal,tr("ID кафедры"));
     chairModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     chairModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
@@ -202,7 +201,6 @@ void DataSelectorView::createButtonClicked()
         }
         else
         {
-//            specialty_id = specialtyModelReference->data(specialtyModelReference->index(rowNumber,0,QModelIndex())).toInt();
             specialty_id = specialtyModelReference->data(specialtyModelReference->index(0,0,QModelIndex())).toInt();
             emit sendData();
         }
@@ -222,7 +220,6 @@ void DataSelectorView::createButtonClicked()
         }
         else
         {
-//            specialty_id = specialtyModelReference->data(specialtyModelReference->index(rowNumber,0,QModelIndex())).toInt();
             discipline_id = disciplineModelReference->data(disciplineModelReference->index(0,0,QModelIndex())).toInt();
             emit sendData();
         }
@@ -242,7 +239,6 @@ void DataSelectorView::createButtonClicked()
         }
         else
         {
-//            specialty_id = specialtyModelReference->data(specialtyModelReference->index(rowNumber,0,QModelIndex())).toInt();
             chair_id = chairModelReference->data(chairModelReference->index(0,0,QModelIndex())).toInt();
             emit sendData();
         }

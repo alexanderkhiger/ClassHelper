@@ -58,8 +58,8 @@ private:
     double lectureMultiplier;
     double seminarMultiplier;
     double labMultiplier;
-    double kont; // consider rename
-    double refr; // consider rename
+    double kont;
+    double refr;
 
     QStringList semesterInfo;
 
@@ -71,25 +71,21 @@ private:
     double seminarHours;
     double labHours;
 
-    double consultTek; // consider rename
-    double consultEx; // consider rename
+    double consultTek;
+    double consultEx;
 
-    double kontHours; // consider rename
-    double refrHours; // consider rename
+    double kontHours;
+    double refrHours;
 
-    double zExamHours; // consider rename
-    double examHours; // consider rename
-    double gExamHours; // consider rename
+    double zExamHours;
+    double examHours;
+    double gExamHours;
 
     double practiceHours;
     double qualHours;
     double totalHours;
 
     int god;
-
-
-
-
 };
 
 #endif // LOADNEWFILELOGIC_H

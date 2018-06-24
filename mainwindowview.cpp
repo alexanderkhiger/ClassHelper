@@ -84,13 +84,6 @@ void MainWindowView::createUI()
 
     this->menuBar()->addMenu(fileMenu);
 
-//    newFileAction = new QAction(tr("Загрузить файл данных"), this);
-//    newFileAction->setShortcuts(QKeySequence::New);
-//    newFileAction->setStatusTip(tr("Загрузить новый файл данных"));
-//    fileMenu->addAction(newFileAction);
-//    fileMenu->addSeparator();
-//    connect(newFileAction, SIGNAL(triggered(bool)), this, SLOT(setLoadNewFileAsCentral()));
-
     backToUniversityList = new QAction(tr("Выбор университета"), this);
     backToUniversityList->setStatusTip(tr("Назад к выбору университета"));
     fileMenu->addAction(backToUniversityList);

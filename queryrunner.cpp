@@ -9,7 +9,6 @@ QueryRunner::QueryRunner(QObject *parent) : QObject(parent)
     }
     else
         db = QSqlDatabase::addDatabase("QMYSQL","dbConnection");
-    //    defaultQuery = new QSqlQuery(db);
     defaultQuery = QSqlQuery(db);
     defaultModel = new QSqlQueryModel;
     defaultCustomModel = new CustomQueryModel;

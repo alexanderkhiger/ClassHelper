@@ -42,8 +42,6 @@ void DistributionView::createUI()
 
     classesList->verticalHeader()->setVisible(0);
     teachersList->verticalHeader()->setVisible(0);
-//    classesList->horizontalHeader()->setStretchLastSection(true);
-//    teachersList->horizontalHeader()->setStretchLastSection(true);
     teachersList->setDragDropMode(QAbstractItemView::DragDrop);
     classesList->setDragDropMode(QAbstractItemView::DragDrop);
 

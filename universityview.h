@@ -26,7 +26,6 @@ class UniversityView : public QWidget
     Q_OBJECT
 public:
     explicit UniversityView(QWidget *parent = 0);
-//    virtual bool UniversityView::eventFilter(QObject *obj, QEvent *event);
 
 signals:
     void updateError(QSqlError error);
@@ -49,11 +48,11 @@ public slots:
 private:
     QueryRunner *runner;
     UniversityModel *uModel;
-    QGroupBox *workField; //
-    CustomTableView *universityTableView; //
-    QPushButton *addButton; //
-    QPushButton *deleteButton; //
-    QPushButton *confirmButton; //
+    QGroupBox *workField;
+    CustomTableView *universityTableView;
+    QPushButton *addButton;
+    QPushButton *deleteButton;
+    QPushButton *confirmButton;
     QPushButton *exitButton;
     QDialogButtonBox *buttonBox;
     QHBoxLayout *topHLayout;

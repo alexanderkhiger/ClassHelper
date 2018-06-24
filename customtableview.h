@@ -22,7 +22,7 @@ protected:
 
 public:
 
-    explicit CustomTableView(QWidget *parent = 0);
+    explicit CustomTableView(QWidget *parent = 0) {};
 
     ~CustomTableView(){}
 

@@ -52,10 +52,6 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     previewLabel->setAlignment(Qt::AlignCenter);
 
     teachersList->setColumnHidden(0,true);
-    //    teachersList->setColumnHidden(1,true);
-    //    teachersList->setColumnHidden(5,true);
-    //    teachersList->setColumnHidden(6,true);
-    //    teachersList->setColumnHidden(7,true);
 
     teachersList->resizeColumnsToContents();
     teachersList->resizeRowsToContents();

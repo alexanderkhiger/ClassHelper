@@ -30,7 +30,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    droparea.cpp \
     universityview.cpp \
     queryrunner.cpp \
     authview.cpp \
@@ -40,16 +39,12 @@ SOURCES += \
     tableeditorview.cpp \
     tableeditormodel.cpp \
     customlineedit.cpp \
-    customtableview.cpp \
     mainwindowview.cpp \
     dataselectorview.cpp \
-    customdoublevalidator.cpp \
     outputtofileview.cpp \
-    customquerymodel.cpp \
     distributionview.cpp
 
 HEADERS += \
-    droparea.h \
     universityview.h \
     queryrunner.h \
     authview.h \

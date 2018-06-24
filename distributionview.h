@@ -5,7 +5,6 @@
 #include <QWidget>
 #include <QMainWindow>
 #include "tableeditorview.h"
-#include "droparea.h"
 #include "loadnewfileview.h"
 #include <QSqlTableModel>
 #include <QCheckBox>
@@ -21,7 +20,6 @@
 #include <QMimeData>
 #include <QPushButton>
 #include <QTableWidget>
-#include "droparea.h"
 #include <QListWidget>
 #include <QString>
 #include <QGroupBox>
@@ -121,8 +119,6 @@ private:
     QString receivedID;
     QString receivedName;
     QString receivedShortname;
-
-    DropArea *dropArea;
 
     QGroupBox *workField;
 

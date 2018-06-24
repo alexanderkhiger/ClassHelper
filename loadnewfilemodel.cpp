@@ -41,12 +41,10 @@ void LoadNewFileModel::processData(const QString dir)
             QString planDate = singleLine.split(":")[1];
             planDate.remove(" ");
             planDate = QDate::fromString(planDate, "MM/dd/yy").addYears(100).toString("yyyy.MM.dd");
-            //            qDebug() << planDate;
         }
         else
             return;
 
-        //
         runner->tryQuery("ROLLBACK;");
         runner->tryQuery("START TRANSACTION;");
 
@@ -89,15 +87,11 @@ void LoadNewFileModel::processData(const QString dir)
         else
             return;
 
-
-        //
-
         while (!stream.atEnd()&&!singleLine.contains("ИТОГИ"))
         {
             while (singleLine[0]!='|')
                 singleLine=stream.readLine();
 
-            //
             for (int i = 0; i < 4; i++)
             {
             singleLine=stream.readLine();
@@ -156,12 +150,10 @@ void LoadNewFileModel::processData(const QString dir)
                     {
                         mySelector = new DataSelectorView("fakultet",facultyName,"noValue","noValue","noValue",receivedID);
                         mySelector->show();
-                        //                    QTimer timer;
-                        //                    timer.setSingleShot(true);
+
                         QEventLoop loop;
                         connect(mySelector,SIGNAL(sendData()),&loop,SLOT(quit()));
-                        //                    connect(&timer,SIGNAL(timeout()),&loop,SLOT(quit()));
-                        //                    timer.start();
+
                         loop.exec();
                         facultyId = mySelector->faculty_id;
                         mySelector->close();
@@ -178,8 +170,7 @@ void LoadNewFileModel::processData(const QString dir)
 
 
                     query = QString("SELECT id_spec FROM specialnost WHERE nazvanie_spec = '%1' AND id_fakulteta = %2").arg(specialty).arg(facultyId);
-                    //                delete runner;
-                    //                runner = new QueryRunner;
+
                     querySize = runner->tryQuery(query,0,1);
                     int specialtyID = 0;
 
@@ -221,24 +212,8 @@ void LoadNewFileModel::processData(const QString dir)
 
                     subgroupsCount = QString(streamInfo[12]).remove(" ").toInt();
 
-                    //                qDebug() << year << studentsCount << groupsCount << subgroupsCount;
-
                     singleLine=stream.readLine();
                     singleLine=stream.readLine();
-
-                    //
-
-                    ////______________________________________________________________вставка групп начата_______________________________________________
-
-                    //                for (int i=1; i<groupsCount+1; i++)
-                    //                {
-                    //                    QString groupName = specialty + " - " +QString::number(i);
-                    //                    query = QString("INSERT INTO gruppa(nazvanie_gruppy,kolvo_studentov,kurs,id_spec,kolvo_podgrupp,abbr_gruppy) VALUES ('%1',%2,%3,%4,%5,'%6')").arg(groupName)
-                    //                            .arg(studentsCount).arg(year).arg(specialtyID).arg(subgroupsCount).arg(groupName);
-                    //                    runner->tryQuery(query);
-                    //                }
-
-                    ////______________________________________________________________вставка групп закончена_______________________________________________
 
                     //______________________________________________________________вставка потока начата_______________________________________________
 
@@ -266,28 +241,19 @@ void LoadNewFileModel::processData(const QString dir)
 
                     }
 
-
-
-
-
-
-
-
                     //______________________________________________________________вставка потока закончена_______________________________________________
 
 
 
                     disciplineInfo = singleLine.split("|");
 
-                    //                qDebug() << disciplineInfo;
-
                     disciplineName = disciplineInfo[1];
                     disciplineName.remove("  ");
                     lectureMultiplier = QString(disciplineInfo[2]).remove(" ").toDouble();
                     seminarMultiplier = QString(disciplineInfo[3]).remove(" ").toDouble();
                     labMultiplier = QString(disciplineInfo[4]).remove(" ").toDouble();
-                    kont = QString(disciplineInfo[7]).remove(" ").toDouble(); // consider rename
-                    refr = QString(disciplineInfo[8]).remove(" ").toDouble(); // consider rename
+                    kont = QString(disciplineInfo[7]).remove(" ").toDouble();
+                    refr = QString(disciplineInfo[8]).remove(" ").toDouble();
 
                     //______________________________________________________________вставка дисциплины начата_______________________________________________
 
@@ -322,21 +288,7 @@ void LoadNewFileModel::processData(const QString dir)
                         delete mySelector;
                     }
 
-
-
-                    //                query = QString("INSERT INTO disciplina(nazvanie_discipliny) VALUES ('%1')").arg(disciplineName);
-                    //                runner->tryQuery(query);
-
-
-                    //                query = QString("SELECT LAST_INSERT_ID() AS id");
-                    //                returnedQuery = runner->tryQuery(query);
-                    //                returnedQuery.next();
-                    //                disciplineID = returnedQuery.value(0).toInt();
-                    //______________________________________________________________вставка дисциплины закончена_______________________________________________
-
                     singleLine=stream.readLine();
-
-                    //
 
                     singleLine[singleLine.indexOf("семестр")+7]='|';
                     singleLine[singleLine.indexOf("нед")+3]='|';
@@ -348,8 +300,6 @@ void LoadNewFileModel::processData(const QString dir)
 
                     semesterInfo = singleLine.split("|");
 
-                    //                qDebug() << semesterInfo;
-
                     semester = QString(semesterInfo[1]).remove(" ").toInt();
                     weeks = QString(semesterInfo[3]).remove(" ").toInt();
                     individual = QString(semesterInfo[7]).remove(" ").toInt();
@@ -359,21 +309,20 @@ void LoadNewFileModel::processData(const QString dir)
                     seminarHours = QString(semesterInfo[9]).remove(" ").toDouble();
                     labHours = QString(semesterInfo[10]).remove(" ").toDouble();
 
-                    consultTek = QString(semesterInfo[11]).remove(" ").toDouble(); // consider rename
-                    consultEx = QString(semesterInfo[12]).remove(" ").toDouble(); // consider rename
+                    consultTek = QString(semesterInfo[11]).remove(" ").toDouble();
+                    consultEx = QString(semesterInfo[12]).remove(" ").toDouble();
 
-                    kontHours = QString(semesterInfo[13]).remove(" ").toDouble(); // consider rename
-                    refrHours = QString(semesterInfo[14]).remove(" ").toDouble(); // consider rename
+                    kontHours = QString(semesterInfo[13]).remove(" ").toDouble();
+                    refrHours = QString(semesterInfo[14]).remove(" ").toDouble();
 
-                    zExamHours = QString(semesterInfo[15]).remove(" ").toDouble(); // consider rename
-                    examHours = QString(semesterInfo[16]).remove(" ").toDouble(); // consider rename
-                    gExamHours = QString(semesterInfo[17]).remove(" ").toDouble(); // consider rename
+                    zExamHours = QString(semesterInfo[15]).remove(" ").toDouble();
+                    examHours = QString(semesterInfo[16]).remove(" ").toDouble();
+                    gExamHours = QString(semesterInfo[17]).remove(" ").toDouble();
 
                     practiceHours = QString(semesterInfo[18]).remove(" ").toDouble();
                     qualHours = QString(semesterInfo[19]).remove(" ").toDouble();
                     totalHours = QString(semesterInfo[20]).remove(" ").toDouble();
                     countedTotal += totalHours;
-                    //                qDebug() << totalHours;
 
                     singleLine=stream.readLine();
                     singleLine=stream.readLine();
@@ -398,7 +347,6 @@ void LoadNewFileModel::processData(const QString dir)
                         reportType = tr("Госэкзамен");
                     }
 
-                    // QString streamName = specialty + tr(" (Переименуйте)");
                     query = QString("INSERT INTO zanyatost(id_potoka,id_discipliny,vid_itog_otch,nedeli,lekcii_chasov,seminary_chasov,lab_chasov,kontrol_chasov,konsultacii_chasov,"
                                     "zachet_chasov,ekzamen_chasov,semestr,kursovie_chasov,ucheb_praktika_chasov,proizv_praktika_chasov,preddipl_praktika_chasov,vkl_chasov,obz_lekcii_chasov,gek_chasov,nirs_chasov,"
                                     "asp_dokt_chasov,lekcii_ed_v_ned,sem_ed_v_ned,lab_ed_v_ned, id_kafedry, recordyear) VALUES (%1,%2,'%3',%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15,%16,%17,%18,%19,%20,%21,%22,%23,%24,%25,%26)")
@@ -433,9 +381,6 @@ void LoadNewFileModel::processData(const QString dir)
 
                     runner->tryQuery(query);
 
-                    //                qDebug () << query;
-
-
                     singleLine[singleLine.indexOf("семестр")+7]='|';
                     singleLine[singleLine.indexOf("нед")+3]='|';
                     singleLine[singleLine.indexOf("Инд")+3]='|';
@@ -446,8 +391,6 @@ void LoadNewFileModel::processData(const QString dir)
 
                     disciplineInfo = singleLine.split("|");
 
-                    //                qDebug() << disciplineInfo;
-
                     semester = QString(disciplineInfo[1]).remove(" ").toInt();
                     weeks = QString(disciplineInfo[3]).remove(" ").toInt();
                     individual = QString(disciplineInfo[7]).remove(" ").toInt();
@@ -455,34 +398,32 @@ void LoadNewFileModel::processData(const QString dir)
                     lectureMultiplier = QString(disciplineInfo[8]).remove(" ").toDouble();
                     seminarMultiplier = QString(disciplineInfo[9]).remove(" ").toDouble();
                     labMultiplier = QString(disciplineInfo[10]).remove(" ").toDouble();
-                    kont = QString(disciplineInfo[13]).remove(" ").toDouble(); // consider rename
-                    refr = QString(disciplineInfo[14]).remove(" ").toDouble(); // consider rename
+                    kont = QString(disciplineInfo[13]).remove(" ").toDouble();
+                    refr = QString(disciplineInfo[14]).remove(" ").toDouble();
 
                     singleLine=stream.readLine();
 
                     semesterInfo = singleLine.split("|");
 
-                    //                qDebug() << semesterInfo;
-
                     lectureHours = QString(semesterInfo[2]).remove(" ").toDouble();
                     seminarHours = QString(semesterInfo[3]).remove(" ").toDouble();
                     labHours = QString(semesterInfo[4]).remove(" ").toDouble();
 
-                    consultTek = QString(semesterInfo[5]).remove(" ").toDouble(); // consider rename
-                    consultEx = QString(semesterInfo[6]).remove(" ").toDouble(); // consider rename
+                    consultTek = QString(semesterInfo[5]).remove(" ").toDouble();
+                    consultEx = QString(semesterInfo[6]).remove(" ").toDouble();
 
-                    kontHours = QString(semesterInfo[7]).remove(" ").toDouble(); // consider rename
-                    refrHours = QString(semesterInfo[8]).remove(" ").toDouble(); // consider rename
+                    kontHours = QString(semesterInfo[7]).remove(" ").toDouble();
+                    refrHours = QString(semesterInfo[8]).remove(" ").toDouble();
 
-                    zExamHours = QString(semesterInfo[9]).remove(" ").toDouble(); // consider rename
-                    examHours = QString(semesterInfo[10]).remove(" ").toDouble(); // consider rename
-                    gExamHours = QString(semesterInfo[11]).remove(" ").toDouble(); // consider rename
+                    zExamHours = QString(semesterInfo[9]).remove(" ").toDouble();
+                    examHours = QString(semesterInfo[10]).remove(" ").toDouble();
+                    gExamHours = QString(semesterInfo[11]).remove(" ").toDouble();
 
                     practiceHours = QString(semesterInfo[12]).remove(" ").toDouble();
                     qualHours = QString(semesterInfo[13]).remove(" ").toDouble();
                     totalHours = QString(semesterInfo[14]).remove(" ").toDouble();
                     countedTotal += totalHours;
-                    //                qDebug() << totalHours;
+
                     singleLine=stream.readLine();
                     singleLine=stream.readLine();
 

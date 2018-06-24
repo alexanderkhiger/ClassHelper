@@ -7,7 +7,6 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     createUI();
     getModel();
     resizeTable();
-//    universityTableView->viewport()->installEventFilter(this);
     connect(universityTableView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(turnOffButtons()));
     connect(exitButton, SIGNAL(clicked(bool)), this, SLOT(close()));
     connect(confirmButton, SIGNAL(clicked(bool)), this, SLOT(choiceConfirmed()));
@@ -21,19 +20,6 @@ UniversityView::UniversityView(QWidget *parent) : QWidget(parent)
     connect(universityTableView->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(changedFrom(QItemSelection)));
     connect(universityTableView->model(),SIGNAL(dataChanged(QModelIndex,QModelIndex)),this,SLOT(changedTo(QModelIndex)));
 }
-
-//bool UniversityView::eventFilter(QObject *obj, QEvent *event)
-//{
-
-//    if (event->type() == QEvent::MouseButtonDblClick) {
-//        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
-
-//        if (mouseEvent -> button() == Qt::LeftButton) {
-//            turnOffButtons();
-//        }
-//    }
-//    return QWidget::eventFilter(obj, event);
-//}
 
 void UniversityView::createUI()
 {
@@ -49,7 +35,6 @@ void UniversityView::createUI()
     confirmAddition = new QPushButton(tr("OK"));
     universityTableView = new CustomTableView(this);
     universityTableView->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    universityTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     universityTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     universityTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     universityTableView->verticalHeader()->setVisible(0);
@@ -233,9 +218,6 @@ void UniversityView::editRecord()
         resizeTable();
         deleteButton->setEnabled(0);
         confirmButton->setEnabled(0);
-        //        QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows;
-        //        QModelIndex index = universityTableView->model()->index(0, 0);
-        //        universityTableView->selectionModel()->select(index,flags);
     }
 }
 

@@ -70,13 +70,6 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     createSpecialtyWidgetUI();
     createStreamWidgetUI();
 
-//    facultyTable->viewport()->installEventFilter(this);
-//    chairTable->viewport()->installEventFilter(this);
-//    teacherTable->viewport()->installEventFilter(this);
-//    disciplineTable->viewport()->installEventFilter(this);
-//    specialtyTable->viewport()->installEventFilter(this);
-//    streamTable->viewport()->installEventFilter(this);
-
     connect(facultyTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableFacultyWidgets()));
     connect(chairTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableChairWidgets()));
     connect(teacherTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableTeacherWidgets()));
@@ -85,40 +78,6 @@ TableEditorView::TableEditorView(QString uID, QString uName, QString uShortname,
     connect(streamTable,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(disableStreamWidgets()));
     resizeTable(facultyTable);
 }
-
-//bool TableEditorView::eventFilter(QObject *obj, QEvent *event) {
-
-//    if (event->type() == QEvent::MouseButtonDblClick) {
-//        QMouseEvent * mouseEvent = static_cast <QMouseEvent *> (event);
-//        if (mouseEvent -> button() == Qt::LeftButton) {
-//            if (obj == facultyTable->viewport())
-//            {
-//                disableFacultyWidgets();
-//            }
-//            else if (obj == chairTable->viewport())
-//            {
-//                disableChairWidgets();
-//            }
-//            else if (obj == teacherTable->viewport())
-//            {
-//                disableTeacherWidgets();
-//            }
-//            else if (obj == disciplineTable->viewport())
-//            {
-//                disableDisciplineWidgets();
-//            }
-//            else if (obj == specialtyTable->viewport())
-//            {
-//                disableSpecialtyWidgets();
-//            }
-//            else if (obj == streamTable->viewport())
-//            {
-//                disableStreamWidgets();
-//            }
-//        }
-//    }
-//    return QWidget::eventFilter(obj, event);
-//}
 
 void TableEditorView::resizeTable(QTableView *table)
 {
@@ -233,7 +192,7 @@ void TableEditorView::createFacultyWidgetUI()
 {
     facultyTable = new CustomTableView;
     facultyTable->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    facultyTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
     facultyTable->setSelectionMode(QAbstractItemView::SingleSelection);
     facultyTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     facultyTable->verticalHeader()->setVisible(0);
@@ -251,16 +210,13 @@ void TableEditorView::createFacultyWidgetUI()
     facultyShortname->setPlaceholderText(tr("Аббревиатура"));
     facultyShortname->setToolTip(tr("Аббревиатура факультета"));
 
-    //    facultyItemDelegate = new CustomItemDelegate;
-    //    facultyTable->setItemDelegate(facultyItemDelegate);
-
     connect(facultyAddButton,SIGNAL(clicked(bool)),this,SLOT(changeFacultyAddButtonStyle()));
     connect(facultyConfirmAddition,SIGNAL(clicked(bool)),this,SLOT(facultyAddRecord()));
     connect(facultyDeleteButton,SIGNAL(clicked(bool)),this,SLOT(facultyDeleteRecord()));
     connect(facultyTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableFacultyButtons()));
     connect(facultyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(facultyEditRecord()));
     connect(facultyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
-//    connect(facultyTable,&QTableView::doubleClicked,this,&TableEditorView::disableFacultyWidgets);
+
     facultyConfirmAddition->setVisible(0);
     facultyName->setVisible(0);
     facultyShortname->setVisible(0);
@@ -287,7 +243,7 @@ void TableEditorView::createChairWidgetUI()
 {
     chairTable = new CustomTableView;
     chairTable->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
     chairTable->setSelectionMode(QAbstractItemView::SingleSelection);
     chairTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     chairTable->verticalHeader()->setVisible(0);
@@ -316,7 +272,6 @@ void TableEditorView::createChairWidgetUI()
     connect(chairTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableChairButtons()));
     connect(chairTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(chairEditRecord()));
     connect(chairTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
-//    connect(chairTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
 
     chairConfirmAddition->setVisible(0);
     chairName->setVisible(0);
@@ -347,7 +302,7 @@ void TableEditorView::createTeacherWidgetUI()
 {
     teacherTable = new CustomTableView;
     teacherTable->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
     teacherTable->setSelectionMode(QAbstractItemView::SingleSelection);
     teacherTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     teacherTable->verticalHeader()->setVisible(0);
@@ -401,7 +356,6 @@ void TableEditorView::createTeacherWidgetUI()
     connect(teacherTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableTeacherButtons()));
     connect(teacherTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(teacherEditRecord()));
     connect(teacherTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
-//    connect(teacherTable,&QTableView::doubleClicked,this,&TableEditorView::disableTeacherWidgets);
 
     teacherConfirmAddition->setVisible(0);
     teacherFirstName->setVisible(0);
@@ -451,7 +405,7 @@ void TableEditorView::createDisciplineWidgetUI()
 {
     disciplineTable = new CustomTableView;
     disciplineTable->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
     disciplineTable->setSelectionMode(QAbstractItemView::SingleSelection);
     disciplineTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     disciplineTable->verticalHeader()->setVisible(0);
@@ -471,7 +425,6 @@ void TableEditorView::createDisciplineWidgetUI()
     connect(disciplineTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableDisciplineButtons()));
     connect(disciplineTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(disciplineEditRecord()));
     connect(disciplineTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
-//    connect(disciplineTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
 
     disciplineConfirmAddition->setVisible(0);
     disciplineName->setVisible(0);
@@ -498,7 +451,7 @@ void TableEditorView::createSpecialtyWidgetUI()
 {
     specialtyTable = new CustomTableView;
     specialtyTable->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    chairTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
     specialtyTable->setSelectionMode(QAbstractItemView::SingleSelection);
     specialtyTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     specialtyTable->verticalHeader()->setVisible(0);
@@ -523,7 +476,6 @@ void TableEditorView::createSpecialtyWidgetUI()
     connect(specialtyTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableSpecialtyButtons()));
     connect(specialtyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(specialtyEditRecord()));
     connect(specialtyTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
-//    connect(chairTable,&QTableView::doubleClicked,this,&TableEditorView::disableChairWidgets);
 
     specialtyConfirmAddition->setVisible(0);
     specialtyName->setVisible(0);
@@ -551,7 +503,6 @@ void TableEditorView::createStreamWidgetUI()
 {
     streamTable = new CustomTableView;
     streamTable->setEditTriggers(QAbstractItemView::DoubleClicked);
-    //    teacherTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     streamTable->setSelectionMode(QAbstractItemView::SingleSelection);
     streamTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     streamTable->verticalHeader()->setVisible(0);
@@ -599,7 +550,6 @@ void TableEditorView::createStreamWidgetUI()
     connect(streamTable,SIGNAL(clicked(QModelIndex)),this,SLOT(enableStreamButtons()));
     connect(streamTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(streamEditRecord()));
     connect(streamTable->itemDelegate(),SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),this,SLOT(enableWidgets()));
-//    connect(teacherTable,&QTableView::doubleClicked,this,&TableEditorView::disableTeacherWidgets);
 
     streamConfirmAddition->setVisible(0);
     streamGroups->setVisible(0);
@@ -879,7 +829,6 @@ void TableEditorView::getFacultyModel()
 void TableEditorView::setFacultyModel(QSqlTableModel *model)
 {
     facultyModelReference = model;
-    //    facultyModelReference->setFilter(QString("id_universiteta = '%1'").arg(receivedUID));
     facultyModelReference->setHeaderData(0,Qt::Horizontal,tr("ID факультета"));
     facultyModelReference->setHeaderData(1,Qt::Horizontal,tr("Название"));
     facultyModelReference->setHeaderData(2,Qt::Horizontal,tr("Аббревиатура"));
