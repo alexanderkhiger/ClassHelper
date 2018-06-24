@@ -78,6 +78,7 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     chosenYear->setDate(QDate(2018,1,1));
     chosenYear->setMaximumDate(QDate(2030,1,1));
     chosenYear->setMinimumDate(QDate(2010,1,1));
+    chosenYear->setToolTip(tr("%1 - %2 учебный год").arg(chosenYear->text().toInt()).arg(chosenYear->text().toInt()+1));
     connect(chosenYear,SIGNAL(dateChanged(QDate)),this,SLOT(process()));
 
     chosenYearLabel = new QLabel(tr("Выбранный год"));
@@ -129,9 +130,8 @@ void OutputToFileView::setChosenTeacher(QModelIndex index)
 
 void OutputToFileView::process()
 {
-
+    chosenYear->setToolTip(tr("%1 - %2 учебный год").arg(chosenYear->text().toInt()).arg(chosenYear->text().toInt()+1));
     runner->outputToFile(teachersList->model()->data(teachersList->model()->index(savedIndex.row(),0)).toInt(),receivedID.toInt(),chosenTeacher->text(),chosenYear->text().toInt());
-
 }
 
 int OutputToFileView::saveFile()

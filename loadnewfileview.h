@@ -40,6 +40,7 @@ public slots:
     void getError(QSqlError error);
     void commit();
     void finishWorking();
+    void changeTooltip();
 
 private:
 

@@ -564,7 +564,7 @@ void DistributionView::createUI()
     teachersFilterComboBox = new QComboBox;
     teachersFilterComboBox->addItem(">");
     teachersFilterComboBox->addItem("<");
-    connect(teachersFilterComboBox,SIGNAL(currentTextChanged(QString)),this,SLOT(filterTeachers()));
+    connect(teachersFilterComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(filterTeachers()));
 
     teachersIDCheck = new QCheckBox(tr("ID преподавателя"));
     teachersChairCheck = new QCheckBox(tr("ID кафедры"));
@@ -710,6 +710,8 @@ void DistributionView::getYearList() {
 }
 
 void DistributionView::receiveModels() {
+
+    yearComboBox->setToolTip(tr("%1 - %2 учебный год").arg(yearComboBox->currentText().toInt()).arg(yearComboBox->currentText().toInt()+1));
 
     QString chairId = chairComboBox->model()->data(chairComboBox->model()->index(chairComboBox->currentIndex(),1,QModelIndex())).toString();
 

@@ -26,6 +26,8 @@ void LoadNewFileView::createUI()
     chosenYear->setDate(QDate(2018,1,1));
     chosenYear->setMaximumDate(QDate(2030,1,1));
     chosenYear->setMinimumDate(QDate(2010,1,1));
+    chosenYear->setToolTip(tr("%1 - %2 учебный год").arg(chosenYear->text().toInt()).arg(chosenYear->text().toInt()+1));
+    connect(chosenYear,SIGNAL(dateChanged(QDate)),this,SLOT(changeTooltip()));
 
     skipAllCheck = new QCheckBox;
     skipAllCheck->setText(tr("Добавить все, как есть"));
@@ -179,4 +181,9 @@ void LoadNewFileView::finishWorking()
     chosenFile->clear();
     delete processor;
     emit finishedProcessing();
+}
+
+void LoadNewFileView::changeTooltip()
+{
+    chosenYear->setToolTip(tr("%1 - %2 учебный год").arg(chosenYear->text().toInt()).arg(chosenYear->text().toInt()+1));
 }
