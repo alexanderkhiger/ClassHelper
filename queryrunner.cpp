@@ -29,7 +29,7 @@ void QueryRunner::tryAuth(const QString login, const QString password, const QSt
     {
         db.open();
         if (db.isOpen() == 0)
-            emit authError(tr("Ошибка авторизации, проверьте правильность данных"));
+            emit authError(db.lastError().text());
         else
         {
             emit authSuccess();

@@ -126,7 +126,7 @@ void LoadNewFileView::startProcessing()
 {
     int year = chosenYear->text().toInt();
     processor = new LoadNewFileModel(receivedID,skipAllCheck->isChecked(),this, year);
-
+    emit startedProcessing();
     disconnect(processor,SIGNAL(processingFinished(double,double)),this,SLOT(finishProcessing(double,double)));
     disconnect(processor,SIGNAL(sendInformation(QString)),this,SLOT(getInformation(QString)));
     disconnect(processor,SIGNAL(sendProgress(int)),this,SLOT(getProgress(int)));
@@ -188,4 +188,5 @@ void LoadNewFileView::finishWorking()
     commitChanges->setEnabled(0);
     chosenFile->clear();
     delete processor;
+    emit finishedProcessing();
 }

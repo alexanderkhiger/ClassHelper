@@ -25,7 +25,6 @@ class LoadNewFileModel : public QObject
     Q_OBJECT
 public:
     explicit LoadNewFileModel(QString uID, int skipAll = 0, QObject *parent = 0, int year = 0);
-    QString rtfToPlainText(const QString rtf);
     QueryRunner *runner;
 
 signals:
@@ -36,7 +35,6 @@ signals:
 
 public slots:
     void processData(const QString dir);
-    void convertRtf(const QString dir);
     void setData(QList<double> list);
     void commit();
 

@@ -85,6 +85,7 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     connect(chosenYear,SIGNAL(dateChanged(QDate)),this,SLOT(process()));
 
     chosenYearLabel = new QLabel(tr("Выбранный год"));
+    chosenYearLabel->setAlignment(Qt::AlignCenter);
 
     t1VBoxLayout->addWidget(chosenTeacherLabel);
     t2VBoxLayout->addWidget(chosenTeacher);
@@ -114,10 +115,6 @@ OutputToFileView::OutputToFileView(QString uID, QWidget *parent) : QWidget(paren
     externalHBoxLayout = new QHBoxLayout(this);
     externalHBoxLayout->addLayout(internalLeftVBoxLayout);
     externalHBoxLayout->addLayout(internalRightVBoxLayout);
-
-
-
-
 }
 
 void OutputToFileView::setTeachersModel(QSqlQueryModel *model)

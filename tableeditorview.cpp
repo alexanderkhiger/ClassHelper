@@ -1153,6 +1153,37 @@ void TableEditorView::disableStreamWidgets()
     tableTab->setTabEnabled(4,0);
 }
 
+void TableEditorView::clearAll()
+{
+    chairName->clear();
+    chairShortname->clear();
+    chairChooseFaculty->clear();
+
+    facultyName->clear();
+    facultyShortname->clear();
+
+    teacherFirstName->clear();
+    teacherMiddleName->clear();
+    teacherSurname->clear();
+    teacherTitle->setCurrentIndex(0);
+    teacherDegree->setCurrentIndex(0);
+    teacherPost->clear();
+    teacherChooseChair->clear();
+
+    streamGroups->clear();
+    streamSubgroups->clear();
+    streamStudents->clear();
+    streamYear->clear();
+    streamName->clear();
+    streamShortName->clear();
+    streamChooseSpecialty->clear();
+
+    specialtyName->clear();
+    specialtyChooseFaculty->clear();
+
+    disciplineName->clear();
+}
+
 void TableEditorView::enableWidgets()
 {
     facultyAddButton->setVisible(1);

@@ -27,6 +27,8 @@ public:
     explicit LoadNewFileView(QString uID, QWidget *parent = 0);
 
 signals:
+    void startedProcessing();
+    void finishedProcessing();
 
 public slots:
     void chooseFile();

@@ -41,13 +41,12 @@ SOURCES += \
     tableeditormodel.cpp \
     customlineedit.cpp \
     customtableview.cpp \
-    mainwindowmodel.cpp \
     mainwindowview.cpp \
     dataselectorview.cpp \
-    dataselectormodel.cpp \
     customdoublevalidator.cpp \
     outputtofileview.cpp \
-    customquerymodel.cpp
+    customquerymodel.cpp \
+    distributionview.cpp
 
 HEADERS += \
     droparea.h \
@@ -61,10 +60,9 @@ HEADERS += \
     tableeditormodel.h \
     customlineedit.h \
     customtableview.h \
-    mainwindowmodel.h \
     mainwindowview.h \
     dataselectorview.h \
-    dataselectormodel.h \
     customdoublevalidator.h \
     outputtofileview.h \
-    customquerymodel.h
+    customquerymodel.h \
+    distributionview.h

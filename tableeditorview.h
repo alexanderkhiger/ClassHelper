@@ -39,6 +39,7 @@ public slots:
 
     void setSmallTablesVisible();
     void setSmallTablesInvisible();
+
     void getFacultyID();
     void getChairID();
     void getSpecialtyID();
@@ -125,6 +126,8 @@ public slots:
     void disableDisciplineWidgets();
     void disableSpecialtyWidgets();
     void disableStreamWidgets();
+
+    void clearAll();
 
     void enableWidgets();
 
